@@ -6,20 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('user_groups', function (Blueprint $table) {
+
             $table->id();
+
+            $table->string('title',100);
+
+            $table->decimal('buy_commission',5,2)->default(0);
+
+            $table->decimal('sell_commission',5,2)->default(0);
+
+            $table->decimal('discount_percent',5,2)->default(0);
+
+            $table->integer('priority')->default(0);
+
+            $table->boolean('is_active')->default(true);
+
+            $table->text('description')->nullable();
+
             $table->timestamps();
+
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('user_groups');

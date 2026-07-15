@@ -6,20 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('kimia_logs', function (Blueprint $table) {
+
             $table->id();
+
+            $table->string('service');
+
+            $table->string('method');
+
+            $table->longText('request')->nullable();
+
+            $table->longText('response')->nullable();
+
+            $table->integer('http_code')->nullable();
+
+            $table->boolean('success')->default(false);
+
             $table->timestamps();
+
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('kimia_logs');

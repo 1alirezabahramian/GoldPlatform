@@ -6,20 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('sms_logs', function (Blueprint $table) {
+
             $table->id();
+
+            $table->string('mobile',20);
+
+            $table->string('template')->nullable();
+
+            $table->string('code',10)->nullable();
+
+            $table->text('message')->nullable();
+
+            $table->boolean('success')->default(false);
+
+            $table->string('provider')->default('sms.ir');
+
             $table->timestamps();
+
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('sms_logs');

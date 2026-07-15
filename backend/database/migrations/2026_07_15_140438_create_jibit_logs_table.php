@@ -6,20 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('jibit_logs', function (Blueprint $table) {
+
             $table->id();
+
+            $table->string('national_code',20);
+
+            $table->string('mobile',20)->nullable();
+
+            $table->boolean('verified')->default(false);
+
+            $table->longText('response')->nullable();
+
             $table->timestamps();
+
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('jibit_logs');

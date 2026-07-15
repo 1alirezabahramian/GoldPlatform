@@ -6,20 +6,39 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
+
             $table->id();
+
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+
+            $table->enum('type', ['buy', 'sell']);
+
+            $table->enum('status', [
+                'pending',
+                'paid',
+                'processing',
+                'completed',
+                'cancelled'
+            ])->default('pending');
+
+            $table->decimal('gold_weight', 12, 3)->default(0);
+
+            $table->decimal('gold_price', 18, 0)->default(0);
+
+            $table->decimal('commission', 18, 0)->default(0);
+
+            $table->decimal('total_price', 18, 0)->default(0);
+
+            $table->text('description')->nullable();
+
             $table->timestamps();
+
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('orders');
