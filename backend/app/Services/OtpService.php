@@ -4,8 +4,21 @@ namespace App\Services;
 
 class OtpService
 {
-    public function generate(): string
+    public function generate(int $length = 6): string
     {
-        return (string) random_int(100000, 999999);
+        $min = (int) pow(10, $length - 1);
+        $max = (int) pow(10, $length) - 1;
+
+        return (string) random_int($min, $max);
+    }
+
+    public function expiresAt(): \DateTime
+    {
+        return new \DateTime('+2 minutes');
+    }
+
+    public function verify(string $code, string $input): bool
+    {
+        return hash_equals($code, $input);
     }
 }
