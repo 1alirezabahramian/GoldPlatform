@@ -1,53 +1,70 @@
-# GoldPlatform - Project State
-
-**Last Update:** 2026-07-18
+# GoldPlatform Project State
+**Version:** 0.6.0
+**Date:** 2026-07-18
+**Sprint:** Sprint 6 - Kimia Integration Started
+**Status:** Stable ✅
 
 ---
 
-# Sprint Status
+# Project Overview
 
-## Current Sprint
-Sprint 5 - Kimia Integration
+GoldPlatform is an online gold trading platform based on Laravel 12.
+
+Current architecture:
+
+- Laravel 12
+- PHP 8.4
+- Docker
+- Nginx
+- MySQL 8.4
+- Redis
+- Sanctum
+- REST API
+- Kimia ERP Integration
 
 ---
 
 # Infrastructure
 
-- ✅ Git Repository Created
-- ✅ GitHub Connected
-- ✅ Docker Environment Stable
-- ✅ Laravel 13 Installed
-- ✅ Nginx Running
-- ✅ MySQL Running
-- ✅ Redis Running
-- ✅ Route System Working
+## Docker
+
+Containers:
+
+- goldplatform_nginx
+- goldplatform_php
+- goldplatform_mysql
+- goldplatform_redis
+
+Status:
+
+Running ✅
 
 ---
 
 # Database
 
-Completed Migrations
+Completed migrations
 
-- Users
-- Cache
-- Jobs
-- Permissions (Spatie)
-- Personal Access Tokens
-- User Groups
-- Wallets
-- Wallet Transactions
-- Product Categories
-- Products
-- Orders
-- Order Items
-- Kimia Logs
-- SMS Logs
-- Jibit Logs
-- OTPs
+- users
+- cache
+- jobs
+- personal_access_tokens
+- permissions
+- user_groups
+- wallets
+- wallet_transactions
+- products
+- product_categories
+- orders
+- order_items
+- otps
+- sms_logs
+- jibit_logs
+- kimia_logs
 
-Migration Status
+Database Status
 
-16 / 16 Successful
+Stable ✅
 
 ---
 
@@ -55,42 +72,165 @@ Migration Status
 
 Completed
 
-- OTP Model
-- OTP Migration
-- AuthController
-- LoginAction
-- VerifyOtpAction
-- LoginDTO
-- VerifyOtpDTO
-- LoginRequest
-- VerifyOtpRequest
-- UserRepository
-- AuthService
-- OtpService
-- SmsService
-- UserResource
+✔ OTP Login
 
-API Routes
+✔ OTP Verification
 
-POST /api/auth/login
+✔ Sanctum Token Creation
 
-POST /api/auth/verify-otp
+✔ Automatic User Creation
 
-POST /api/auth/logout
+✔ Login Timestamp
+
+✔ SMS Service Layer
+
+✔ AuthService
+
+✔ OtpService
+
+✔ User Repository
+
+Current Flow
+
+Mobile
+
+↓
+
+Generate OTP
+
+↓
+
+Save OTP
+
+↓
+
+Verify OTP
+
+↓
+
+Create User (if not exists)
+
+↓
+
+Issue Sanctum Token
+
+↓
+
+Login Completed
+
+Status
+
+Working ✅
 
 ---
 
-# Docker Status
+# Users Table
 
-goldplatform_nginx
+Current Fields
 
-goldplatform_php
+- id
+- mobile
+- name
+- national_code
+- group_id
+- mobile_verified
+- is_active
+- last_login_at
+- email
+- email_verified_at
+- password
+- remember_token
+- created_at
+- updated_at
 
-goldplatform_mysql
+Notes
 
-goldplatform_redis
+Email and password still exist for Laravel compatibility.
 
-All Containers Healthy
+Future cleanup planned.
+
+---
+
+# Kimia Integration
+
+Completed
+
+✔ KimiaService
+
+✔ HTTP Client
+
+✔ Basic Authentication
+
+✔ Environment Configuration
+
+✔ Connection Test Command
+
+Environment
+
+KIMIA_BASE_URL
+
+KIMIA_USERNAME
+
+KIMIA_PASSWORD
+
+KIMIA_TIMEOUT
+
+Connection Test
+
+Command
+
+php artisan kimia:test
+
+Result
+
+HTTP 200
+
+Connection Successful
+
+Kimia API is reachable.
+
+Status
+
+Production Ready ✅
+
+---
+
+# Implemented Services
+
+App\Services
+
+- AuthService
+- OtpService
+- SmsService
+- KimiaService
+
+---
+
+# Implemented Controllers
+
+Api
+
+- AuthController
+
+---
+
+# Current API
+
+POST
+
+/api/auth/login
+
+POST
+
+/api/auth/verify-otp
+
+POST
+
+/api/auth/logout
+
+Status
+
+Working ✅
 
 ---
 
@@ -100,69 +240,101 @@ Repository
 
 https://github.com/1alirezabahramian/GoldPlatform
 
-Latest Commit
+Branch
 
-Sprint 4 - Authentication foundation
+main
 
-Working Tree
+Last Stable Point
 
-Clean
-
----
-
-# Kimia API
-
-Status
-
-Official Swagger Documentation Available
-
-Reference
-
-swagger/v1/swagger.json
-
-Modules
-
-- Account
-- Product
-- Voucher
-- Wallet
-- Barcode
-- RFID
-- Report
-
-Development Policy
-
-All Kimia integrations must be implemented strictly according to the official Swagger documentation.
+Sprint 6
+Kimia Connection Successful
 
 ---
 
-# Next Sprint
+# Remaining Sprint 6
 
-Sprint 5
+Next Target
 
-Kimia Integration Layer
+Kimia Customer Sync
 
-Priority
+Tasks
 
-1. KimiaClient
-2. Authentication Client
-3. Product Synchronization
-4. Wallet Synchronization
-5. Voucher Integration
-6. Account Synchronization
+- Read customer information
+- Sync customer
+- Read customer group
+- Read Rial balance
+- Read Gold balance
+- Sync wallet
 
 ---
 
-# Project Health
+# Upcoming Sprint
 
-Backend : Stable
+Sprint 7
 
-Database : Stable
+Customer synchronization with Kimia
 
-Docker : Stable
+Features
 
-GitHub : Healthy
+- Customer lookup
+- Wallet synchronization
+- Customer group synchronization
+- Balance synchronization
 
-Architecture : Stable
+---
 
-Ready For Sprint 5
+# Architecture Rules
+
+Business logic
+
+↓
+
+Service Layer
+
+↓
+
+Repository
+
+↓
+
+Database
+
+Controllers must remain thin.
+
+No business logic inside controllers.
+
+---
+
+# Current Project Health
+
+Docker
+
+✅
+
+Laravel
+
+✅
+
+Database
+
+✅
+
+OTP Login
+
+✅
+
+Sanctum
+
+✅
+
+Kimia Connection
+
+✅
+
+Architecture
+
+✅
+
+Ready for Customer Synchronization
+
+🚀

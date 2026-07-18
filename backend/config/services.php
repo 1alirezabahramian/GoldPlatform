@@ -37,7 +37,7 @@ return [
 
     'kimia' => [
 
-        'url' => env('KIMIA_API_URL'),
+        'base_url' => env('KIMIA_BASE_URL'),
 
         'username' => env('KIMIA_USERNAME'),
 
