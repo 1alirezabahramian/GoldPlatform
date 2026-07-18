@@ -30,3 +30,10 @@ Route::prefix('auth')->group(function () {
         ->middleware('auth:sanctum');
 
 });
+use App\Http\Controllers\Api\KimiaController;
+
+Route::prefix('kimia')->group(function () {
+
+    Route::get('/account-groups', [KimiaController::class, 'accountGroups']);
+
+});

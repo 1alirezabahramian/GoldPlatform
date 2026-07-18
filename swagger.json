@@ -1,0 +1,3760 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Kimia API",
+    "description": "امکان تست سرویس‌ها در همین پنل وجود دارد <br/>\r\nدر صورت ترجیح استفاده از برنامه‌های دیگر <br/>\r\nلینک بالا 👆 را در برنامه مورد نظر خود وارد کنید",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://94.101.184.26:11000"
+    }
+  ],
+  "paths": {
+    "/api/account": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "لیست حساب‌ها",
+        "parameters": [
+          {
+            "name": "AccountId",
+            "in": "query",
+            "description": "شناسه حساب",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": null
+            }
+          },
+          {
+            "name": "AccountCode",
+            "in": "query",
+            "description": "کد حساب",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": null
+            }
+          },
+          {
+            "name": "Name",
+            "in": "query",
+            "description": "نام و نام خانوادگی",
+            "schema": {
+              "maxLength": 255,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "NationalCode",
+            "in": "query",
+            "description": "کد ملی",
+            "schema": {
+              "maxLength": 20,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "ShopName",
+            "in": "query",
+            "description": "نام مغازه",
+            "schema": {
+              "maxLength": 255,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "EconomicCode",
+            "in": "query",
+            "description": "کد اقتصادی",
+            "schema": {
+              "maxLength": 20,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "Tel",
+            "in": "query",
+            "description": "تلفن",
+            "schema": {
+              "maxLength": 255,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "Mobile",
+            "in": "query",
+            "description": "همراه",
+            "schema": {
+              "maxLength": 255,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "PostalCode",
+            "in": "query",
+            "description": "کد پستی",
+            "schema": {
+              "maxLength": 10,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "Address",
+            "in": "query",
+            "description": "نشانی",
+            "schema": {
+              "maxLength": 255,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "DateBirthday",
+            "in": "query",
+            "description": "تاریخ تولد",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": null
+            }
+          },
+          {
+            "name": "Comment",
+            "in": "query",
+            "description": "یادداشت",
+            "schema": {
+              "maxLength": 500,
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "description": "<p>نوع حساب</p>\n<ul>\n<li><b>1</b> = بنکداری</li>\r\n<li><b>3</b> = تکفروشی</li>\r\n<li><b>5</b> = سرمایه و برداشت</li>\r\n<li><b>6</b> = بانک</li>\r\n<li><b>8</b> = حساب‌داخلی</li>\r\n<li><b>9</b> = ذوب</li>\r\n<li><b>10</b> = امانات</li>\r\n<li><b>11</b> = هزینه</li>\r\n<li><b>12</b> = کارمندان</li>\r\n</ul>",
+            "schema": {
+              "type": "integer",
+              "description": "<p>نوع حساب</p>\n<ul>\n<li><b>1</b> = بنکداری</li>\r\n<li><b>3</b> = تکفروشی</li>\r\n<li><b>5</b> = سرمایه و برداشت</li>\r\n<li><b>6</b> = بانک</li>\r\n<li><b>8</b> = حساب‌داخلی</li>\r\n<li><b>9</b> = ذوب</li>\r\n<li><b>10</b> = امانات</li>\r\n<li><b>11</b> = هزینه</li>\r\n<li><b>12</b> = کارمندان</li>\r\n</ul>",
+              "format": "int32",
+              "default": null
+            }
+          },
+          {
+            "name": "IsVisible",
+            "in": "query",
+            "description": "وضعیت نمایش",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "onlyCheckExists",
+            "in": "query",
+            "description": "پردازش سریع وضعیت موجود بودن",
+            "schema": {
+              "type": "boolean",
+              "default": null,
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست حساب‌ها در حالت غیرفعال بودن پردازش سریع",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "ایجاد حساب",
+        "description": "نوع حساب‌های مجاز: [بنکداری، تکفروشی، امانات]",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDto"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه حساب ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "بروزرسانی حساب بنکداری",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDto"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "انجام موفق درخواست"
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/account/groups": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "لیست گروه‌ها",
+        "parameters": [
+          {
+            "name": "accountType",
+            "in": "query",
+            "description": "<p>نوع حساب</p>\n<ul>\n<li><b>1</b> = بنکداری</li>\r\n<li><b>3</b> = تکفروشی</li>\r\n<li><b>5</b> = سرمایه و برداشت</li>\r\n<li><b>6</b> = بانک</li>\r\n<li><b>8</b> = حساب‌داخلی</li>\r\n<li><b>9</b> = ذوب</li>\r\n<li><b>10</b> = امانات</li>\r\n<li><b>11</b> = هزینه</li>\r\n<li><b>12</b> = کارمندان</li>\r\n</ul>",
+            "schema": {
+              "type": "integer",
+              "description": "<p>نوع حساب</p>\n<ul>\n<li><b>1</b> = بنکداری</li>\r\n<li><b>3</b> = تکفروشی</li>\r\n<li><b>5</b> = سرمایه و برداشت</li>\r\n<li><b>6</b> = بانک</li>\r\n<li><b>8</b> = حساب‌داخلی</li>\r\n<li><b>9</b> = ذوب</li>\r\n<li><b>10</b> = امانات</li>\r\n<li><b>11</b> = هزینه</li>\r\n<li><b>12</b> = کارمندان</li>\r\n</ul>",
+              "format": "int32",
+              "default": null,
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست گروه‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountGroupDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountGroupDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountGroupDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/barcode": {
+      "get": {
+        "tags": [
+          "Barcode"
+        ],
+        "summary": "دریافت لیست",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "query",
+            "description": "شناسه جنس",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": null,
+              "nullable": true
+            }
+          },
+          {
+            "name": "X-Book-Id",
+            "in": "header",
+            "description": "شناسه دفتر حسابداری",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست بارکدها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BarcodeDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BarcodeDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BarcodeDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/barcode/exists/{id}": {
+      "get": {
+        "tags": [
+          "Barcode"
+        ],
+        "summary": "بررسی موجود بودن",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "شناسه بارکد",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-Book-Id",
+            "in": "header",
+            "description": "شناسه دفتر حسابداری",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "بارکد مورد نظر موجود است"
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "بارکد مورد نظر پیدا نشد و یا موجود نیست"
+          }
+        }
+      }
+    },
+    "/api/images/{hash}": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/product": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "لیست اجناس",
+        "responses": {
+          "200": {
+            "description": "لیست اجناس",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/product/coins": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "لیست سکه‌ها",
+        "responses": {
+          "200": {
+            "description": "لیست سکه‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CoinDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CoinDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CoinDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/product/currencies": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "لیست ارزها",
+        "responses": {
+          "200": {
+            "description": "لیست ارزها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrencyDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrencyDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrencyDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/report/dealsbalance": {
+      "get": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "تراز خرید و فروش",
+        "description": "توجه: استفاده بازه زمانی \"از ابتدای دوره\" ممکن است کند باشد ⚠️",
+        "parameters": [
+          {
+            "name": "range",
+            "in": "query",
+            "description": "بازه زمانی تراز \r\n<ul><li><b>0</b> = امروز</li>\r\n<li><b>1</b> = از ابتدای دوره</li>\r\n</ul>",
+            "schema": {
+              "type": "integer",
+              "description": "بازه تراز",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "query",
+            "description": "شناسه جنس \r\n<ul><li><b>0</b> = همه سکه‌های بانکی</li>\r\n<li><b>-1</b> = طلا و سکه غیره</li>\r\n<li><b>-2</b> = طلا و سکه‌ها</li>\r\n<li>یا شناسه جنس مورد نظر</li>\r\n</ul>",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "number",
+                  "format": "decimal",
+                  "nullable": true
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "number",
+                  "format": "decimal",
+                  "nullable": true
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "number",
+                  "format": "decimal",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/rfid": {
+      "get": {
+        "tags": [
+          "RFID"
+        ],
+        "summary": "دریافت لیست",
+        "parameters": [
+          {
+            "name": "X-Book-Id",
+            "in": "header",
+            "description": "شناسه دفتر حسابداری",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست تگ‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RFIDDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RFIDDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RFIDDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voucher/balance/{id}": {
+      "get": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "مانده حساب",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "شناسه حساب",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "includePeaks",
+            "in": "query",
+            "description": "شامل رأس حساب",
+            "schema": {
+              "type": "boolean",
+              "default": null,
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست ته حساب‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BalanceDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BalanceDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BalanceDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/balances": {
+      "get": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "مانده حساب‌ها",
+        "parameters": [
+          {
+            "name": "groups",
+            "in": "query",
+            "description": "شناسه گروه‌ها",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست ته حساب‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BalanceDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BalanceDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BalanceDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/voucher/transactions/{id}": {
+      "get": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "تراکنش‌ها",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "شناسه حساب",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "description": "از تاریخ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": null,
+              "nullable": true
+            }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "description": "تا تاریخ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": null,
+              "nullable": true
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "(شماره صفحه (⚠️ شروع از صفر",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": null,
+              "nullable": true
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "تعداد آیتم در صفحه",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": null,
+              "nullable": true
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "description": "ترتیب از آخر به اول",
+            "schema": {
+              "type": "boolean",
+              "default": null,
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست صفحه بندی",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordDtoPagedList"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordDtoPagedList"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordDtoPagedList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/wallet/list": {
+      "get": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "شماره حساب‌های گرفته شده",
+        "description": "محدود به یک هفته اخیر",
+        "responses": {
+          "200": {
+            "description": "لیست شماره حساب‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/list/{id}": {
+      "get": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "شماره حساب‌های گرفته شده",
+        "description": "محدود به یک هفته اخیر",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "شناسه حساب",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست شماره حساب‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/wallet/payments": {
+      "get": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "شماره حساب‌های داده شده",
+        "description": "محدود به یک هفته اخیر",
+        "responses": {
+          "200": {
+            "description": "لیست پرداخت‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletPaymentRequest"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletPaymentRequest"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletPaymentRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/payments/{id}": {
+      "get": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "شماره حساب‌های داده شده",
+        "description": "محدود به یک هفته اخیر",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "شناسه حساب",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست پرداخت‌ها",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletPaymentRequest"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletPaymentRequest"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WalletPaymentRequest"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "بررسی سلامت سرویس‌ها",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "بررسی سلامت سرویس‌ها",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/rfid/inventory": {
+      "post": {
+        "tags": [
+          "RFID"
+        ],
+        "summary": "موجودی گیری",
+        "parameters": [
+          {
+            "name": "X-Book-Id",
+            "in": "header",
+            "description": "شناسه دفتر حسابداری",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "لیست شناسه تگ‌ها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "انجام موفق درخواست"
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          }
+        }
+      }
+    },
+    "/api/voucher/adjustment": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "کسر یا اضافه",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustmentRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustmentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustmentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/exchangecurrency": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "پولی کردن ارز یا سکه",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeCurrencyRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeCurrencyRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeCurrencyRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeCurrencyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/exchangegold": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "پولی کردن طلا",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/exchangemoney": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "پولی کردن مبلغ",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/tradebarcode": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "معامله بارکد",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeBarcodeRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeBarcodeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeBarcodeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeBarcodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه سند و ردیف‌های ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoucherDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoucherDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoucherDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/tradecash": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "مبادله نقدی",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeCashRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeCashRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeCashRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeCashRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/tradecurrency": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "مبادله ارز یا سکه",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeCurrencyRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeCurrencyRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeCurrencyRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeCurrencyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/transfergold": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "حواله طلا",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/transfermoney": {
+      "post": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "حواله مبلغ",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/wallet": {
+      "post": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "ثبت شماره حساب",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه شماره حساب ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "حساب مورد نظر پیدا نشد"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "حذف شماره حساب",
+        "requestBody": {
+          "description": "شناسه شماره حساب",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "example": "00000000-0000-0000-0000-000000000000"
+            },
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "example": "00000000-0000-0000-0000-000000000000"
+            },
+            "text/json": {
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "example": "00000000-0000-0000-0000-000000000000"
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "example": "00000000-0000-0000-0000-000000000000"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "انجام موفق درخواست"
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "شماره حساب مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/wallet/transfer": {
+      "post": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "پرداخت حواله",
+        "requestBody": {
+          "description": "پارامترها",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletPaymentTransferRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletPaymentTransferRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletPaymentTransferRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletPaymentTransferRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "شناسه ردیف ایجاد شده",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "پرداخت مورد نظر پیدا نشد"
+          }
+        }
+      }
+    },
+    "/api/voucher/deleterecord": {
+      "delete": {
+        "tags": [
+          "Voucher"
+        ],
+        "summary": "حذف ردیف",
+        "requestBody": {
+          "description": "شناسه ردیف",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "انجام موفق درخواست"
+          },
+          "400": {
+            "description": "خطا در پردازش درخواست"
+          },
+          "404": {
+            "description": "ردیف مورد نظر پیدا نشد"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountDto": {
+        "type": "object",
+        "properties": {
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "default": null,
+            "nullable": true
+          },
+          "AccountCode": {
+            "type": "integer",
+            "description": "کد حساب",
+            "format": "int32",
+            "default": null,
+            "nullable": true
+          },
+          "Name": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام و نام خانوادگی",
+            "default": null,
+            "nullable": true
+          },
+          "NationalCode": {
+            "maxLength": 20,
+            "type": "string",
+            "description": "کد ملی",
+            "default": null,
+            "nullable": true
+          },
+          "ShopName": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام مغازه",
+            "default": null,
+            "nullable": true
+          },
+          "EconomicCode": {
+            "maxLength": 20,
+            "type": "string",
+            "description": "کد اقتصادی",
+            "default": null,
+            "nullable": true
+          },
+          "Tel": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "تلفن",
+            "default": null,
+            "nullable": true
+          },
+          "Mobile": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "همراه",
+            "default": null,
+            "nullable": true
+          },
+          "PostalCode": {
+            "maxLength": 10,
+            "type": "string",
+            "description": "کد پستی",
+            "default": null,
+            "nullable": true
+          },
+          "Address": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نشانی",
+            "default": null,
+            "nullable": true
+          },
+          "DateBirthday": {
+            "type": "string",
+            "description": "تاریخ تولد",
+            "format": "date-time",
+            "default": null,
+            "nullable": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true
+          },
+          "Type": {
+            "type": "integer",
+            "description": "<p>نوع حساب</p>\n<ul>\n<li><b>1</b> = بنکداری</li>\r\n<li><b>3</b> = تکفروشی</li>\r\n<li><b>5</b> = سرمایه و برداشت</li>\r\n<li><b>6</b> = بانک</li>\r\n<li><b>8</b> = حساب‌داخلی</li>\r\n<li><b>9</b> = ذوب</li>\r\n<li><b>10</b> = امانات</li>\r\n<li><b>11</b> = هزینه</li>\r\n<li><b>12</b> = کارمندان</li>\r\n</ul>",
+            "format": "int32",
+            "default": null,
+            "nullable": true
+          },
+          "IsVisible": {
+            "type": "boolean",
+            "description": "وضعیت نمایش",
+            "default": true,
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "حساب"
+      },
+      "AccountGroupDto": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "integer",
+            "description": "شناسه گروه",
+            "format": "int32"
+          },
+          "Name": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام",
+            "nullable": true
+          },
+          "AccountType": {
+            "type": "integer",
+            "description": "<p>نوع حساب</p>\n<ul>\n<li><b>1</b> = بنکداری</li>\r\n<li><b>3</b> = تکفروشی</li>\r\n<li><b>5</b> = سرمایه و برداشت</li>\r\n<li><b>6</b> = بانک</li>\r\n<li><b>8</b> = حساب‌داخلی</li>\r\n<li><b>9</b> = ذوب</li>\r\n<li><b>10</b> = امانات</li>\r\n<li><b>11</b> = هزینه</li>\r\n<li><b>12</b> = کارمندان</li>\r\n</ul>",
+            "format": "int32",
+            "default": null,
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "گروه حساب"
+      },
+      "AdjustmentRequest": {
+        "required": [
+          "AccountId",
+          "Action"
+        ],
+        "type": "object",
+        "properties": {
+          "RequestId": {
+            "maxLength": 36,
+            "type": "string",
+            "description": "شناسه یکتای درخواست \r\n\r\nمورد استفاده برای جلوگیری از ثبت سند تکراری \r\n\r\nنسخه 4 استفاده شود UUID پیشنهاد می‌شود از",
+            "default": null,
+            "nullable": true
+          },
+          "AddToExistingDateVoucher": {
+            "type": "boolean",
+            "description": "اضافه کردن به سند با تاریخ مشابه",
+            "default": false
+          },
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": "?"
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "default": null,
+            "nullable": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "معامله آنلاین"
+          },
+          "Action": {
+            "type": "integer",
+            "description": "تشخیص \r\n<ul><li><b>2</b> = اضافه</li>\r\n<li><b>4</b> = کسر</li>\r\n</ul>",
+            "format": "int32",
+            "example": "?"
+          },
+          "TagId": {
+            "type": "integer",
+            "description": "شناسه برچسب بابت",
+            "format": "int32",
+            "nullable": true,
+            "example": null
+          },
+          "Money": {
+            "type": "number",
+            "description": "مبلغ",
+            "format": "decimal",
+            "nullable": true,
+            "example": "?"
+          },
+          "CurrencyId": {
+            "type": "integer",
+            "description": "شناسه واحد ارزی",
+            "format": "int32",
+            "nullable": true,
+            "example": null
+          },
+          "Weight": {
+            "type": "number",
+            "description": "(وزن (گرم",
+            "format": "decimal",
+            "nullable": true,
+            "example": null
+          },
+          "Fineness": {
+            "type": "number",
+            "description": "عیار وزن",
+            "format": "decimal",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست کسر/اضافه"
+      },
+      "BalanceDto": {
+        "type": "object",
+        "properties": {
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": 123
+          },
+          "AccountName": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام حساب",
+            "nullable": true,
+            "example": "حساب نقدی"
+          },
+          "GroupId": {
+            "type": "integer",
+            "description": "شناسه گروه",
+            "format": "int32",
+            "example": 1
+          },
+          "Weight": {
+            "type": "number",
+            "description": "(وزن (گرم",
+            "format": "decimal",
+            "nullable": true,
+            "example": 13.67
+          },
+          "Money": {
+            "type": "number",
+            "description": "مبلغ",
+            "format": "decimal",
+            "nullable": true,
+            "example": -1065900000
+          },
+          "CurrencyId": {
+            "type": "integer",
+            "description": "شناسه واحد ارزی",
+            "format": "int32",
+            "example": 11
+          },
+          "CurrencySymbol": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نماد واحد ارزی",
+            "default": null,
+            "nullable": true,
+            "readOnly": true,
+            "example": "ریال"
+          },
+          "GoldPeaks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeakDto"
+            },
+            "description": "رأس طلا",
+            "nullable": true
+          },
+          "MoneyPeaks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeakDto"
+            },
+            "description": "رأس مبلغ",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "مانده حساب"
+      },
+      "BarcodeDto": {
+        "type": "object",
+        "properties": {
+          "BarcodeId": {
+            "type": "integer",
+            "description": "شناسه بارکد",
+            "format": "int32",
+            "example": 123
+          },
+          "RFID": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "شناسه تگ",
+            "default": null,
+            "nullable": true,
+            "example": "21203D2A916E8B8719BA30C3"
+          },
+          "ProductId": {
+            "type": "integer",
+            "description": "شناسه جنس",
+            "format": "int32",
+            "example": 100
+          },
+          "Name": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام جنس",
+            "default": null,
+            "nullable": true,
+            "example": "انگشتر"
+          },
+          "Producer": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "سازنده",
+            "default": null,
+            "nullable": true,
+            "example": "کارتیر"
+          },
+          "Fineness": {
+            "type": "number",
+            "description": "عیار طلا",
+            "format": "decimal",
+            "nullable": true,
+            "example": 750
+          },
+          "GoldWeight": {
+            "type": "number",
+            "description": "وزن طلا",
+            "format": "decimal",
+            "nullable": true,
+            "example": 3.67
+          },
+          "GemWeight": {
+            "type": "number",
+            "description": "وزن سنگ",
+            "format": "decimal",
+            "nullable": true
+          },
+          "TotalWeight": {
+            "type": "number",
+            "description": "وزن کل",
+            "format": "decimal",
+            "readOnly": true,
+            "example": 3.67
+          },
+          "GemQuantity": {
+            "type": "number",
+            "description": "تعداد سنگ",
+            "format": "decimal",
+            "nullable": true
+          },
+          "GemMoney": {
+            "type": "number",
+            "description": "پول سنگ",
+            "format": "decimal",
+            "nullable": true
+          },
+          "UnitPrice": {
+            "type": "number",
+            "description": "فی اجرت",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Cent": {
+            "type": "number",
+            "description": "درصد اجرت",
+            "format": "decimal",
+            "nullable": true,
+            "example": 7
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "ساخت فرانسه - برند کارتیه"
+          },
+          "GoldColor": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "رنگ طلا",
+            "default": null,
+            "nullable": true,
+            "example": "رزگلد"
+          },
+          "GemColor": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "رنگ سنگ",
+            "default": null,
+            "nullable": true,
+            "example": "سبز"
+          },
+          "EnamelColor": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "رنگ مینا",
+            "default": null,
+            "nullable": true,
+            "example": "فیروزه‌ای"
+          },
+          "LeatherColor": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "رنگ چرم",
+            "default": null,
+            "nullable": true,
+            "example": "مشکی"
+          },
+          "Size": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "اندازه",
+            "default": null,
+            "nullable": true,
+            "example": "S1"
+          },
+          "ProductImageUrl": {
+            "type": "string",
+            "description": "آدرس تصویر جنس",
+            "default": null,
+            "nullable": true,
+            "example": "http://192.168.1.1:11000/api/images/hashcode"
+          },
+          "BarcodeImageUrl": {
+            "type": "string",
+            "description": "آدرس تصویر بارکد",
+            "default": null,
+            "nullable": true,
+            "example": "http://192.168.1.1:11000/api/images/hashcode"
+          }
+        },
+        "additionalProperties": false,
+        "description": "بارکد"
+      },
+      "CoinDto": {
+        "type": "object",
+        "properties": {
+          "CoinId": {
+            "type": "integer",
+            "description": "شناسه سکه",
+            "format": "int32",
+            "nullable": true
+          },
+          "Name": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام",
+            "default": null,
+            "nullable": true
+          },
+          "Fineness": {
+            "type": "number",
+            "description": "عیار",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Weight": {
+            "type": "number",
+            "description": "وزن",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Type": {
+            "type": "integer",
+            "description": "نوع سکه \r\n\r\n15 = سکه بانکی \r\n\r\n17 = سکه متفرقه \r\n",
+            "format": "int32",
+            "readOnly": true
+          },
+          "IsVisible": {
+            "type": "boolean",
+            "description": "وضعیت نمایش",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "سکه"
+      },
+      "CurrencyDto": {
+        "type": "object",
+        "properties": {
+          "CurrencyId": {
+            "type": "integer",
+            "description": "شناسه ارز",
+            "format": "int32",
+            "nullable": true
+          },
+          "Name": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام",
+            "default": null,
+            "nullable": true
+          },
+          "IsVisible": {
+            "type": "boolean",
+            "description": "وضعیت نمایش",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ارز"
+      },
+      "ExchangeCurrencyRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "Quantity",
+          "SourceId",
+          "UnitPrice"
+        ],
+        "type": "object",
+        "properties": {
+          "RequestId": {
+            "maxLength": 36,
+            "type": "string",
+            "description": "شناسه یکتای درخواست \r\n\r\nمورد استفاده برای جلوگیری از ثبت سند تکراری \r\n\r\nنسخه 4 استفاده شود UUID پیشنهاد می‌شود از",
+            "default": null,
+            "nullable": true
+          },
+          "AddToExistingDateVoucher": {
+            "type": "boolean",
+            "description": "اضافه کردن به سند با تاریخ مشابه",
+            "default": false
+          },
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": "?"
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "default": null,
+            "nullable": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "معامله آنلاین"
+          },
+          "Action": {
+            "type": "integer",
+            "description": "تشخیص \r\n<ul><li><b>32</b> = خرید</li>\r\n<li><b>64</b> = فروش</li>\r\n</ul>",
+            "format": "int32",
+            "example": "?"
+          },
+          "SourceId": {
+            "type": "integer",
+            "description": "شناسه ارز یا سکه مبدأ",
+            "format": "int32",
+            "example": "?"
+          },
+          "TargetId": {
+            "type": "integer",
+            "description": "شناسه ارز یا سکه مقصد",
+            "format": "int32",
+            "nullable": true,
+            "example": null
+          },
+          "UnitPrice": {
+            "type": "number",
+            "description": "فی",
+            "format": "decimal",
+            "example": "?"
+          },
+          "DivideUnitPrice": {
+            "type": "boolean",
+            "description": "مقصد گران‌تر از مبدأ است؟",
+            "nullable": true,
+            "example": null
+          },
+          "Quantity": {
+            "type": "number",
+            "description": "تعداد",
+            "format": "decimal",
+            "example": "?"
+          },
+          "GoldPrice": {
+            "type": "number",
+            "description": "(قیمت طلا (⚠️ فقط برای سکه غیره",
+            "format": "decimal",
+            "nullable": true,
+            "example": null
+          },
+          "GoldUnit": {
+            "type": "integer",
+            "description": "(واحد طلا (⚠️ فقط برای سکه غیره \r\n<ul><li><b>0</b> = مثقال</li>\r\n<li><b>1</b> = گرم</li>\r\n<li><b>2</b> = اونس</li>\r\n<li><b>3</b> = کیلوگرم</li>\r\n</ul>",
+            "format": "int32",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست پولی کردن ارز یا سکه"
+      },
+      "ExchangeRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "GoldPrice",
+          "Value"
+        ],
+        "type": "object",
+        "properties": {
+          "RequestId": {
+            "maxLength": 36,
+            "type": "string",
+            "description": "شناسه یکتای درخواست \r\n\r\nمورد استفاده برای جلوگیری از ثبت سند تکراری \r\n\r\nنسخه 4 استفاده شود UUID پیشنهاد می‌شود از",
+            "default": null,
+            "nullable": true
+          },
+          "AddToExistingDateVoucher": {
+            "type": "boolean",
+            "description": "اضافه کردن به سند با تاریخ مشابه",
+            "default": false
+          },
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": "?"
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "default": null,
+            "nullable": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "معامله آنلاین"
+          },
+          "Action": {
+            "type": "integer",
+            "description": "تشخیص \r\n<ul><li><b>32</b> = خرید</li>\r\n<li><b>64</b> = فروش</li>\r\n</ul>",
+            "format": "int32",
+            "example": "?"
+          },
+          "CurrencyId": {
+            "type": "integer",
+            "description": "شناسه واحد ارزی",
+            "format": "int32",
+            "nullable": true,
+            "example": null
+          },
+          "GoldPrice": {
+            "type": "number",
+            "description": "قیمت طلا",
+            "format": "decimal",
+            "example": "?"
+          },
+          "GoldUnit": {
+            "type": "integer",
+            "description": "واحد طلا",
+            "format": "int32",
+            "nullable": true,
+            "example": null
+          },
+          "Value": {
+            "type": "number",
+            "description": "چه مقدار پولی شود؟",
+            "format": "decimal",
+            "example": "?"
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست پولی کردن"
+      },
+      "PeakDto": {
+        "type": "object",
+        "properties": {
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "nullable": true
+          },
+          "Days": {
+            "type": "integer",
+            "description": "تعداد روز",
+            "format": "int32",
+            "nullable": true
+          },
+          "Value": {
+            "type": "number",
+            "description": "وزن (گرم) | مبلغ",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false,
+        "description": "رأس"
+      },
+      "ProductDto": {
+        "type": "object",
+        "properties": {
+          "ProductId": {
+            "type": "integer",
+            "description": "شناسه جنس",
+            "format": "int32",
+            "nullable": true
+          },
+          "Name": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام",
+            "default": null,
+            "nullable": true
+          },
+          "Fineness": {
+            "type": "number",
+            "description": "عیار",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Weight": {
+            "type": "number",
+            "description": "وزن",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Type": {
+            "type": "integer",
+            "description": "نوع جنس \r\n\r\n11 = ساخته \r\n\r\n12 = کالا \r\n\r\n13 = نیمساخت \r\n",
+            "format": "int32",
+            "readOnly": true
+          },
+          "IsVisible": {
+            "type": "boolean",
+            "description": "وضعیت نمایش",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "جنس"
+      },
+      "RFIDDto": {
+        "type": "object",
+        "properties": {
+          "Epc": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "شناسه تگ",
+            "nullable": true,
+            "example": "21203D2A916E8B8719BA30C3"
+          },
+          "Type": {
+            "type": "integer",
+            "description": "نوع تگ",
+            "format": "int32",
+            "example": 1
+          },
+          "BarcodeId": {
+            "type": "integer",
+            "description": "شناسه بارکد",
+            "format": "int32",
+            "example": 123
+          },
+          "Serial": {
+            "type": "integer",
+            "description": "شناسه جنس",
+            "format": "int32",
+            "example": 100
+          },
+          "Name": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام جنس",
+            "default": null,
+            "nullable": true,
+            "example": "انگشتر"
+          },
+          "Producer": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "سازنده",
+            "default": null,
+            "nullable": true,
+            "example": "کارتیر"
+          },
+          "Fineness": {
+            "type": "number",
+            "description": "عیار طلا",
+            "format": "decimal",
+            "nullable": true,
+            "example": 750
+          },
+          "GoldWeight": {
+            "type": "number",
+            "description": "وزن طلا",
+            "format": "decimal",
+            "nullable": true,
+            "example": 3.67
+          },
+          "GemWeight": {
+            "type": "number",
+            "description": "وزن سنگ",
+            "format": "decimal",
+            "nullable": true
+          },
+          "TotalWeight": {
+            "type": "number",
+            "description": "وزن کل",
+            "format": "decimal",
+            "readOnly": true,
+            "example": 3.67
+          },
+          "GemQuantity": {
+            "type": "number",
+            "description": "تعداد سنگ",
+            "format": "decimal",
+            "nullable": true
+          },
+          "GemMoney": {
+            "type": "number",
+            "description": "پول سنگ",
+            "format": "decimal",
+            "nullable": true
+          },
+          "UnitPrice": {
+            "type": "number",
+            "description": "فی اجرت",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Cent": {
+            "type": "number",
+            "description": "درصد اجرت",
+            "format": "decimal",
+            "nullable": true,
+            "example": 7
+          },
+          "ProductImageUrl": {
+            "type": "string",
+            "description": "آدرس تصویر جنس",
+            "default": null,
+            "nullable": true,
+            "example": "http://192.168.1.1:11000/api/images/hashcode"
+          },
+          "BarcodeImageUrl": {
+            "type": "string",
+            "description": "آدرس تصویر بارکد",
+            "default": null,
+            "nullable": true,
+            "example": "http://192.168.1.1:11000/api/images/hashcode"
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "رنگ رزگلد، ساخت فرانسه"
+          },
+          "Status": {
+            "type": "integer",
+            "description": "وضعیت موجودی \r\n\r\n0 = غیرفعال\r\n\r\n1 = موجود\r\n\r\n2 = ناموجود \r\n",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "تگ رادیویی"
+      },
+      "RecordDto": {
+        "type": "object",
+        "properties": {
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": 100
+          },
+          "AccountCode": {
+            "type": "integer",
+            "description": "کد حساب",
+            "format": "int32",
+            "example": 100
+          },
+          "AccountName": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام حساب",
+            "default": null,
+            "nullable": true,
+            "example": "فرهاد تهرانی"
+          },
+          "VoucherId": {
+            "type": "integer",
+            "description": "شناسه سند",
+            "format": "int32",
+            "example": 360
+          },
+          "VoucherNumber": {
+            "type": "integer",
+            "description": "شماره سند",
+            "format": "int32",
+            "example": 1
+          },
+          "RecordId": {
+            "type": "integer",
+            "description": "شناسه ردیف",
+            "format": "int32",
+            "example": 1000
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "nullable": true
+          },
+          "Action": {
+            "type": "integer",
+            "description": "<p>تشخیص</p>\n<ul>\n<li><b>2</b> = دریافت</li>\r\n<li><b>4</b> = پرداخت</li>\r\n<li><b>8</b> = دریافت مرجوعی</li>\r\n<li><b>16</b> = پرداخت مرجوعی</li>\r\n<li><b>32</b> = خرید</li>\r\n<li><b>64</b> = فروش</li>\r\n<li><b>128</b> = تعویض</li>\r\n<li><b>256</b> = پاس شدن</li>\r\n<li><b>512</b> = وصول</li>\r\n<li><b>1024</b> = در حساب</li>\r\n<li><b>2048</b> = خرید مرجوعی</li>\r\n</ul>",
+            "format": "int32",
+            "nullable": true,
+            "example": 64
+          },
+          "ActionName": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "عنوان تشخیص",
+            "default": null,
+            "nullable": true,
+            "readOnly": true,
+            "example": "فروش"
+          },
+          "ProductId": {
+            "type": "integer",
+            "description": "شناسه جنس",
+            "format": "int32",
+            "nullable": true,
+            "example": 4
+          },
+          "ProductName": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نام جنس",
+            "default": null,
+            "nullable": true,
+            "example": "پولی"
+          },
+          "Description": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "شرح",
+            "default": null,
+            "nullable": true,
+            "example": "فروش پولی"
+          },
+          "Weight": {
+            "type": "number",
+            "description": "(وزن (گرم",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Fineness": {
+            "type": "number",
+            "description": "عیار طلا",
+            "format": "decimal",
+            "nullable": true
+          },
+          "UnitPrice": {
+            "type": "number",
+            "description": "فی اجرت",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Cent": {
+            "type": "number",
+            "description": "درصد اجرت",
+            "format": "decimal",
+            "nullable": true
+          },
+          "GoldUnit": {
+            "type": "integer",
+            "description": "<p>واحد طلا</p>\n<ul>\n<li><b>0</b> = مثقال</li>\r\n<li><b>1</b> = گرم</li>\r\n<li><b>2</b> = اونس</li>\r\n<li><b>3</b> = کیلوگرم</li>\r\n</ul>",
+            "format": "int32",
+            "nullable": true,
+            "example": 0
+          },
+          "GoldUnitName": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "عنوان واحد طلا",
+            "default": null,
+            "nullable": true,
+            "readOnly": true,
+            "example": "مثقال"
+          },
+          "GoldPrice": {
+            "type": "number",
+            "description": "قیمت طلا",
+            "format": "decimal",
+            "nullable": true,
+            "example": 78000000
+          },
+          "Quantity": {
+            "type": "number",
+            "description": "تعداد",
+            "format": "decimal",
+            "nullable": true
+          },
+          "Weight750": {
+            "type": "number",
+            "description": "(وزن 750 (گرم",
+            "format": "decimal",
+            "example": 13.67
+          },
+          "SumMoney": {
+            "type": "number",
+            "description": "مبلغ",
+            "format": "decimal",
+            "example": -1065900000
+          },
+          "CurrencyId": {
+            "type": "integer",
+            "description": "شناسه واحد ارزی",
+            "format": "int32",
+            "example": 11
+          },
+          "CurrencySymbol": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "نماد واحد ارزی",
+            "default": null,
+            "nullable": true,
+            "example": "ریال"
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "معامله آنلاین"
+          },
+          "CumulativeWeight750": {
+            "type": "number",
+            "description": "(جمع تجمیعی وزن 750 (گرم",
+            "format": "decimal",
+            "nullable": true
+          },
+          "CumulativeSumMoney": {
+            "type": "number",
+            "description": "جمع تجمیعی مبلغ",
+            "format": "decimal",
+            "nullable": true
+          },
+          "RelatedRecord": {
+            "$ref": "#/components/schemas/RecordDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ردیف سند"
+      },
+      "RecordDtoPagedList": {
+        "type": "object",
+        "properties": {
+          "FromDate": {
+            "type": "string",
+            "description": "از تاریخ",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ToDate": {
+            "type": "string",
+            "description": "تا تاریخ",
+            "format": "date-time",
+            "nullable": true
+          },
+          "TotalCount": {
+            "type": "integer",
+            "description": "تعداد کل آیتم‌ها",
+            "format": "int32",
+            "example": 1000
+          },
+          "TotalPages": {
+            "type": "integer",
+            "description": "تعداد کل صفحات",
+            "format": "int32",
+            "readOnly": true,
+            "example": 3
+          },
+          "PageSize": {
+            "type": "integer",
+            "description": "تعداد آیتم‌ها در صفحه",
+            "format": "int32",
+            "example": 50
+          },
+          "PageNumber": {
+            "type": "integer",
+            "description": "(شماره صفحه (⚠️ شروع از صفر",
+            "format": "int32",
+            "example": 0
+          },
+          "Items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecordDto"
+            },
+            "description": "آیتم‌ها",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "لیست صفحه بندی"
+      },
+      "TradeBarcodeRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "BarcodeIds",
+          "GoldPrice"
+        ],
+        "type": "object",
+        "properties": {
+          "RequestId": {
+            "maxLength": 36,
+            "type": "string",
+            "description": "شناسه یکتای درخواست \r\n\r\nمورد استفاده برای جلوگیری از ثبت سند تکراری \r\n\r\nنسخه 4 استفاده شود UUID پیشنهاد می‌شود از",
+            "default": null,
+            "nullable": true
+          },
+          "AddToExistingDateVoucher": {
+            "type": "boolean",
+            "description": "اضافه کردن به سند با تاریخ مشابه",
+            "default": false
+          },
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": "?"
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "default": null,
+            "nullable": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "معامله آنلاین"
+          },
+          "Action": {
+            "type": "integer",
+            "description": "تشخیص \r\n<ul><li><b>2</b> = دریافت</li>\r\n<li><b>4</b> = پرداخت</li>\r\n<li><b>8</b> = دریافت مرجوعی</li>\r\n<li><b>16</b> = پرداخت مرجوعی</li>\r\n<li><b>32</b> = خرید</li>\r\n<li><b>64</b> = فروش</li>\r\n<li><b>128</b> = تعویض</li>\r\n<li><b>2048</b> = خرید مرجوعی</li>\r\n</ul>",
+            "format": "int32",
+            "example": "?"
+          },
+          "BarcodeIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "شناسه بارکدها",
+            "example": [
+              123,
+              124,
+              125
+            ]
+          },
+          "GoldPrice": {
+            "type": "number",
+            "description": "قیمت طلا",
+            "format": "decimal",
+            "example": "?"
+          },
+          "GoldUnit": {
+            "type": "integer",
+            "description": "<p>واحد طلا</p>\n<ul>\n<li><b>0</b> = مثقال</li>\r\n<li><b>1</b> = گرم</li>\r\n<li><b>2</b> = اونس</li>\r\n<li><b>3</b> = کیلوگرم</li>\r\n</ul>",
+            "format": "int32",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست معامله بارکد"
+      },
+      "TradeCashRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "Value"
+        ],
+        "type": "object",
+        "properties": {
+          "RequestId": {
+            "maxLength": 36,
+            "type": "string",
+            "description": "شناسه یکتای درخواست \r\n\r\nمورد استفاده برای جلوگیری از ثبت سند تکراری \r\n\r\nنسخه 4 استفاده شود UUID پیشنهاد می‌شود از",
+            "default": null,
+            "nullable": true
+          },
+          "AddToExistingDateVoucher": {
+            "type": "boolean",
+            "description": "اضافه کردن به سند با تاریخ مشابه",
+            "default": false
+          },
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": "?"
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "default": null,
+            "nullable": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "معامله آنلاین"
+          },
+          "Action": {
+            "type": "integer",
+            "description": "تشخیص \r\n<ul><li><b>2</b> = دریافت</li>\r\n<li><b>4</b> = پرداخت</li>\r\n</ul>",
+            "format": "int32",
+            "example": "?"
+          },
+          "Value": {
+            "type": "number",
+            "description": "مقدار",
+            "format": "decimal",
+            "example": "?"
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست مبادله نقدی"
+      },
+      "TradeCurrencyRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "TargetId",
+          "Value"
+        ],
+        "type": "object",
+        "properties": {
+          "RequestId": {
+            "maxLength": 36,
+            "type": "string",
+            "description": "شناسه یکتای درخواست \r\n\r\nمورد استفاده برای جلوگیری از ثبت سند تکراری \r\n\r\nنسخه 4 استفاده شود UUID پیشنهاد می‌شود از",
+            "default": null,
+            "nullable": true
+          },
+          "AddToExistingDateVoucher": {
+            "type": "boolean",
+            "description": "اضافه کردن به سند با تاریخ مشابه",
+            "default": false
+          },
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": "?"
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "default": null,
+            "nullable": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "معامله آنلاین"
+          },
+          "Action": {
+            "type": "integer",
+            "description": "تشخیص \r\n<ul><li><b>2</b> = دریافت</li>\r\n<li><b>4</b> = پرداخت</li>\r\n</ul>",
+            "format": "int32",
+            "example": "?"
+          },
+          "TargetId": {
+            "type": "integer",
+            "description": "شناسه ارز یا سکه",
+            "format": "int32",
+            "example": null
+          },
+          "Value": {
+            "type": "number",
+            "description": "مقدار",
+            "format": "decimal",
+            "example": "?"
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست مبادله ارز یا سکه"
+      },
+      "TransferRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "TargetId",
+          "Value"
+        ],
+        "type": "object",
+        "properties": {
+          "RequestId": {
+            "maxLength": 36,
+            "type": "string",
+            "description": "شناسه یکتای درخواست \r\n\r\nمورد استفاده برای جلوگیری از ثبت سند تکراری \r\n\r\nنسخه 4 استفاده شود UUID پیشنهاد می‌شود از",
+            "default": null,
+            "nullable": true
+          },
+          "AddToExistingDateVoucher": {
+            "type": "boolean",
+            "description": "اضافه کردن به سند با تاریخ مشابه",
+            "default": false
+          },
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب",
+            "format": "int32",
+            "example": "?"
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "default": null,
+            "nullable": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "example": "معامله آنلاین"
+          },
+          "Action": {
+            "type": "integer",
+            "description": "تشخیص \r\n<ul><li><b>2</b> = دریافت</li>\r\n<li><b>4</b> = پرداخت</li>\r\n</ul>",
+            "format": "int32",
+            "example": "?"
+          },
+          "TargetId": {
+            "type": "integer",
+            "description": "شناسه حساب مقصد",
+            "format": "int32",
+            "example": "?"
+          },
+          "Value": {
+            "type": "number",
+            "description": "وزن (گرم) | مبلغ",
+            "format": "decimal",
+            "example": "?"
+          },
+          "CurrencyId": {
+            "type": "integer",
+            "description": "شناسه واحد ارزی",
+            "format": "int32",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست حواله"
+      },
+      "VoucherDto": {
+        "type": "object",
+        "properties": {
+          "Voucher": {
+            "type": "integer",
+            "description": "شناسه سند",
+            "format": "int32"
+          },
+          "Records": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "شناسه ردیف‌ها",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "شناسه سند"
+      },
+      "WalletDto": {
+        "required": [
+          "Amount",
+          "Bank",
+          "Name",
+          "Number"
+        ],
+        "type": "object",
+        "properties": {
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب کیمیا",
+            "format": "int32",
+            "nullable": true
+          },
+          "Tag": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "برچسب",
+            "default": null,
+            "nullable": true,
+            "example": "نقدی حاضر"
+          },
+          "Bank": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "description": "بانک",
+            "default": null
+          },
+          "Number": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "description": "شماره حساب",
+            "default": null
+          },
+          "Name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "description": "صاحب حساب",
+            "default": null
+          },
+          "Amount": {
+            "type": "number",
+            "description": "مبلغ کل",
+            "format": "decimal"
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true
+          },
+          "Id": {
+            "type": "string",
+            "description": "شناسه شماره حساب",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true
+          },
+          "RemainAmount": {
+            "type": "number",
+            "description": "مبلغ مانده",
+            "format": "decimal",
+            "nullable": true,
+            "readOnly": true
+          },
+          "PayedAmount": {
+            "type": "number",
+            "description": "جمع پرداخت‌ها",
+            "format": "decimal",
+            "nullable": true,
+            "readOnly": true
+          },
+          "Items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletPaymentRequest"
+            },
+            "description": "لیست پرداخت‌ها",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "شماره حساب"
+      },
+      "WalletPaymentRequest": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "description": "شناسه پرداخت",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true
+          },
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب کیمیا",
+            "format": "int32",
+            "nullable": true,
+            "readOnly": true
+          },
+          "Amount": {
+            "type": "number",
+            "description": "مبلغ کل",
+            "format": "decimal",
+            "readOnly": true
+          },
+          "RemainAmount": {
+            "type": "number",
+            "description": "مبلغ مانده",
+            "format": "decimal",
+            "nullable": true,
+            "readOnly": true
+          },
+          "PayedAmount": {
+            "type": "number",
+            "description": "جمع حواله‌ها",
+            "format": "decimal",
+            "nullable": true,
+            "readOnly": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true,
+            "readOnly": true
+          },
+          "Items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletPaymentTransferRequest"
+            },
+            "description": "لیست حواله‌ها",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست پرداخت شماره حساب"
+      },
+      "WalletPaymentTransferRequest": {
+        "required": [
+          "Amount",
+          "PaymentId"
+        ],
+        "type": "object",
+        "properties": {
+          "PaymentId": {
+            "type": "string",
+            "description": "شناسه پرداخت",
+            "format": "uuid"
+          },
+          "RecordId": {
+            "type": "integer",
+            "description": "شناسه ردیف",
+            "format": "int32",
+            "nullable": true,
+            "readOnly": true
+          },
+          "Amount": {
+            "type": "number",
+            "description": "مبلغ",
+            "format": "decimal"
+          },
+          "Date": {
+            "type": "string",
+            "description": "تاریخ",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست حواله شماره حساب"
+      },
+      "WalletRequest": {
+        "required": [
+          "Amount",
+          "Bank",
+          "Name",
+          "Number"
+        ],
+        "type": "object",
+        "properties": {
+          "AccountId": {
+            "type": "integer",
+            "description": "شناسه حساب کیمیا",
+            "format": "int32",
+            "nullable": true
+          },
+          "Tag": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "برچسب",
+            "default": null,
+            "nullable": true,
+            "example": "نقدی حاضر"
+          },
+          "Bank": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "description": "بانک",
+            "default": null
+          },
+          "Number": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "description": "شماره حساب",
+            "default": null
+          },
+          "Name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "description": "صاحب حساب",
+            "default": null
+          },
+          "Amount": {
+            "type": "number",
+            "description": "مبلغ کل",
+            "format": "decimal"
+          },
+          "Comment": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "یادداشت",
+            "default": null,
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "درخواست شماره حساب"
+      }
+    },
+    "securitySchemes": {
+      "Basic": {
+        "type": "http",
+        "description": "https://swagger.io/docs/specification/authentication/basic-authentication",
+        "scheme": "Basic"
+      }
+    }
+  },
+  "security": [
+    {
+      "Basic": [ ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account",
+      "description": "حساب‌ها"
+    },
+    {
+      "name": "Barcode",
+      "description": "بارکدها"
+    },
+    {
+      "name": "Home",
+      "description": "دیگر ..."
+    },
+    {
+      "name": "Images",
+      "description": "تصاویر"
+    },
+    {
+      "name": "Product",
+      "description": "اجناس"
+    },
+    {
+      "name": "Report",
+      "description": "گزارش‌ها"
+    },
+    {
+      "name": "RFID",
+      "description": "تگ‌ها"
+    },
+    {
+      "name": "Voucher",
+      "description": "اسناد"
+    },
+    {
+      "name": "Wallet",
+      "description": "پنل ریالی"
+    }
+  ]
+}
