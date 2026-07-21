@@ -3,40 +3,62 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\VerifyOtpRequest;
-use App\Services\AuthService;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\SendOtpRequest;
+use App\Models\Otp;
+use App\Services\Sms\OtpService;
+use App\Services\Sms\SmsService;
+use App\Support\ApiResponse;
 
 class AuthController extends Controller
 {
     public function __construct(
-        protected AuthService $authService
+
+        protected OtpService $otpService,
+
+        protected SmsService $smsService
+
     ) {
     }
 
-    public function login(LoginRequest $request): JsonResponse
+    public function sendOtp(SendOtpRequest $request)
     {
-        $result = $this->authService->sendOtp($request->mobile);
+        $otp = $this->otpService->create(
 
-        return response()->json($result);
-    }
+            $request->mobile
 
-    public function verifyOtp(VerifyOtpRequest $request): JsonResponse
-    {
-        $result = $this->authService->verifyOtp(
-            $request->mobile,
-            $request->otp
         );
 
-        return response()->json($result);
+        $result = $this->smsService->sendOtp(
+
+            $request->mobile,
+
+            $otp->otp
+
+        );
+
+        if (! $result->success) {
+
+            return ApiResponse::error(
+
+                $result->message
+
+            );
+        }
+
+        return ApiResponse::success(
+
+            message: 'OTP Sent Successfully'
+
+        );
     }
 
-    public function logout(): JsonResponse
+    public function verifyOtp()
     {
-        return response()->json([
-            'success' => true,
-            'message' => 'Logout successful.',
-        ]);
+        //
+    }
+
+    public function logout()
+    {
+        //
     }
 }

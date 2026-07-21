@@ -46,5 +46,18 @@ return [
         'timeout' => env('KIMIA_TIMEOUT', 30),
 
     ],
+    'smsir' => [
+
+    'base_url' => env('SMSIR_BASE_URL'),
+
+    'api_key' => env('SMSIR_API_KEY'),
+
+    'templates' => [
+
+        'login' => env('SMSIR_TEMPLATE_LOGIN'),
+
+    ],
+
+],
 
 ];

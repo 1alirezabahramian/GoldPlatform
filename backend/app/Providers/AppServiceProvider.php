@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
+use App\Services\Sms\Contracts\SmsProvider;
+use App\Services\Sms\Providers\SmsIrProvider;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -11,7 +14,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+
+            SmsProvider::class,
+
+            SmsIrProvider::class
+
+        );
     }
 
     /**
