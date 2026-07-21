@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -67,12 +70,12 @@ class User extends Authenticatable
     }
 
     /**
-     * User Group
-     */
-    public function group()
+    * Account Group
+    */
+    public function group(): BelongsTo
     {
-        return $this->belongsTo(UserGroup::class);
-    }
+    return $this->belongsTo(AccountGroup::class);  
+    }    
 
     /**
      * Kimia Account

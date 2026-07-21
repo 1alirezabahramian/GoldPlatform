@@ -12,20 +12,13 @@ class RegistrationController extends Controller
 {
     public function __construct(
         protected RegistrationService $registrationService
-    ) {
-    }
+    ) {}
 
     public function register(RegisterRequest $request): JsonResponse
     {
         Log::info('========== REGISTER REQUEST ==========');
 
-        Log::info('Request Data', $request->all());
-
-        Log::info('Validation Passed');
-
         $validated = $request->validated();
-
-        Log::info('Validated Data', $validated);
 
         $user = $this->registrationService->register($validated);
 
@@ -36,17 +29,11 @@ class RegistrationController extends Controller
 
         $token = $user->createToken('mobile')->plainTextToken;
 
-        Log::info('Token Created');
-
         return response()->json([
             'success' => true,
             'message' => 'Registration completed successfully.',
-            'token' => $token,
-            'user' => $user->load([
-                'wallet',
-                'group',
-                'account',
-            ]),
+            'token'   => $token,
+            'user'    => $user,
         ]);
     }
 }

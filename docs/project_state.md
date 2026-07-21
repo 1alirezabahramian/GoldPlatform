@@ -191,3 +191,27 @@ Healthy
 Overall
 
 Stable
+
+## 2026-07-21
+
+### Completed
+- RegistrationService implemented
+- Wallet created automatically after registration
+- Sanctum token generation verified
+- Kimia API connection verified
+- AccountGroup model integrated
+- Authentication routes verified
+- Database migrations completed
+- Docker environment healthy
+
+### Known Issues
+- Registration endpoint returns HTTP 500 only when accessed through Nginx.
+- Registration works correctly when executed directly inside Laravel/container.
+- Root cause appears to be Nginx/PHP-FPM integration and will be investigated later.
+
+### Next Tasks
+1. Complete project architecture audit
+2. Fix Nginx registration issue
+3. Kimia account creation
+4. Wallet services
+5. Orders module
