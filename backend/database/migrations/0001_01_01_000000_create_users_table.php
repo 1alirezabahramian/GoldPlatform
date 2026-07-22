@@ -20,10 +20,7 @@ return new class extends Migration
 
     $table->string('national_code', 10)->nullable()->unique();
 
-    $table->foreignId('group_id')
-        ->nullable()
-        ->constrained('user_groups')
-        ->nullOnDelete();
+    $table->unsignedBigInteger('group_id')->nullable();
 
     $table->boolean('mobile_verified')->default(false);
 

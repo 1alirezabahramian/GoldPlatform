@@ -215,3 +215,18 @@ Stable
 3. Kimia account creation
 4. Wallet services
 5. Orders module
+
+## 2026-07-21
+
+### Completed
+- Registration API completed
+- Wallet auto creation completed
+- Sanctum token generation verified
+- AccountGroup model connected
+- Kimia connection verified
+- Health Check passed
+
+### Pending
+- Fix Windows -> Nginx -> PHP POST 500 issue
+- Kimia Account auto creation
+- OTP Login completion
