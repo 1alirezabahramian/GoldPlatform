@@ -230,3 +230,147 @@ Stable
 - Fix Windows -> Nginx -> PHP POST 500 issue
 - Kimia Account auto creation
 - OTP Login completion
+
+
+# GoldPlatform Project State
+
+**Last Update:** 2026-07-22
+**Branch:** main
+**Repository Status:** Synced with GitHub
+
+---
+
+## Current Project Status
+
+GoldPlatform is currently in the Backend Foundation phase.
+
+The core Laravel infrastructure, Docker environment, database foundation, authentication base, permission structure, and initial wallet architecture have been implemented and committed.
+
+---
+
+# Completed Milestones
+
+## Infrastructure
+
+✅ Laravel project initialized
+✅ Docker environment configured
+
+Current services:
+
+* Nginx
+* PHP-FPM Laravel container
+* MySQL 8.4
+* Redis
+
+---
+
+## Database Foundation
+
+Completed:
+
+✅ Base migrations structure
+✅ User and permission foundation
+✅ Wallet database architecture
+
+Implemented wallet tables:
+
+* wallets
+* wallet_accounts
+* wallet_transactions
+
+---
+
+## Wallet Architecture
+
+Completed:
+
+✅ WalletAccount model
+✅ WalletTransaction model
+✅ WalletAccountType enum
+✅ Wallet service foundation
+✅ Wallet transaction structure
+
+Purpose:
+
+The wallet system will support:
+
+* Gold balance
+* Toman balance
+* Customer transactions
+* Buy/Sell operations
+* Future accounting integration
+
+---
+
+# Documentation
+
+Updated:
+
+✅ ARCHITECTURE_BLUEPRINT.md
+
+Documentation now includes:
+
+* System architecture direction
+* Wallet design decisions
+* Development structure
+
+---
+
+# Git History
+
+Latest successful push:
+
+Commit:
+
+`966d142`
+
+Status:
+
+```
+main branch synced
+working tree clean
+```
+
+---
+
+# Current Development Focus
+
+Next steps:
+
+1. Run and verify wallet migrations
+2. Test database relationships
+3. Complete Wallet Service logic
+4. Connect wallet flow to Buy/Sell order system
+5. Prepare integration layer for Kimia accounting API
+
+---
+
+# Important Development Rule
+
+Development workflow:
+
+Design → Code → Test → Commit → Update project_state.md
+
+Every major milestone must be documented before moving to the next phase.
+
+---
+
+# Current Risk Points
+
+* Redis PHP extension inside container needs verification
+* Permission migration requires final validation
+* Wallet relations need automated tests before production flow
+
+---
+
+# Next Checkpoint
+
+After wallet verification:
+
+Create commit:
+
+```
+test: verify wallet database structure and application health
+```
+
+Then continue toward order and trading flow implementation.
