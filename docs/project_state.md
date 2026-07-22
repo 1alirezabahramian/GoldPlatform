@@ -374,3 +374,315 @@ test: verify wallet database structure and application health
 ```
 
 Then continue toward order and trading flow implementation.
+
+# GoldPlatform Project State
+
+**Last Update:** 2026-07-22
+**Branch:** main
+**Repository:** GitHub - GoldPlatform
+**Status:** Stable Development Checkpoint
+
+---
+
+# Project Overview
+
+GoldPlatform is an online gold trading platform designed to support:
+
+* Gold buying and selling
+* Customer wallet management
+* Accounting integration with Kimia
+* Secure authentication
+* Order management
+* Digital and physical gold operations
+
+Current development phase:
+
+**Backend Foundation → Wallet & Transaction Core**
+
+---
+
+# Infrastructure Status
+
+## Docker Environment
+
+Status: ✅ Healthy
+
+Active Containers:
+
+| Service     | Status    |
+| ----------- | --------- |
+| Nginx       | ✅ Running |
+| PHP-FPM 8.4 | ✅ Running |
+| MySQL 8.4   | ✅ Running |
+| Redis       | ✅ Running |
+
+---
+
+# Laravel Environment
+
+Framework:
+
+```
+Laravel 13.20.0
+PHP 8.4
+```
+
+Status:
+
+✅ Laravel boot successful
+✅ Artisan commands working
+✅ Cache optimization successful
+
+---
+
+# PHP Extensions
+
+Required Laravel extensions:
+
+| Extension | Status  |
+| --------- | ------- |
+| PDO       | ✅       |
+| PDO MySQL | ✅       |
+| ZIP       | ✅       |
+| MBString  | ✅       |
+| INTL      | ✅ Added |
+
+Latest fix:
+
+```
+fix: add php intl extension for laravel support
+```
+
+Commit:
+
+```
+fc1ca22
+```
+
+---
+
+# Database Status
+
+Database:
+
+```
+MySQL 8.4.10
+Database: goldplatform
+Tables: 30
+```
+
+Migration Status:
+
+✅ All migrations completed successfully
+
+---
+
+# Database Modules Completed
+
+## Authentication & Users
+
+Completed:
+
+* Users table
+* OTP foundation
+* Personal access tokens
+* User groups
+* Account structure
+
+---
+
+## Permission System
+
+Completed:
+
+* Spatie Permission tables
+* Roles foundation
+* Permissions foundation
+
+---
+
+## Wallet System
+
+Status: ✅ Foundation Completed
+
+Implemented:
+
+### Wallet
+
+* Wallet model
+* Wallet table
+
+### Wallet Accounts
+
+Added:
+
+```
+wallet_accounts
+```
+
+Features:
+
+* Multiple account types
+* Separation of balances
+* Future support for:
+
+  * Gold balance
+  * Toman balance
+  * Customer accounts
+
+### Wallet Transactions
+
+Implemented:
+
+* Transaction model
+* Transaction structure
+* Account relation support
+
+---
+
+# Wallet Architecture Files
+
+Added:
+
+```
+app/
+ ├── Enums/
+ │    └── WalletAccountType.php
+ │
+ ├── Models/
+ │    ├── Wallet.php
+ │    ├── WalletAccount.php
+ │    └── WalletTransaction.php
+ │
+ └── Services/
+      └── Wallet/
+```
+
+---
+
+# Documentation Status
+
+Updated:
+
+```
+docs/ARCHITECTURE_BLUEPRINT.md
+docs/project_state.md
+```
+
+Documentation includes:
+
+* Architecture decisions
+* Current implementation state
+* Development checkpoints
+
+---
+
+# Git Status
+
+Current branch:
+
+```
+main
+```
+
+Repository status:
+
+```
+Your branch is up to date with origin/main.
+Working tree clean.
+```
+
+Latest commits:
+
+```
+fc1ca22 fix: add php intl extension for laravel support
+
+966d142 docs: document Laravel setup, database migration progress, and project decisions
+```
+
+---
+
+# Health Check Report
+
+Date:
+
+```
+2026-07-22
+```
+
+Result:
+
+```
+Infrastructure        ✅ PASS
+Laravel               ✅ PASS
+Database              ✅ PASS
+Migration System      ✅ PASS
+Wallet Foundation     ✅ PASS
+PHP Extensions        ✅ PASS
+Git Backup            ✅ PASS
+```
+
+---
+
+# Current Risks / Pending Items
+
+## Pending Verification
+
+* Wallet model relationships
+* Wallet service business logic
+* Transaction validation rules
+* Automated tests
+
+---
+
+# Next Development Phase
+
+## Wallet Business Logic
+
+Tasks:
+
+1. Complete Wallet Service
+2. Implement deposit/withdraw operations
+3. Add balance validation
+4. Create transaction workflows
+5. Connect Wallet with Order system
+
+---
+
+# Development Rule
+
+Every major change follows:
+
+```
+Design
+↓
+Implementation
+↓
+Health Check
+↓
+Documentation Update
+↓
+Git Commit
+↓
+Push
+```
+
+---
+
+# Current Stable Checkpoint
+
+GoldPlatform is now at:
+
+```
+Backend Foundation Complete
++
+Wallet Architecture Ready
++
+Infrastructure Stable
+```
+
+Next milestone:
+
+```
+Wallet Transaction Engine
+```
