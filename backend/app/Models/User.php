@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\UserGroup;
 
 class User extends Authenticatable
 {
@@ -73,9 +74,12 @@ class User extends Authenticatable
     * Account Group
     */
     public function group(): BelongsTo
-    {
-    return $this->belongsTo(AccountGroup::class);  
-    }    
+{
+    return $this->belongsTo(
+        UserGroup::class,
+        'group_id'
+    );
+}   
 
     /**
      * Kimia Account

@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 
 use App\Services\Sms\Contracts\SmsProvider;
 use App\Services\Sms\Providers\SmsIrProvider;
+use App\Models\User;
+use App\Observers\UserObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
      * Bootstrap any application services.
      */
     public function boot(): void
-    {
-        //
-    }
+{
+    User::observe(UserObserver::class);
+}
 }
