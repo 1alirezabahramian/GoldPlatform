@@ -41,4 +41,8 @@ class WalletAccount extends Model
             6
         );
     }
+    public function ledgerEntries()
+{
+    return $this->hasMany(LedgerEntry::class);
+}
 }
