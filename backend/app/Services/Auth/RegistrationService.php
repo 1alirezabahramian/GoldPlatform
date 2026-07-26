@@ -27,7 +27,6 @@ class RegistrationService
 
                 'national_code' => $data['national_code'] ?? null,
 
-                // Laravel خودش Hash می‌کند
                 'password' => $data['password'],
 
                 'mobile_verified' => true,
@@ -42,16 +41,29 @@ class RegistrationService
             |--------------------------------------------------------------------------
             */
 
-            $user->wallet()->create([
+            $wallet = $user->wallet()->create([]);
 
-                'rial_balance' => 0,
+            /*
+            |--------------------------------------------------------------------------
+            | Create Default Wallet Accounts
+            |--------------------------------------------------------------------------
+            */
 
-                'gold_balance' => 0.000,
-
-                'blocked_rial' => 0,
-
-                'blocked_gold' => 0.000,
-
+            $wallet->accounts()->createMany([
+                [
+                    'code' => 'RIAL',
+                    'title' => 'ریال',
+                    'balance' => '0',
+                    'blocked_balance' => '0',
+                    'is_active' => true,
+                ],
+                [
+                    'code' => 'GOLD18',
+                    'title' => 'طلای ۱۸ عیار',
+                    'balance' => '0',
+                    'blocked_balance' => '0',
+                    'is_active' => true,
+                ],
             ]);
 
             /*

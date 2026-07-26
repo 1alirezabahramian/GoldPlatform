@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WalletAccount extends Model
 {
@@ -31,6 +32,14 @@ class WalletAccount extends Model
     }
 
     /**
+     * Ledger Entries
+     */
+    public function ledgerEntries(): HasMany
+    {
+        return $this->hasMany(LedgerEntry::class);
+    }
+
+    /**
      * Available Balance
      */
     public function getAvailableBalanceAttribute(): string
@@ -41,8 +50,4 @@ class WalletAccount extends Model
             6
         );
     }
-    public function ledgerEntries()
-{
-    return $this->hasMany(LedgerEntry::class);
-}
 }

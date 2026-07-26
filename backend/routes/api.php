@@ -60,3 +60,7 @@ Route::prefix('kimia')->group(function () {
 if (file_exists(__DIR__.'/kimia.php')) {
     require __DIR__.'/kimia.php';
 }
+
+use App\Http\Controllers\Api\OrderController;
+
+Route::post('/orders', [OrderController::class, 'store']);

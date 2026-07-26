@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FinancialTransaction extends Model
@@ -22,8 +22,19 @@ class FinancialTransaction extends Model
         'metadata' => 'array',
     ];
 
-    public function ledgers(): HasMany
+    public function trade(): BelongsTo
     {
-        return $this->hasMany(LedgerEntry::class);
+        return $this->belongsTo(
+            Trade::class,
+            'reference_id'
+        );
+    }
+
+    public function ledgerEntries(): HasMany
+    {
+        return $this->hasMany(
+            LedgerEntry::class,
+            'financial_transaction_id'
+        );
     }
 }

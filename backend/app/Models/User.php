@@ -6,11 +6,10 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\UserGroup;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -18,73 +17,51 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-
         'first_name',
-
         'last_name',
-
         'mobile',
-
         'name',
-
         'national_code',
-
         'group_id',
-
         'account_id',
-
         'mobile_verified',
-
         'is_active',
-
         'last_login_at',
-
         'email',
-
         'password',
-
     ];
 
     protected $hidden = [
-
         'password',
-
         'remember_token',
-
     ];
 
     protected function casts(): array
     {
         return [
-
             'email_verified_at' => 'datetime',
-
             'mobile_verified' => 'boolean',
-
             'is_active' => 'boolean',
-
             'last_login_at' => 'datetime',
-
             'password' => 'hashed',
-
         ];
     }
 
     /**
-    * Account Group
-    */
+     * Account Group
+     */
     public function group(): BelongsTo
-{
-    return $this->belongsTo(
-        UserGroup::class,
-        'group_id'
-    );
-}   
+    {
+        return $this->belongsTo(
+            UserGroup::class,
+            'group_id'
+        );
+    }
 
     /**
      * Kimia Account
      */
-    public function account()
+    public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
     }
@@ -92,7 +69,7 @@ class User extends Authenticatable
     /**
      * Wallet
      */
-    public function wallet()
+    public function wallet(): HasOne
     {
         return $this->hasOne(Wallet::class);
     }
@@ -100,7 +77,7 @@ class User extends Authenticatable
     /**
      * Orders
      */
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }

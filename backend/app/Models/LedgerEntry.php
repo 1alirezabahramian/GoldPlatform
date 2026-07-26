@@ -16,13 +16,19 @@ class LedgerEntry extends Model
         'description',
     ];
 
-    public function transaction(): BelongsTo
+    public function financialTransaction(): BelongsTo
     {
-        return $this->belongsTo(FinancialTransaction::class,'financial_transaction_id');
+        return $this->belongsTo(
+            FinancialTransaction::class,
+            'financial_transaction_id'
+        );
     }
 
-    public function account(): BelongsTo
+    public function walletAccount(): BelongsTo
     {
-        return $this->belongsTo(WalletAccount::class,'wallet_account_id');
+        return $this->belongsTo(
+            WalletAccount::class,
+            'wallet_account_id'
+        );
     }
 }
