@@ -2,7 +2,13 @@
 
 namespace App\Enums;
 
-enum WalletAccountType
+enum WalletAccountType: string
 {
-    //
+    case CASH = 'cash';
+
+    case GOLD = 'gold';
+
+    case COIN = 'coin';
+
+    case CURRENCY = 'currency';
 }
