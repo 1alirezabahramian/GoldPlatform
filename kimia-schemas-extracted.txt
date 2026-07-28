@@ -1,0 +1,148 @@
+﻿========== AccountDto ==========
+"AccountDto": {
+        "type": "object",
+
+========== AccountGroupDto ==========
+"AccountGroupDto": {
+        "type": "object",
+
+========== BalanceDto ==========
+"BalanceDto": {
+        "type": "object",
+
+========== ProductDto ==========
+"ProductDto": {
+        "type": "object",
+
+========== CoinDto ==========
+"CoinDto": {
+        "type": "object",
+
+========== CurrencyDto ==========
+"CurrencyDto": {
+        "type": "object",
+
+========== VoucherDto ==========
+"VoucherDto": {
+        "type": "object",
+
+========== RecordDto ==========
+"RecordDto": {
+        "type": "object",
+
+========== RecordDtoPagedList ==========
+"RecordDtoPagedList": {
+        "type": "object",
+
+========== WalletDto ==========
+"WalletDto": {
+        "required": [
+          "Amount",
+          "Bank",
+          "Name",
+          "Number"
+        ],
+        "type": "object",
+
+========== WalletRequest ==========
+"WalletRequest": {
+        "required": [
+          "Amount",
+          "Bank",
+          "Name",
+          "Number"
+        ],
+        "type": "object",
+
+========== WalletPaymentRequest ==========
+"WalletPaymentRequest": {
+        "type": "object",
+
+========== WalletPaymentTransferRequest ==========
+"WalletPaymentTransferRequest": {
+        "required": [
+          "Amount",
+          "PaymentId"
+        ],
+        "type": "object",
+
+========== AdjustmentRequest ==========
+"AdjustmentRequest": {
+        "required": [
+          "AccountId",
+          "Action"
+        ],
+        "type": "object",
+
+========== ExchangeRequest ==========
+"ExchangeRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "GoldPrice",
+          "Value"
+        ],
+        "type": "object",
+
+========== ExchangeCurrencyRequest ==========
+"ExchangeCurrencyRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "Quantity",
+          "SourceId",
+          "UnitPrice"
+        ],
+        "type": "object",
+
+========== TradeBarcodeRequest ==========
+"TradeBarcodeRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "BarcodeIds",
+          "GoldPrice"
+        ],
+        "type": "object",
+
+========== TradeCashRequest ==========
+"TradeCashRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "Value"
+        ],
+        "type": "object",
+
+========== TradeCurrencyRequest ==========
+"TradeCurrencyRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "TargetId",
+          "Value"
+        ],
+        "type": "object",
+
+========== TransferRequest ==========
+"TransferRequest": {
+        "required": [
+          "AccountId",
+          "Action",
+          "TargetId",
+          "Value"
+        ],
+        "type": "object",
+
+========== BarcodeDto ==========
+"BarcodeDto": {
+        "type": "object",
+
+========== RFIDDto ==========
+"RFIDDto": {
+        "type": "object",
+
+========== PeakDto ==========
+"PeakDto": {
+        "type": "object",
+
