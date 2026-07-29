@@ -29,7 +29,7 @@ class KimiaSyncGroups extends Command
             1, 3, 5, 6, 8, 9, 10, 11, 12
         ] as $type) {
 
-            $groups = $this->repository->allGroups($type);
+            $groups = $this->repository->groups($type);
 
             foreach ($groups as $group) {
 
