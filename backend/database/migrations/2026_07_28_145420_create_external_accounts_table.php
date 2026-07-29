@@ -30,22 +30,16 @@ return new class extends Migration
             // External status
             $table->boolean('is_active')->default(true);
 
-            // Synchronization state
-            $table->string('sync_status', 20)->default('synced');
-            $table->text('sync_error')->nullable();
-            $table->string('sync_hash', 64)->nullable();
-            $table->json('raw_data')->nullable();
+            // Synchronization timestamp
             $table->timestamp('last_synced_at')->nullable();
 
             $table->timestamps();
-            $table->softDeletes();
 
             // Constraints and indexes
             $table->unique(['provider', 'external_id']);
             $table->index(['provider', 'code']);
             $table->index('mobile');
             $table->index('national_id');
-            $table->index('sync_status');
             $table->index('last_synced_at');
         });
     }
