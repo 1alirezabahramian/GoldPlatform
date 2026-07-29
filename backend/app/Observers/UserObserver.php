@@ -17,15 +17,8 @@ class UserObserver
         ]);
 
         $accounts = [
-            ['code' => 'RIAL',      'title' => 'کیف پول ریالی'],
-            ['code' => 'GOLD18',    'title' => 'طلای ۱۸ عیار'],
-            ['code' => 'USD',       'title' => 'دلار آمریکا'],
-            ['code' => 'EUR',       'title' => 'یورو'],
-            ['code' => 'AED',       'title' => 'درهم امارات'],
-            ['code' => 'TRY',       'title' => 'لیر ترکیه'],
-            ['code' => 'BTC',       'title' => 'بیت کوین'],
-            ['code' => 'BANK_COIN', 'title' => 'سکه بانکی'],
-            ['code' => 'PAHLAVI',   'title' => 'سکه پهلوی'],
+            ['code' => 'RIAL', 'title' => 'کیف پول ریالی'],
+            ['code' => 'GOLD18', 'title' => 'طلای ۱۸ عیار'],
         ];
 
         foreach ($accounts as $account) {
