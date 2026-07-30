@@ -20,7 +20,11 @@ class SyncKimiaCoins extends Command
         try {
             $coins = $kimia->get('/api/product/coins');
         } catch (Throwable $exception) {
-            $this->error('Kimia connection failed: '.$exception->getMessage());
+            report($exception);
+
+            $this->error(
+                'Kimia connection failed: '.$exception->getMessage()
+            );
 
             return self::FAILURE;
         }
@@ -31,43 +35,71 @@ class SyncKimiaCoins extends Command
             return self::FAILURE;
         }
 
+        $received = 0;
         $created = 0;
         $updated = 0;
         $skipped = 0;
 
         foreach ($coins as $coin) {
-            if (! isset($coin['CoinId'], $coin['Type'])) {
+            if (
+                ! is_array($coin)
+                || ! isset($coin['CoinId'], $coin['Type'])
+            ) {
                 $skipped++;
 
                 continue;
             }
 
-            $model = KimiaCoin::updateOrCreate(
-                [
-                    'kimia_id' => $coin['CoinId'],
-                ],
-                [
-                    'name' => $coin['Name'] ?? null,
-                    'fineness' => $coin['Fineness'] ?? null,
-                    'weight' => $coin['Weight'] ?? null,
-                    'type' => $coin['Type'],
-                    'is_visible' => $coin['IsVisible'] ?? null,
-                    'synced_at' => now(),
-                ]
-            );
+            $received++;
 
-            if ($model->wasRecentlyCreated) {
+            $model = KimiaCoin::query()
+                ->where('kimia_id', (int) $coin['CoinId'])
+                ->first();
+
+            $data = [
+                'name' => $coin['Name'] ?? null,
+                'fineness' => $coin['Fineness'] ?? null,
+                'weight' => $coin['Weight'] ?? null,
+                'type' => (int) $coin['Type'],
+                'is_visible' => $coin['IsVisible'] ?? null,
+            ];
+
+            if ($model === null) {
+                KimiaCoin::create([
+                    'kimia_id' => (int) $coin['CoinId'],
+                    ...$data,
+                    'synced_at' => now(),
+                ]);
+
                 $created++;
-            } else {
-                $updated++;
+
+                continue;
             }
+
+            $model->fill($data);
+
+            if (! $model->isDirty()) {
+                $skipped++;
+
+                continue;
+            }
+
+            $model->synced_at = now();
+            $model->save();
+
+            $updated++;
         }
 
         $this->newLine();
 
         $this->table(
             ['Received', 'Created', 'Updated', 'Skipped'],
-            [[count($coins), $created, $updated, $skipped]]
+            [[
+                $received,
+                $created,
+                $updated,
+                $skipped,
+            ]]
         );
 
         $this->info('Kimia coin synchronization finished.');

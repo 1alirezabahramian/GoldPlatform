@@ -23,7 +23,7 @@ class SyncKimiaCoinsCommandTest extends TestCase
                 [
                     [
                         'CoinId' => 101,
-                        'Name' => 'سکه امامی',
+                        'Name' => 'Imami Coin',
                         'Fineness' => 900,
                         'Weight' => 8.133,
                         'Type' => 15,
@@ -31,7 +31,7 @@ class SyncKimiaCoinsCommandTest extends TestCase
                     ],
                     [
                         'CoinId' => 102,
-                        'Name' => 'نیم سکه',
+                        'Name' => 'Half Coin',
                         'Fineness' => 900,
                         'Weight' => 4.066,
                         'Type' => 15,
@@ -41,7 +41,7 @@ class SyncKimiaCoinsCommandTest extends TestCase
                 [
                     [
                         'CoinId' => 101,
-                        'Name' => 'سکه امامی جدید',
+                        'Name' => 'Updated Imami Coin',
                         'Fineness' => 916,
                         'Weight' => 8.133,
                         'Type' => 15,
@@ -49,7 +49,7 @@ class SyncKimiaCoinsCommandTest extends TestCase
                     ],
                     [
                         'CoinId' => 102,
-                        'Name' => 'نیم سکه',
+                        'Name' => 'Half Coin',
                         'Fineness' => 900,
                         'Weight' => 4.066,
                         'Type' => 15,
@@ -74,9 +74,58 @@ class SyncKimiaCoinsCommandTest extends TestCase
             ->where('kimia_id', 101)
             ->firstOrFail();
 
-        $this->assertSame('سکه امامی جدید', $coin->name);
+        $this->assertSame('Updated Imami Coin', $coin->name);
         $this->assertSame('916.0000', $coin->fineness);
         $this->assertFalse($coin->is_visible);
         $this->assertNotNull($coin->synced_at);
+    }
+
+    public function test_it_skips_unchanged_kimia_coins(): void
+    {
+        $originalSyncedAt = now()->subDay();
+
+        $coin = KimiaCoin::create([
+            'kimia_id' => 202,
+            'name' => 'Unchanged Coin',
+            'fineness' => 900,
+            'weight' => 8.133,
+            'type' => 15,
+            'is_visible' => true,
+            'synced_at' => $originalSyncedAt,
+        ]);
+
+        $originalUpdatedAt = $coin->updated_at;
+$originalSyncedAt = $coin->synced_at;
+
+        $kimia = Mockery::mock(KimiaService::class);
+
+        $kimia->shouldReceive('get')
+            ->once()
+            ->with('/api/product/coins')
+            ->andReturn([
+                [
+                    'CoinId' => 202,
+                    'Name' => 'Unchanged Coin',
+                    'Fineness' => 900,
+                    'Weight' => 8.133,
+                    'Type' => 15,
+                    'IsVisible' => true,
+                ],
+            ]);
+
+        $this->app->instance(KimiaService::class, $kimia);
+
+        $this->artisan('kimia:sync-coins')
+            ->assertSuccessful();
+
+        $coin->refresh();
+
+        $this->assertDatabaseCount('kimia_coins', 1);
+        $this->assertTrue(
+            $coin->updated_at->equalTo($originalUpdatedAt)
+        );
+        $this->assertTrue(
+            $coin->synced_at->equalTo($originalSyncedAt)
+        );
     }
 }
