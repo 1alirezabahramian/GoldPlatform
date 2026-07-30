@@ -22,18 +22,34 @@ class SyncKimiaAccountsCommand extends Command
 
         try {
             foreach ($types as $type) {
-                $response = $kimia->get('/api/account', ['Type' => $type]);
-                $accounts = array_merge($accounts, $this->accountRows($response));
+                $response = $kimia->get('/api/account', [
+                    'Type' => $type,
+                ]);
+
+                $accounts = array_merge(
+                    $accounts,
+                    $this->accountRows($response)
+                );
             }
         } catch (Throwable $exception) {
-            $this->error('Kimia account synchronization failed: '.$exception->getMessage());
+            report($exception);
+
+            $this->error(
+                'Kimia account synchronization failed: '
+                .$exception->getMessage()
+            );
 
             return self::FAILURE;
         }
 
         $accounts = collect($accounts)
-            ->filter(fn (mixed $account): bool => is_array($account) && isset($account['AccountId']))
-            ->keyBy('AccountId')
+            ->filter(
+                fn (mixed $account): bool => is_array($account)
+                    && isset($account['AccountId'])
+            )
+            ->keyBy(
+                fn (array $account): string => (string) $account['AccountId']
+            )
             ->values();
 
         if ($accounts->isEmpty()) {
@@ -53,37 +69,64 @@ class SyncKimiaAccountsCommand extends Command
                 continue;
             }
 
+            $externalId = (int) $account['AccountId'];
+            $syncHash = $this->makeSyncHash($account);
+
+            $model = ExternalAccount::query()
+                ->where('provider', 'kimia')
+                ->where('external_id', $externalId)
+                ->first();
+
+            if (
+                $model !== null
+                && is_string($model->sync_hash)
+                && hash_equals($model->sync_hash, $syncHash)
+            ) {
+                $skipped++;
+
+                continue;
+            }
+
             $data = [
-                'external_id' => (int) $account['AccountId'],
-                'code' => isset($account['AccountCode']) ? (string) $account['AccountCode'] : null,
+                'external_id' => $externalId,
+                'code' => isset($account['AccountCode'])
+                    ? (string) $account['AccountCode']
+                    : null,
                 'name' => (string) $account['Name'],
                 'type' => (int) $account['Type'],
                 'mobile' => $account['Mobile'] ?? null,
                 'national_id' => $account['NationalCode'] ?? null,
                 'is_active' => (bool) ($account['IsVisible'] ?? true),
+                'raw_data' => $account,
+                'sync_hash' => $syncHash,
+                'sync_status' => 'synced',
+                'sync_error' => null,
+                'last_synced_at' => now(),
             ];
 
-            $model = ExternalAccount::updateOrCreate(
-                [
+            if ($model === null) {
+                ExternalAccount::create([
                     'provider' => 'kimia',
-                    'external_id' => $data['external_id'],
-                ],
-                [
                     ...$data,
-                    'raw_data' => $account,
-                    'sync_hash' => hash('sha256', json_encode($account, JSON_UNESCAPED_UNICODE)),
-                    'sync_status' => 'synced',
-                    'sync_error' => null,
-                    'last_synced_at' => now(),
-                ]
-            );
+                ]);
 
-            $model->wasRecentlyCreated ? $created++ : $updated++;
+                $created++;
+
+                continue;
+            }
+
+            $model->update($data);
+            $updated++;
         }
 
         $this->table(
             ['Received', 'Created', 'Updated', 'Skipped'],
-            [[$accounts->count(), $created, $updated, $skipped]]
+            [[
+                $accounts->count(),
+                $created,
+                $updated,
+                $skipped,
+            ]]
         );
 
         $this->info('Kimia account synchronization finished.');
@@ -105,9 +148,24 @@ class SyncKimiaAccountsCommand extends Command
             );
         }
 
-        return array_values(array_unique(array_map('intval', $requested)));
+        $validTypes = array_map(
+            fn (AccountType $type): int => $type->value,
+            AccountType::cases()
+        );
+
+        return array_values(
+            array_unique(
+                array_intersect(
+                    array_map('intval', $requested),
+                    $validTypes
+                )
+            )
+        );
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     private function accountRows(array $response): array
     {
         foreach (['data', 'items', 'result'] as $key) {
@@ -117,5 +175,20 @@ class SyncKimiaAccountsCommand extends Command
         }
 
         return array_is_list($response) ? $response : [];
+    }
+
+    /**
+     * @param array<string, mixed> $account
+     */
+    private function makeSyncHash(array $account): string
+    {
+        $json = json_encode(
+            $account,
+            JSON_UNESCAPED_UNICODE
+            | JSON_UNESCAPED_SLASHES
+            | JSON_THROW_ON_ERROR
+        );
+
+        return hash('sha256', $json);
     }
 }
