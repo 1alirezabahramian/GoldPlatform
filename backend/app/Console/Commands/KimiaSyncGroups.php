@@ -5,12 +5,13 @@ namespace App\Console\Commands;
 use App\Models\AccountGroup;
 use App\Repositories\Kimia\AccountRepository;
 use Illuminate\Console\Command;
+use Throwable;
 
 class KimiaSyncGroups extends Command
 {
     protected $signature = 'kimia:sync-groups';
 
-    protected $description = 'Sync Account Groups from Kimia';
+    protected $description = 'Synchronize account groups from Kimia';
 
     public function __construct(
         protected AccountRepository $repository
@@ -22,50 +23,91 @@ class KimiaSyncGroups extends Command
     {
         $this->info('Connecting to Kimia...');
 
+        $received = 0;
         $created = 0;
         $updated = 0;
+        $skipped = 0;
 
-        foreach ([
-            1, 3, 5, 6, 8, 9, 10, 11, 12
-        ] as $type) {
+        try {
+            foreach ([1, 3, 5, 6, 8, 9, 10, 11, 12] as $type) {
+                $groups = $this->repository->groups($type);
 
-            $groups = $this->repository->groups($type);
+                foreach ($groups as $group) {
+                    if (
+                        ! is_array($group)
+                        || ! isset(
+                            $group['Id'],
+                            $group['Name'],
+                            $group['AccountType']
+                        )
+                    ) {
+                        $skipped++;
 
-            foreach ($groups as $group) {
+                        continue;
+                    }
 
-                $model = AccountGroup::updateOrCreate(
+                    $received++;
 
-                    [
-                        'kimia_id' => $group['Id'],
-                    ],
+                    $model = AccountGroup::query()
+                        ->where('kimia_id', (int) $group['Id'])
+                        ->first();
 
-                    [
-                        'name'         => $group['Name'],
-                        'account_type' => $group['AccountType'],
-                        'is_active'    => true,
-                        'synced_at'    => now(),
-                    ]
+                    $data = [
+                        'account_type' => (int) $group['AccountType'],
+                        'name' => (string) $group['Name'],
+                        'is_active' => true,
+                    ];
 
-                );
+                    if ($model === null) {
+                        AccountGroup::create([
+                            'kimia_id' => (int) $group['Id'],
+                            ...$data,
+                            'synced_at' => now(),
+                        ]);
 
-                if ($model->wasRecentlyCreated) {
-                    $created++;
-                } else {
+                        $created++;
+
+                        continue;
+                    }
+
+                    $model->fill($data);
+
+                    if (! $model->isDirty()) {
+                        $skipped++;
+
+                        continue;
+                    }
+
+                    $model->synced_at = now();
+                    $model->save();
+
                     $updated++;
                 }
             }
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $this->error(
+                'Kimia group synchronization failed: '
+                .$exception->getMessage()
+            );
+
+            return self::FAILURE;
         }
 
         $this->newLine();
 
         $this->table(
-            ['Created', 'Updated'],
-            [
-                [$created, $updated]
-            ]
+            ['Received', 'Created', 'Updated', 'Skipped'],
+            [[
+                $received,
+                $created,
+                $updated,
+                $skipped,
+            ]]
         );
 
-        $this->info('Kimia Sync Finished.');
+        $this->info('Kimia group synchronization finished.');
 
         return self::SUCCESS;
     }
