@@ -26,23 +26,32 @@
 
 ## فاز 1 — زیرساخت و پایه Backend
 
-**وضعیت:** تثبیت‌شده، با چند بدهی فنی
+**وضعیت:** تثبیت‌شده، با چند بدهی فنی؛ CI آماده نخستین اجرای GitHub
 
 - Docker، Nginx، PHP-FPM، MySQL، Redis و Laravel آماده‌اند.
 - Auth، Sanctum، OTP tables، Permission و Wallet foundation وجود دارند.
 - تست کامل در 2026-08-02: `23 passed / 160 assertions`.
-- بدهی باز: Auth flow ناسازگار، مسیرهای ناقص OTP و نبود CI خودکار.
+- Workflow تست Backend برای PHP 8.4 و SQLite memory آماده شده اما هنوز روی GitHub
+  اجرا نشده است.
+- بدهی باز: Auth flow ناسازگار و مسیرهای ناقص OTP.
 
 ## فاز 2 — پایه محصول و Multi-tenancy
 
-**وضعیت:** معماری پذیرفته‌شده؛ پیاده‌سازی شروع نشده
+**وضعیت:** ممیزی اثر انجام‌شده؛ ADR پیشنهادی در انتظار تصمیم مالک؛ Migration شروع نشده
 
 - Tenant model و Tenant isolation
 - Branding، domain و module configuration
 - Feature flag و licensing foundation
 - Khalifeh Coin به‌عنوان Tenant اول
 
-تصمیم Shared DB در برابر Database-per-tenant و روش Tenant resolution قبل از Migration نیازمند ADR مستقل است.
+ممیزی نشان داد شناسه‌های Kimia، کاربران، گروه مشتری، Catalog، سفارش، Wallet، Ledger و
+لاگ‌های اتصال هنوز مرز Tenant ندارند. جزئیات در
+[`architecture/MULTI_TENANCY_IMPACT_AUDIT.md`](architecture/MULTI_TENANCY_IMPACT_AUDIT.md)
+ثبت شده است.
+
+ADR-026 گزینه Shared DB/Shared Schema را پیشنهاد می‌کند، اما تا تعیین یکتایی موبایل،
+تعداد اتصال‌های Kimia هر Tenant، نقش Super Admin و روش Tenant resolution در وضعیت
+`Proposed` باقی می‌ماند. قبل از پذیرش آن هیچ `tenant_id` یا Migration اجرایی اضافه نمی‌شود.
 
 ## فاز 3 — تثبیت Kimia Connector
 
@@ -118,7 +127,7 @@ Checkpoint بعدی با اجرای `scripts/run-shop-verification.ps1` روی �
 
 ## فاز 9 — پنل‌ها و Frontend تولیدی
 
-**وضعیت:** شروع نشده؛ طراحی مقدماتی مجاز است
+**وضعیت:** پایه Framework-neutral Design System و RTL شروع شده؛ کد تولیدی شروع نشده
 
 ترتیب:
 
@@ -130,6 +139,11 @@ Checkpoint بعدی با اجرای `scripts/run-shop-verification.ps1` روی �
 6. Trading flow
 7. Custody/delivery
 8. Reports
+
+قرارداد اولیه زبان تجربه، توکن‌های Semantic، نمایش دقیق پول/وزن، حالت‌های داده،
+دسترس‌پذیری و Shell پنل‌ها در
+[`ui/DESIGN_SYSTEM_FOUNDATION.md`](ui/DESIGN_SYSTEM_FOUNDATION.md) ثبت شده است. انتخاب
+Framework، فونت، رنگ، رقم و تاریخ همچنان نیازمند تصمیم جداگانه است.
 
 ## فاز 10 — گزارش، عملیات و عرضه تجاری
 

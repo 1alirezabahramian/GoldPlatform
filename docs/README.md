@@ -24,15 +24,19 @@
 - [`ADR/ADR-023-kimia-customer-trade-action-mapping.md`](ADR/ADR-023-kimia-customer-trade-action-mapping.md) — نگاشت قطعی `32/64`.
 - [`ADR/ADR-024-platform-user-kimia-account-binding.md`](ADR/ADR-024-platform-user-kimia-account-binding.md) — اتصال یک‌به‌یک اکانت پلتفرم و `AccountId` کیمیا.
 - [`ADR/ADR-025-kimia-live-write-safety-gate.md`](ADR/ADR-025-kimia-live-write-safety-gate.md) — قفل پیش‌فرض همه نوشتن‌های زنده Kimia.
+- [`ADR/ADR-026-multi-tenancy-isolation-strategy.md`](ADR/ADR-026-multi-tenancy-isolation-strategy.md) — پیشنهاد راهبرد جداسازی Tenant؛ هنوز پذیرفته نشده است.
 
 ## معماری و دامنه
 
 - [`architecture`](architecture) — معماری سیستم، Domain Model و Blueprintها.
+- [`architecture/MULTI_TENANCY_IMPACT_AUDIT.md`](architecture/MULTI_TENANCY_IMPACT_AUDIT.md) — ممیزی فرضیات تک‌Tenant فعلی و دامنه Migration آینده.
 - [`domain`](domain) — Auth، Wallet، Trading، Custody، Settlement، OMS و گزارش‌ها.
 - [`business/Business-Rules.md`](business/Business-Rules.md) — قواعد کسب‌وکار پذیرفته‌شده.
 - [`database`](database) — جدول‌ها، Migrationها، Indexها و ERD.
 - [`ui/UI-UX.md`](ui/UI-UX.md) — تصمیم‌ها و ایده‌های Frontend.
+- [`ui/DESIGN_SYSTEM_FOUNDATION.md`](ui/DESIGN_SYSTEM_FOUNDATION.md) — پایه فارسی/RTL، White-label و حالت‌های مشترک سه پنل بدون وابستگی به Framework.
 - [`testing/SHOP_VERIFICATION.md`](testing/SHOP_VERIFICATION.md) — تست‌های Docker/Kimia مغازه با خروجی واحد و قابل اشتراک.
+- [`testing/CI.md`](testing/CI.md) — قرارداد تست خودکار Backend روی GitHub و مرز آن با تست مغازه.
 
 ## قاعده نگهداری
 

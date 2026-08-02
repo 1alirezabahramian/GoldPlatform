@@ -1,5 +1,9 @@
 # رابط کاربری و تجربه کاربری GoldPlatform
 
+پایه مشترک Design System، RTL، نمایش دقیق اعداد و حالت‌های Loading/Error/Stale در
+[`DESIGN_SYSTEM_FOUNDATION.md`](DESIGN_SYSTEM_FOUNDATION.md) ثبت شده است. این سند هنوز
+Framework یا رنگ و فونت نهایی را انتخاب نمی‌کند.
+
 ## ورود و انتخاب بستر حساب
 
 وضعیت: قرارداد نسخه فعلی به‌همراه مسیر پیشنهادی آینده

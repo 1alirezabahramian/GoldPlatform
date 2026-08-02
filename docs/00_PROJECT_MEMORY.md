@@ -3275,3 +3275,134 @@ Safety boundary:
 
 The generated report must be reviewed before applying the pending identity migrations or
 implementing any additional Balance mapping.
+
+---
+
+# 99. Multi-tenancy Impact Audit and Proposed Strategy — 2026-08-03
+
+Confirmed product direction:
+
+```text
+GoldPlatform = White-label / Multi-tenant product
+Khalifeh Coin = first explicit pilot tenant
+Khalifeh Coin != hidden global default
+```
+
+Current implementation evidence shows that the schema is still single-tenant. The
+following areas do not carry an explicit tenant boundary:
+
+- users and customer groups;
+- accounts, account groups, and external accounts;
+- Kimia coin and currency projections;
+- product categories, products, orders, and trades;
+- wallets, financial transactions, and ledger entries;
+- Kimia, SMS, and Jibit operational logs;
+- HTTP tenant resolution, queue jobs, and sync commands;
+- tenant-scoped roles and permissions.
+
+Several current unique constraints are global, including Kimia AccountId, account group,
+coin and currency identifiers, external provider identity, category slug, and product
+barcode. Independent Kimia installations may reuse numeric identifiers; therefore these
+constraints cannot be assumed safe for several tenants.
+
+Canonical audit:
+
+```text
+docs/architecture/MULTI_TENANCY_IMPACT_AUDIT.md
+```
+
+ADR-026 is currently `Proposed`, not `Accepted`. It recommends a shared database/shared
+schema with mandatory tenant ownership, domain-based public resolution, authenticated
+user/tenant cross-checks, explicit tenant context for jobs/commands, and tenant/connector
+scoped Kimia identifiers.
+
+The recommendation must not be implemented until the owner decides:
+
+1. shared-schema or database-per-tenant isolation;
+2. global mobile uniqueness or uniqueness inside each tenant;
+3. one Kimia connector/book per tenant or multiple connections from the first release;
+4. separation of Platform Super Admin from tenant Admin/Operator;
+5. approval of domain/subdomain resolution and authenticated tenant cross-checking.
+
+Stop condition:
+
+```text
+No Tenant model/Migration
+No tenant_id backfill
+No unique-index replacement
+No tenant-specific Catalog/OMS runtime behavior
+until ADR-026 is accepted and its owner decisions are closed.
+```
+
+---
+
+# 100. Backend Continuous Integration Foundation — 2026-08-03
+
+Prepared workflow:
+
+```text
+.github/workflows/backend-tests.yml
+```
+
+Contract:
+
+- Laravel tests run on PHP 8.4.
+- The test database is SQLite in memory.
+- No Kimia, SMS, Jibit, database, or customer Secret is provided.
+- `KIMIA_WRITES_ENABLED=false` is explicit.
+- Repository permission is read-only.
+- The workflow runs only when Backend code or the workflow changes on pull requests or
+  configured `main`, `work/**`, and `audit/**` branches.
+- CI does not replace MySQL/Docker/Nginx/Redis or controlled live-read verification at the
+  shop.
+
+Verification status:
+
+```text
+Workflow prepared: yes
+Static YAML/guard/path review: completed
+First GitHub Actions execution: pending
+Shop Docker verification: unchanged and still pending
+```
+
+The CI workflow must not be described as operational or passing until GitHub Actions
+returns its first successful run.
+
+---
+
+# 101. Frontend Design System Foundation — 2026-08-03
+
+The production Frontend framework is not selected and no production UI implementation has
+started. A framework-neutral foundation is now documented at:
+
+```text
+docs/ui/DESIGN_SYSTEM_FOUNDATION.md
+```
+
+Accepted experience invariants carried into the foundation:
+
+- Persian/RTL customer experience;
+- Complex Backend / Simple Frontend;
+- no raw Kimia/accounting terms or identifiers in Customer UI;
+- Toman display with explicit Backend-owned Rial conversion;
+- exact decimal/string contracts for financial money and weight;
+- negative financial balances preserved rather than hidden or clamped;
+- Custody kept separate from financial balances;
+- dynamic Coin/Currency naming;
+- tenant-provided branding with no hard-coded Khalifeh Coin fallback;
+- Backend authorization remains authoritative.
+
+The foundation also defines semantic token names, shared Loading/Empty/Error/Stale/Disabled
+states, Customer/Operator/Tenant Admin shells, conditional Platform Super Admin separation,
+White-label bootstrap boundaries, accessibility, and responsive behavior.
+
+Decisions intentionally not guessed:
+
+1. Frontend framework;
+2. visual palette and approved logo variants;
+3. Persian typeface;
+4. Persian or Latin digits;
+5. calendar and display timezone;
+6. light-only or light/dark themes.
+
+These decisions block visual implementation, not the documented experience invariants.

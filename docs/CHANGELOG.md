@@ -4,6 +4,16 @@
 
 ### Added
 
+- Multi-tenancy impact audit covering current schema, Kimia projections, Auth, Catalog,
+  Wallet/Ledger, integrations, queues, and Frontend boundaries.
+- Proposed ADR-026 comparing tenancy isolation options and recommending shared-schema
+  tenancy subject to explicit owner decisions.
+- GitHub Actions Backend test workflow for Laravel 13 on PHP 8.4 with an in-memory SQLite
+  database and Kimia writes disabled.
+- CI safety and verification runbook.
+- Framework-neutral Persian/RTL and White-label Design System foundation covering semantic
+  tokens, exact financial presentation, panel shells, component states, accessibility,
+  responsiveness, and Backend/Frontend boundaries.
 - Fail-closed Kimia write gate protecting active, direct-client, and preserved legacy paths.
 - `kimia:safety-status` runtime guard command.
 - Privacy-safe `kimia:inspect-sync-state` command for local projection counts and AccountId
@@ -35,6 +45,10 @@
 
 ### Verification
 
+- Multi-tenancy changes are documentation-only; no Tenant model, Migration, unique-index
+  change, data backfill, or runtime tenant resolver has been applied.
+- CI workflow structure and local references are prepared; its first GitHub Actions run is
+  still pending and must not be reported as passed yet.
 - Previous canonical suite: `23 passed / 160 assertions / 0 failures`.
 - New write-gate, safety-status, sync-state, Balance, identity, and full-suite execution are
   queued in one shop report and are not yet reported as passed.

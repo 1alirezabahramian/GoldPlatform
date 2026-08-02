@@ -13,8 +13,9 @@ GoldPlatform یک سامانه White-label و Multi-tenant برای معامله
 | نگاشت معامله Kimia | تأییدشده: خرید مشتری `→ 64`، فروش مشتری `→ 32` |
 | تست کامل | `23 passed`, `160 assertions`, `0 failures` |
 | ارسال سند مالی زنده به Kimia | با قفل پیش‌فرض کدی غیرفعال؛ تست Runtime جدید در انتظار مغازه |
-| Frontend | پیاده‌سازی تولیدی شروع نشده؛ طراحی می‌تواند موازی با Backend پیش برود |
-| White-label / Multi-tenancy | جهت معماری پذیرفته شده؛ هنوز پیاده‌سازی نشده |
+| CI تست Backend | Workflow آماده؛ نخستین اجرای GitHub هنوز انجام نشده |
+| Frontend | قرارداد پایه Design System فارسی/RTL و White-label شروع شده؛ کد تولیدی هنوز شروع نشده |
+| White-label / Multi-tenancy | ممیزی انجام‌شده؛ ADR-026 پیشنهادی و در انتظار تصمیم مالک؛ بدون Migration |
 
 شاخه مرجع فعلی این Checkpoint:
 
@@ -48,7 +49,10 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run-shop-verification.ps1 -In
 - [`docs/08_KIMIA_INTEGRATION_AUDIT.md`](docs/08_KIMIA_INTEGRATION_AUDIT.md) — ممیزی Kimia
 - [`docs/PROJECT_PRINCIPLES.md`](docs/PROJECT_PRINCIPLES.md) — اصول الزام‌آور فعلی
 - [`docs/ADR`](docs/ADR) — تصمیم‌های معماری پذیرفته‌شده
+- [`docs/architecture/MULTI_TENANCY_IMPACT_AUDIT.md`](docs/architecture/MULTI_TENANCY_IMPACT_AUDIT.md) — اثر Multi-tenancy بر کد و داده فعلی
+- [`docs/ui/DESIGN_SYSTEM_FOUNDATION.md`](docs/ui/DESIGN_SYSTEM_FOUNDATION.md) — پایه مشترک تجربه و پنل‌ها
 - [`docs/testing/SHOP_VERIFICATION.md`](docs/testing/SHOP_VERIFICATION.md) — اجرای یک‌مرحله‌ای تست‌های مغازه و گزارش خروجی
+- [`docs/testing/CI.md`](docs/testing/CI.md) — تست خودکار Backend روی GitHub
 
 ## قانون توسعه
 

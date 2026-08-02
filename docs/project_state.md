@@ -1,7 +1,7 @@
 # GoldPlatform
 ## Project State
 
-> **وضعیت مرجع جاری — 2026-08-03:** زیرساخت و پایه Kimia سالم است؛ آخرین اجرای کامل تأییدشده همچنان `23 passed / 160 assertions / 0 failures` است. پس از آن Balance، هویت/اتصال حساب و قفل کدی نوشتن Kimia آماده شده‌اند اما اجرای Docker جدید هنوز انجام نشده است. نگاشت API معامله `customer buy → 64` و `customer sell → 32` با خواندن تراکنش واقعی حساب `350` تأیید شده است. بخش‌های قدیمی‌تر این فایل تاریخچه Checkpointها هستند و در صورت تعارض، این خلاصه، `00_PROJECT_MEMORY.md` و ADRهای پذیرفته‌شده اولویت دارند.
+> **وضعیت مرجع جاری — 2026-08-03:** زیرساخت و پایه Kimia سالم است؛ آخرین اجرای کامل تأییدشده همچنان `23 passed / 160 assertions / 0 failures` است. پس از آن Balance، هویت/اتصال حساب و قفل کدی نوشتن Kimia آماده شده‌اند اما اجرای Docker جدید هنوز انجام نشده است. نگاشت API معامله `customer buy → 64` و `customer sell → 32` با خواندن تراکنش واقعی حساب `350` تأیید شده است. ممیزی Multi-tenancy تکمیل و ADR-026 به‌صورت `Proposed` آماده شده، اما هیچ Tenant Migration یا تغییر Runtime اعمال نشده است. Workflow تست Backend نیز آماده است و نخستین اجرای GitHub آن هنوز نتیجه ندارد. بخش‌های قدیمی‌تر این فایل تاریخچه Checkpointها هستند و در صورت تعارض، این خلاصه، `00_PROJECT_MEMORY.md` و ADRهای پذیرفته‌شده اولویت دارند.
 
 ### Current milestone
 
@@ -18,6 +18,12 @@ Product Foundation + Kimia Read Stabilization
 - فرمان‌های `kimia:safety-status` و `kimia:inspect-sync-state` آماده شده‌اند.
 - اسکریپت `scripts/run-shop-verification.ps1` همه تست‌ها و خواندن‌های مجاز را در یک
   گزارش جمع می‌کند.
+- ممیزی اثر Multi-tenancy همه یکتایی‌های جهانی و جدول‌های نیازمند جداسازی را ثبت کرده
+  است؛ ADR-026 تا پاسخ مالک پذیرفته نیست و هیچ Migration ندارد.
+- Workflow `.github/workflows/backend-tests.yml` تست‌های Laravel را بدون Secret و با
+  `KIMIA_WRITES_ENABLED=false` اجرا خواهد کرد؛ نخستین اجرای GitHub هنوز انجام نشده است.
+- پایه Design System فارسی/RTL و White-label برای Customer/Operator/Admin مستند شده؛
+  Framework، فونت، رنگ و کد تولیدی Frontend هنوز انتخاب یا پیاده‌سازی نشده‌اند.
 - اجرای این تست‌های جدید در Docker هنوز انجام نشده و نتیجه آن نباید Pass فرض شود.
 
 ### Current execution split
