@@ -3115,22 +3115,71 @@ Current implementation audit:
 - `users.mobile` is unique.
 - `accounts.kimia_id` is unique.
 - `User::account()` and `Account::user()` express the intended relationship.
-- `users.account_id` is a nullable foreign key but is not yet unique, so the reverse
-  one-to-one rule is not database-enforced.
-- `users.national_code` is currently unique. Reusing the same national code for a second
-  account belonging to the same physical person is therefore an unresolved KYC/schema
-  decision and must not be guessed.
+- `users.account_id` is a nullable foreign key. A nullable unique-index migration is now
+  prepared with a duplicate-link preflight, but has not run in the shop Docker runtime.
+- `users.national_code` currently has a unique index in deployed databases. The owner has
+  now explicitly allowed reuse; an index-removal migration and validation change are
+  prepared but have not run in the shop Docker runtime.
 
 Implementation boundary:
 
-- No database migration is included in this documentation checkpoint.
-- Before adding a nullable unique constraint to `users.account_id`, run a duplicate-data
-  preflight and test the migration in the shop Docker runtime.
-- National-code and Jibit/KYC behavior for the second account requires separate owner
-  confirmation.
+- Run the targeted automated tests before applying the two identity migrations to shop
+  data.
+- The AccountId identity and an established User-to-Account binding are immutable through
+  prepared Eloquent guards.
+- National-code reuse does not decide whether a Jibit/KYC result can be reused by another
+  account. KYC reuse remains a separate decision.
 
 Canonical decision record:
 
 ```text
 docs/ADR/ADR-024-platform-user-kimia-account-binding.md
 ```
+
+---
+
+# 96. Editable Identity Fields and Immutable Kimia Binding — 2026-08-03
+
+Owner-confirmed rules:
+
+```text
+mobile = unique current OTP login identifier, editable through a secure future flow
+national_code = editable and non-unique across platform accounts
+Kimia AccountId = unique and immutable financial binding
+```
+
+Current behavior remains:
+
+```text
+one platform account -> zero or one Kimia AccountId
+one Kimia AccountId -> no more than one platform account
+```
+
+If the same person requests a second account in the current release, it uses a second
+mobile number and a second Kimia `AccountId`; the national code may be the same.
+
+Prepared implementation:
+
+- Registration no longer applies a unique validation rule to `national_code`.
+- Migration replaces `users_national_code_unique` with a non-unique lookup index.
+- Migration adds `users_account_id_unique` only after checking for duplicate non-null
+  links.
+- `UserObserver` permits the first link from `null` to an account and rejects later change
+  or removal.
+- `Account.kimia_id` and `ExternalAccount(provider, external_id)` are immutable through
+  Eloquent update guards.
+- Feature tests cover the new constraints; execution is pending the shop Docker runtime.
+
+Deferred product direction:
+
+The platform may later authenticate or identify a person by mobile/national code, show a
+verified list of authorized accounts, and require account selection before balances or
+trading. This is not implemented. It requires a separate identity/person layer, explicit
+selected-account authorization, audit logs, KYC rules, and a new ADR; it must not be
+represented as several `AccountId` values on the current `User` record.
+
+Known architecture boundary:
+
+The active Kimia account sync writes `external_accounts`, while the current `users.account_id`
+foreign key targets `accounts`. This checkpoint does not silently merge or replace those
+models. Their consolidation requires a separate code-path and migration audit.

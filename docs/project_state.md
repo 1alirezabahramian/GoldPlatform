@@ -803,12 +803,30 @@ These are documented stop conditions for the next authentication implementation 
   `AccountId`.
 - A customer who requests two accounts must receive two independent platform accounts,
   each with a distinct mobile number and a distinct Kimia `AccountId`.
-- `users.mobile UNIQUE` and `accounts.kimia_id UNIQUE` already enforce two parts of this
-  contract.
-- `users.account_id` is not currently unique; database enforcement is pending a
-  duplicate-data preflight and migration test.
-- `users.national_code` is currently unique, which conflicts with a second account for the
-  same physical person if the same national code must be reused. National-code/KYC reuse
-  remains an explicit owner decision before implementation.
-- ADR-024 records the accepted cardinality and the unresolved identity boundary.
-- No schema or runtime behavior changed in this checkpoint.
+- National-code reuse is explicitly allowed; national code and mobile remain editable
+  profile fields, while `AccountId` is the immutable financial binding.
+- Mobile remains unique and is the current OTP login identifier.
+- Registration validation no longer rejects an already-used national code.
+- Two migrations are prepared: replace the `users.national_code` unique index with a
+  normal lookup index and add a nullable unique index to `users.account_id` after an
+  embedded duplicate-link preflight.
+- Eloquent guards are prepared to reject changes to a synchronized Kimia identifier or an
+  established User-to-Account binding.
+- Targeted automated tests are prepared for duplicate national codes, unique mobiles,
+  editable profile identifiers, one-to-one binding, and immutable Kimia identifiers.
+- The future login/identity account list is documented as a deferred UX direction and is
+  not current runtime behavior.
+- The active Kimia sync table remains `external_accounts`, while `users.account_id` points
+  to `accounts`; consolidation of those two account representations remains a separate
+  architecture task and was not guessed in this checkpoint.
+- ADR-024 records the accepted current rule and the future boundary.
+- No migration has been applied to shop data.
+
+Verification status:
+
+```text
+Static review: completed (150 PHP files parsed; Diff and secret scan passed)
+New automated Laravel tests: pending shop Docker runtime
+Database migrations: prepared, not applied to shop data
+Live Kimia read/write: not used by this identity checkpoint
+```

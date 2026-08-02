@@ -46,7 +46,6 @@ class RegisterRequest extends FormRequest
             'national_code' => [
                 'nullable',
                 'digits:10',
-                'unique:users,national_code',
             ],
 
             'password' => [
@@ -75,7 +74,6 @@ class RegisterRequest extends FormRequest
             'last_name.min' => 'نام خانوادگی باید حداقل ۲ کاراکتر باشد.',
 
             'national_code.digits' => 'کد ملی باید ۱۰ رقم باشد.',
-            'national_code.unique' => 'این کد ملی قبلاً ثبت شده است.',
 
             'password.required' => 'رمز عبور الزامی است.',
             'password.min' => 'رمز عبور باید حداقل ۶ کاراکتر باشد.',

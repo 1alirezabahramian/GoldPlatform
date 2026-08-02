@@ -2,12 +2,32 @@
 
 namespace App\Models;
 
+use App\Exceptions\BusinessException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ExternalAccount extends Model
 {
     use SoftDeletes;
+
+    /**
+     * The provider and external identifier form the immutable external identity.
+     *
+     * @throws BusinessException
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (self $account): void {
+            if (
+                $account->isDirty('provider')
+                || $account->isDirty('external_id')
+            ) {
+                throw new BusinessException(
+                    'An external account identity cannot be changed after synchronization.'
+                );
+            }
+        });
+    }
 
     protected $fillable = [
         'provider',
