@@ -8,39 +8,30 @@ use Illuminate\Support\Str;
 
 class OtpService
 {
-    const EXPIRE_MINUTES = 2;
+    public const EXPIRE_MINUTES = 2;
 
-    const MAX_ATTEMPTS = 5;
+    public const MAX_ATTEMPTS = 5;
 
     public function generate(): string
     {
-        return (string) random_int(100000,999999);
+        return (string) random_int(100000, 999999);
     }
 
     public function create(string $mobile): Otp
     {
-        Otp::where('mobile',$mobile)
-            ->where('verified',false)
+        Otp::where('mobile', $mobile)
+            ->where('verified', false)
             ->delete();
 
         return Otp::create([
-
             'mobile' => $mobile,
-
             'otp' => $this->generate(),
-
             'purpose' => 'login',
-
             'attempts' => 0,
-
             'verified' => false,
-
             'expires_at' => now()->addMinutes(self::EXPIRE_MINUTES),
-
             'ip_address' => request()->ip(),
-
-            'user_agent' => Str::limit(request()->userAgent(),255),
-
+            'user_agent' => Str::limit(request()->userAgent(), 255),
         ]);
     }
 
@@ -59,27 +50,21 @@ class OtpService
         return $otp->attempts >= self::MAX_ATTEMPTS;
     }
 
-    public function verify(Otp $otp,string $code): bool
+    public function verify(Otp $otp, string $code): bool
     {
-        if($this->isExpired($otp))
+        if ($this->isExpired($otp) || $this->isBlocked($otp)) {
             return false;
+        }
 
-        if($this->isBlocked($otp))
-            return false;
-
-        if($otp->otp !== $code){
-
+        if ($otp->otp !== $code) {
             $this->increaseAttempts($otp);
 
             return false;
         }
 
         $otp->update([
-
-            'verified'=>true,
-
-            'verified_at'=>now(),
-
+            'verified' => true,
+            'verified_at' => now(),
         ]);
 
         return true;

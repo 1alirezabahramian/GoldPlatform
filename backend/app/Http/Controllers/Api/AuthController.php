@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SendOtpRequest;
-use App\Models\Otp;
 use App\Services\Sms\OtpService;
 use App\Services\Sms\SmsService;
 use App\Support\ApiResponse;

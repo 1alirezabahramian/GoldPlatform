@@ -686,3 +686,68 @@ Next milestone:
 ```
 Wallet Transaction Engine
 ```
+
+---
+
+# Stabilization Checkpoint — 2026-08-02
+
+## Scope
+
+Kimia account synchronization and backend duplicate-path audit.
+
+## Completed in code
+
+- Corrected `GET /api/account` query from `accountType` to Swagger-defined `Type`.
+- Kept `accountType` only for `GET /api/account/groups`.
+- Confirmed the repeatable, validated `--type` option in `kimia:sync-accounts`; without an option it synchronizes all defined `AccountType` cases.
+- Confirmed mapping of Swagger-defined account fields into `external_accounts`.
+- Fixed `kimia:sync-groups` to call the canonical repository method.
+- Removed legacy duplicate Kimia paths under `app/Clients` and `app/Services/kimia`; preserved the pre-existing `App\Integrations\Kimia` tree pending a separate architecture review.
+- Consolidated Kimia configuration under `config/services.php` and documented non-secret environment placeholders in `.env.example`.
+- Added repository tests that lock the two different query parameter names.
+
+## Test status
+
+- Static source verification: completed.
+- Laravel/PHP automated tests: pending because the current Codex runtime does not contain PHP, Composer, or Docker.
+- Live Kimia account sync: pending; no Kimia credentials were available in the runtime and no credential was copied into source.
+
+## Remaining blockers
+
+- Numeric trade Action encoding is not runtime-confirmed: the owner-confirmed operational/form codes are `3/4`, while Swagger API schemas define `32/64`.
+- The complete Kimia voucher write payload, retry behavior, and verified write flow are not yet confirmed. Swagger does confirm `RequestId` UUID support for idempotency.
+- Live Kimia account sync remains pending because credentials are not available in this runtime.
+- Authentication decisions below remain unresolved and separate from the Kimia transaction mapping.
+
+## Confirmed customer trade mapping — 2026-08-02
+
+- Customer Buy in GoldPlatform maps semantically to the business selling to the customer in Kimia.
+- Customer Sell in GoldPlatform maps semantically to the business buying from the customer in Kimia.
+- Added `App\Enums\KimiaTradeSide` as the numeric-free code-level mapping contract.
+- Added unit tests for both directions and rejection of unsupported order types.
+- Added accepted decision record `ADR-023` and reconciled the conflicting Ground Truth and Business Rules sections.
+- No live Kimia financial write was enabled in this step.
+- Numeric API Action remains blocked pending real transaction evidence (`3/4` operational codes versus Swagger `32/64`).
+- Added read-only `VoucherRepository::transactions()` using the exact Swagger endpoint and query names.
+- Added `kimia:inspect-transactions {accountId}` to display the evidence fields needed for Action verification without mutating Kimia.
+- Added HTTP-fake tests for the transaction path, zero-based pagination, descending order, and pass-through of raw Action values.
+- Owner confirmed `AccountId=350` as the read-only evidence account. No live response has
+  been captured in the current Codex runtime, so the `3/4` versus `32/64` transport mapping
+  remains intentionally unresolved.
+
+## Authentication/SMS structural follow-up
+
+- Fixed five confirmed PSR-4 path/class mismatches.
+- Added missing request, provider contract, and result DTO used by the active OTP route.
+- Removed unused duplicate Auth/OTP/SMS implementations from the application path.
+- Added an automated PSR-4 compliance test to prevent recurrence.
+- OTP storage security and verification behavior were not redesigned in this pass and remain pending explicit review.
+
+## Confirmed authentication blockers
+
+- OTP-only project rules conflict with the password field currently required by registration code.
+- Registration writes `first_name` and `last_name`, but those columns do not exist in the current migration chain.
+- The existing wallet observer test expects nine accounts although the observer is empty and registration creates two accounts.
+- Active OTP verification and logout methods are incomplete.
+
+These are documented stop conditions for the next authentication implementation pass.

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginRequest extends FormRequest
+class SendOtpRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,8 +16,9 @@ class LoginRequest extends FormRequest
         return [
             'mobile' => [
                 'required',
-                'regex:/^09[0-9]{9}$/'
-            ]
+                'string',
+                'regex:/^09[0-9]{9}$/',
+            ],
         ];
     }
 
@@ -25,7 +26,7 @@ class LoginRequest extends FormRequest
     {
         return [
             'mobile.required' => 'شماره موبایل الزامی است.',
-            'mobile.regex'    => 'شماره موبایل معتبر نیست.',
+            'mobile.regex' => 'شماره موبایل معتبر نیست.',
         ];
     }
 }

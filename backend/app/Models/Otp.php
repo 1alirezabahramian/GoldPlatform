@@ -4,19 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OtpCode extends Model
+class Otp extends Model
 {
     protected $fillable = [
 
         'mobile',
 
-        'code',
+        'otp',
 
         'purpose',
 
         'attempts',
 
-        'resend_count',
+        'verified',
 
         'expires_at',
 
@@ -34,6 +34,8 @@ class OtpCode extends Model
 
         'verified_at' => 'datetime',
 
+        'verified' => 'boolean',
+
     ];
 
     /*
@@ -49,6 +51,6 @@ class OtpCode extends Model
 
     public function isVerified(): bool
     {
-        return $this->verified_at !== null;
+        return $this->verified;
     }
 }

@@ -17,11 +17,13 @@ class AccountRepository
      */
     public function all(?int $accountType = null): array
     {
+        $query = $accountType === null
+            ? []
+            : ['Type' => $accountType];
+
         $response = $this->kimia
             ->client()
-            ->get('/api/account', [
-                'accountType' => $accountType,
-            ]);
+            ->get('/api/account', $query);
 
         if (! $response->successful()) {
             return [];
@@ -51,11 +53,13 @@ class AccountRepository
      */
     public function groups(?int $accountType = null): array
     {
+        $query = $accountType === null
+            ? []
+            : ['accountType' => $accountType];
+
         $response = $this->kimia
             ->client()
-            ->get('/api/account/groups', [
-                'accountType' => $accountType,
-            ]);
+            ->get('/api/account/groups', $query);
 
         if (! $response->successful()) {
             return [];

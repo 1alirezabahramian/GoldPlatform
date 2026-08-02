@@ -434,7 +434,7 @@ Trading Rules
 
 ---
 
-# 16. Kimia Action Codes — Confirmed
+# 16. Kimia Operational/Form Codes — Owner Confirmed
 
 از مثال‌های واقعی پروژه:
 
@@ -447,7 +447,10 @@ Trading Rules
 | 7 | حواله |
 | 8 | پولی کردن سکه و ارز |
 
-**این جدول Ground Truth فعلی است.**
+**این جدول Ground Truth روند عملیاتی/فرم Kimia است، نه قرارداد عددی API.**
+
+Swagger رسمی برای فیلد `Action` در API از کدهای دیگری مانند `32=خرید` و
+`64=فروش` استفاده می‌کند. این دو نمایش نباید با یکدیگر ادغام شوند.
 
 ---
 
@@ -455,7 +458,7 @@ Trading Rules
 
 یکی از مهم‌ترین قوانین پروژه:
 
-### Action Code 4
+### Operational/Form Code 4
 
 یعنی:
 
@@ -470,7 +473,7 @@ Trading Rules
 پس این دو هرگز نباید با هم اشتباه شوند:
 
 ```text
-Action Code 4 = فروش
+Operational/Form Code 4 = فروش
 
 Money Product Code 4 = پولی در معامله طلای کاغذی
 ```
@@ -478,7 +481,7 @@ Money Product Code 4 = پولی در معامله طلای کاغذی
 همچنین:
 
 ```text
-Action Code 8 = پولی کردن سکه و ارز
+Operational/Form Code 8 = پولی کردن سکه و ارز
 ```
 
 ---
@@ -490,8 +493,22 @@ Action Code 8 = پولی کردن سکه و ارز
 Action:
 
 ```text
-Buy  = 3
-Sell = 4
+Customer Buy  = Kimia business side Sell
+Customer Sell = Kimia business side Buy
+```
+
+Owner-confirmed operational/form code:
+
+```text
+Kimia Buy  = 3
+Kimia Sell = 4
+```
+
+Swagger API transport code (requires runtime confirmation before write):
+
+```text
+API Buy  = 32
+API Sell = 64
 ```
 
 Money Product:
@@ -526,7 +543,9 @@ Fineness = 750
 مفهوم ثبت:
 
 ```text
-Action = 4
+Kimia business side = Sell
+Operational/form code = 4
+Swagger API Action = 64 (runtime confirmation pending)
 Money Product = 4
 Weight = 2
 Fineness = 750
@@ -570,7 +589,9 @@ Fineness = 750
 ثبت مفهومی:
 
 ```text
-Action = 3
+Kimia business side = Buy
+Operational/form code = 3
+Swagger API Action = 32 (runtime confirmation pending)
 Money Product = 4
 Weight = 1.5
 Fineness = 750
@@ -600,15 +621,15 @@ Conversion Code = 8
 Buy/Sell همچنان:
 
 ```text
-Buy  = Action 3
-Sell = Action 4
+Customer Buy  = Kimia business side Sell
+Customer Sell = Kimia business side Buy
 ```
 
 است.
 
 ---
 
-# 22. Sell Coin — Real Example
+# 22. Customer Sells Coin — Real Example
 
 مشتری:
 
@@ -620,7 +641,8 @@ ProductId = 10006
 ثبت مفهومی:
 
 ```text
-Action = 4
+Operational/form code = 3
+Swagger API Action = 32 (runtime confirmation pending)
 Conversion = 8
 ProductId = 10006
 Quantity = 2
@@ -637,12 +659,13 @@ Money Balance += Total
 
 ---
 
-# 23. Buy Coin — Real Example
+# 23. Customer Buys Coin — Real Example
 
 ثبت مفهومی:
 
 ```text
-Action = 3
+Operational/form code = 4
+Swagger API Action = 64 (runtime confirmation pending)
 Conversion = 8
 ProductId = 10006
 Quantity = ...
@@ -683,12 +706,15 @@ Coin Balance  += Quantity
 
 # 25. Receiving / Paying
 
-کدهای فیزیکی دریافت/پرداخت:
+کدهای عملیاتی/فرم برای دریافت/پرداخت:
 
 ```text
-Receive = Action 1
-Pay     = Action 2
+Receive = Operational/form code 1
+Pay     = Operational/form code 2
 ```
+
+Swagger برای endpointهای API مرتبط از `2=Receive` و `4=Pay` استفاده می‌کند؛
+کد API باید بر اساس endpoint و خروجی واقعی انتخاب شود.
 
 ---
 
@@ -697,7 +723,7 @@ Pay     = Action 2
 ## Receive Full Coin
 
 ```text
-Action = 1
+Operational/form code = 1
 Product = Full Coin
 ProductId = 10006
 Quantity = 2
@@ -706,7 +732,7 @@ Quantity = 2
 ## Pay Half Coin
 
 ```text
-Action = 2
+Operational/form code = 2
 Product = Half Coin
 ProductId = 10007
 Quantity = 1
@@ -715,7 +741,7 @@ Quantity = 1
 ## Receive Bank Transfer
 
 ```text
-Action = 1
+Operational/form code = 1
 Type = 7
 Bank = Mellat
 Account/Product Id = 105
@@ -725,7 +751,7 @@ Money Amount = ...
 ## Pay Transfer
 
 ```text
-Action = 2
+Operational/form code = 2
 Type = 7
 Party = Mr. Alavi
 AccountId = 600
@@ -735,7 +761,7 @@ Weight = 200 g
 ## Pay Cash
 
 ```text
-Action = 2
+Operational/form code = 2
 Cash
 Amount = ... Rial
 ```
@@ -743,7 +769,7 @@ Amount = ... Rial
 ## Pay Melted Gold
 
 ```text
-Action = 2
+Operational/form code = 2
 Product = Melted Gold
 Weight = ...
 Fineness = ...
@@ -754,7 +780,7 @@ Profit = 2%
 ## Receive Miscellaneous
 
 ```text
-Action = 1
+Operational/form code = 1
 Type = 2
 Weight = 50 g
 ```
@@ -762,7 +788,7 @@ Weight = 50 g
 ## Receive Parsian
 
 ```text
-Action = 1
+Operational/form code = 1
 Product = Parsian
 Weight = 500 Soot
 Product Code = 500
@@ -1219,7 +1245,7 @@ softDeletes
 فایل‌ها:
 
 ```text
-backend/app/Console/Commands/KimiaSyncAccounts.php
+backend/app/Console/Commands/SyncKimiaAccountsCommand.php
 backend/app/Console/Commands/KimiaSyncGroups.php
 ```
 
@@ -1227,16 +1253,18 @@ Commands:
 
 ```bash
 php artisan kimia:sync-accounts
+php artisan kimia:sync-accounts --type=3
 php artisan kimia:sync-groups
 ```
 
-`kimia:sync-accounts` از:
+`kimia:sync-accounts` از مسیر فعال زیر استفاده می‌کند:
 
 ```text
-AccountRepository::all()
+App\Services\KimiaService::get('/api/account', ['Type' => ...])
 ```
 
-داده می‌گیرد و فعلاً بر اساس:
+گزینه `--type` تکرارپذیر است و در صورت حذف‌شدن گزینه، تمام موارد تعریف‌شده در
+`AccountType` همگام می‌شوند. داده‌ها بر اساس:
 
 ```text
 AccountId
@@ -1245,12 +1273,12 @@ Type
 Name
 ```
 
-Account را `updateOrCreate` می‌کند.
+در جدول `external_accounts` با provider برابر `kimia` ثبت یا به‌روزرسانی می‌شوند.
 
 `kimia:sync-groups` از:
 
 ```text
-allGroups($type)
+AccountRepository::groups($type)
 ```
 
 برای AccountTypeهای:
@@ -1261,6 +1289,12 @@ allGroups($type)
 
 داده می‌گیرد.
 
+`kimia:sync-accounts` برای endpoint حساب‌ها پارامتر `Type` را می‌فرستد.
+
+`kimia:sync-groups` برای endpoint گروه‌ها پارامتر `accountType` را می‌فرستد.
+
+> این تفاوت نام پارامترها در Swagger رسمی کیمیا ثبت شده است و نباید یکسان‌سازی یا حدس زده شود.
+>
 > این Commandها باید با API واقعی دوباره تست شوند؛ وجود Command به معنی درست بودن Mapping نهایی نیست.
 
 ---
@@ -1950,7 +1984,7 @@ Commit.
 
 ---
 
-# 65. Known Confirmed Action Table
+# 65. Owner-Confirmed Operational/Form Code Table
 
 ```text
 1 = دریافت
@@ -1961,16 +1995,23 @@ Commit.
 8 = پولی کردن سکه و ارز
 ```
 
+این جدول کدهای روند عملیاتی است. برای payload API، Swagger کدهای bit-flag از جمله
+`32=خرید` و `64=فروش` را تعریف می‌کند.
+
 ---
 
 # 66. Known Gold Paper Mapping
 
 ```text
-Buy:
-Action = 3
+Customer Buy:
+Kimia business side = Sell
+Operational/form code = 4
+Swagger API Action = 64 (runtime confirmation pending)
 
-Sell:
-Action = 4
+Customer Sell:
+Kimia business side = Buy
+Operational/form code = 3
+Swagger API Action = 32 (runtime confirmation pending)
 
 Money Product:
 Code = 4
@@ -1996,11 +2037,15 @@ Money ↑
 # 67. Known Coin/Currency Mapping
 
 ```text
-Buy:
-Action = 3
+Customer Buy:
+Kimia business side = Sell
+Operational/form code = 4
+Swagger API Action = 64 (runtime confirmation pending)
 
-Sell:
-Action = 4
+Customer Sell:
+Kimia business side = Buy
+Operational/form code = 3
+Swagger API Action = 32 (runtime confirmation pending)
 
 Conversion:
 Code = 8
@@ -2023,9 +2068,14 @@ Money ↑
 # 68. Known Physical Receive/Pay Mapping
 
 ```text
-Receive = Action 1
-Pay     = Action 2
+Receive = Operational/form code 1
+Pay     = Operational/form code 2
+
+Swagger API receive = 2
+Swagger API pay     = 4
 ```
+
+API transport values remain endpoint-specific and require runtime confirmation before write.
 
 ---
 
@@ -2042,10 +2092,10 @@ Pay     = Action 2
 اما:
 
 ```text
-Action 4 ≠ پولی کردن
+Operational/form code 4 ≠ پولی کردن
 ```
 
-Action 4 فقط:
+Operational/form code 4 فقط:
 
 ```text
 فروش
@@ -2215,7 +2265,7 @@ AI/Developer نباید:
 - Action Code را با Product Code اشتباه بگیرد.
 - Coin/Currency را بدون API به چند Wallet ثابت تبدیل کند.
 - Amanat را با Gold Balance قاطی کند.
-- Action 4 را «پولی کردن» بنامد.
+- Operational/form code 4 را «پولی کردن» بنامد.
 - API Request Body را حدس بزند.
 - Response را بدون دیدن Raw JSON فرض کند.
 - معماری پذیرفته‌شده را بی‌دلیل عوض کند.
@@ -2242,7 +2292,8 @@ docker-compose.yml
 docs_list.txt
 ```
 
-Repository در GitHub موجود است و شاخه اصلی فعلی `main` است.
+Repository در GitHub موجود است؛ شاخه پایه `main` و شاخه فعال این مرحله
+`audit/kimia-foundation` است.
 
 ---
 
@@ -2260,8 +2311,10 @@ backend/app/Enums/WalletAccountType.php
 ```text
 backend/app/Services/KimiaService.php
 backend/app/Repositories/Kimia/AccountRepository.php
-backend/app/Console/Commands/KimiaSyncAccounts.php
+backend/app/Repositories/Kimia/VoucherRepository.php
+backend/app/Console/Commands/SyncKimiaAccountsCommand.php
 backend/app/Console/Commands/KimiaSyncGroups.php
+backend/app/Console/Commands/KimiaInspectTransactions.php
 ```
 
 ## Models
@@ -2496,13 +2549,15 @@ Jewelry
 Physical / Amanat.
 
 ```text
-Action 1 = Receive
-Action 2 = Pay
-Action 3 = Buy
-Action 4 = Sell
-Action 7 = Transfer
-Action 8 = Coin/Currency Monetization
+Operational/form code 1 = Receive
+Operational/form code 2 = Pay
+Operational/form code 3 = Buy
+Operational/form code 4 = Sell
+Operational/form code 7 = Transfer
+Operational/form code 8 = Coin/Currency Monetization
 ```
+
+این Invariant مربوط به معنای روند عملیاتی است. قرارداد عددی API جدا و endpoint-specific است.
 
 و:
 
@@ -2584,10 +2639,10 @@ Hope
 1. چهار Financial Balance چیست.
 2. Amanat چیست.
 3. چرا Physical Product با Financial Balance فرق دارد.
-4. Action Code 4 چیست.
+4. تفاوت Operational/Form Code 4 و API Action چیست.
 5. Product/Money Code 4 چیست.
 6. Code 8 چیست.
-7. Action 1 و 2 چه هستند.
+7. تفاوت کدهای عملیاتی 1/2 و Actionهای API endpoint چیست.
 8. Coin/Currency چرا Dynamic هستند.
 9. چرا AccountId و GroupId باید از کیمیا استخراج شوند.
 10. چرا API Request Body را نباید حدس زد.
@@ -2685,13 +2740,16 @@ Trading:
 Gold / Coin / Currency
 
 Paper Gold:
-Action 3/4 + Money Product 4
+Operational/form code 3/4 + Money Product 4
+Swagger API Action 32/64 (runtime confirmation pending)
 
 Coin/Currency Conversion:
-Action 3/4 + Code 8
+Operational/form code 3/4 + Code 8
+Swagger API Action 32/64 (runtime confirmation pending)
 
 Physical Receive/Pay:
-Action 1/2
+Operational/form code 1/2
+Swagger endpoint-specific Action 2/4 (runtime confirmation pending)
 
 Customer Groups:
 Normal / VIP Credit
@@ -2718,3 +2776,129 @@ NO GUESSING
 اگر چیزی را نمی‌دانی، دقیقاً همان بخش ناشناخته را بپرس.
 
 **GoldPlatform باید از واقعیت کسب‌وکار و واقعیت کیمیا ساخته شود، نه از حدس AI.**
+
+---
+
+# 91. Backend Stabilization Audit — 2026-08-02
+
+## Confirmed Kimia Account Query Fix
+
+```text
+GET /api/account         → Type
+GET /api/account/groups  → accountType
+```
+
+Evidence:
+
+- `swagger.json`
+- بررسی مسیر واقعی `AccountRepository`
+- وضعیت قبلی `Account::count() = 0`
+
+Changes:
+
+- Account sync accepts repeatable, validated `--type` options and synchronizes all defined `AccountType` cases when no option is supplied.
+- Account fields documented by Swagger are mapped into the local `external_accounts` model.
+- Invalid account rows without `AccountId` are skipped and counted instead of causing a silent partial failure.
+- Legacy duplicate Kimia implementations under `app/Clients` and `app/Services/kimia` were removed. The active synchronization commands currently use:
+
+```text
+App\Services\KimiaService
+App\Repositories\Kimia\AccountRepository
+```
+
+The pre-existing `App\Integrations\Kimia` tree was preserved for a separate architecture
+review because it belongs to earlier commits on `audit/kimia-foundation` and is not part of
+this stabilization deletion scope.
+
+- Kimia configuration now has one canonical source: `config/services.php`, with placeholder environment keys documented in `.env.example`.
+
+Migration impact:
+
+```text
+None
+```
+
+API impact:
+
+```text
+Correct query parameter for GET /api/account
+No change to financial write operations
+```
+
+## Resolved Owner Decisions and Remaining Transport Stop Condition
+
+The previous Trading Engine stop conditions were resolved from approved project rules and
+owner confirmation on 2026-08-02:
+
+1. Customer Buy in GoldPlatform = business sells to customer in Kimia.
+2. Customer Sell in GoldPlatform = business buys from customer in Kimia.
+3. Money, Gold, Coin, and Currency balances may be negative only for approved credit groups
+   and only within their configured limits. Custody remains a separate physical asset model.
+
+The semantic trade direction is resolved. Numeric API transport encoding is still a stop
+condition because owner-confirmed operational/form codes `3/4` differ from Swagger API
+codes `32/64`. One real buy and one real sell transaction response are required before a
+live voucher write is enabled.
+
+Canonical implementation contract:
+
+```text
+App\Enums\KimiaTradeSide
+```
+
+Full decision record:
+
+```text
+docs/ADR/ADR-023-kimia-customer-trade-action-mapping.md
+```
+
+## Read-Only Transaction Evidence Path
+
+To resolve the transport Action discrepancy without writing any financial document, the
+canonical read path is:
+
+```text
+App\Repositories\Kimia\VoucherRepository::transactions()
+GET /api/voucher/transactions/{accountId}
+```
+
+The inspection command is:
+
+```text
+php artisan kimia:inspect-transactions {accountId} --page=0 --size=50
+```
+
+Owner-confirmed evidence account (2026-08-02):
+
+```text
+AccountId = 350
+php artisan kimia:inspect-transactions 350 --page=0 --size=50
+```
+
+This account identifier is approved only for the read-only transaction inspection above.
+No runtime response for account `350` has been captured yet. The numeric Action mapping
+must remain unconfirmed until the command runs in a Kimia-connected environment and its
+real response contains the relevant customer buy and sell records.
+
+It displays the raw evidence fields `RecordId`, `Action`, `ActionName`, `ProductId`,
+`ProductName`, `Weight`, `Quantity`, and `SumMoney`. The command is read-only and does not
+create, edit, or delete a Kimia voucher.
+
+## Authentication/SMS Structural Stabilization
+
+- Active OTP/SMS classes were aligned with their PSR-4 paths.
+- Missing `SendOtpRequest`, `SmsProvider`, and `SmsResult` contracts were added.
+- Unreferenced duplicate Auth/OTP/SMS implementations were removed.
+- No OTP duration, attempt limit, provider behavior, or customer-facing route was intentionally changed in this structural pass.
+- Secure OTP-at-rest design remains pending because changing it affects security behavior and database schema.
+
+## Authentication Decisions Still Required
+
+The current repository contains confirmed implementation conflicts that were not silently resolved:
+
+1. Project rules describe OTP-only authentication, while `RegisterRequest` and `RegistrationService` currently require/use a password.
+2. `RegistrationService` writes `first_name` and `last_name`, but no current users migration creates those columns.
+3. `UserObserverTest` expects automatic creation of nine wallet accounts, while the active observer is empty and registration currently creates two default accounts.
+4. The active `verify-otp` and `logout` controller methods are still incomplete.
+
+These items affect security and customer experience and require an approved canonical authentication flow before implementation.

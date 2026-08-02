@@ -6,6 +6,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class KimiaService
 {
@@ -16,10 +17,23 @@ class KimiaService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.kimia.base_url'), '/');
-        $this->username = config('services.kimia.username');
-        $this->password = config('services.kimia.password');
-        $this->timeout = config('services.kimia.timeout', 30);
+        $this->baseUrl = rtrim(
+            (string) config('services.kimia.base_url'),
+            '/'
+        );
+        $this->username = (string) config('services.kimia.username');
+        $this->password = (string) config('services.kimia.password');
+        $this->timeout = (int) config('services.kimia.timeout', 30);
+
+        if (
+            $this->baseUrl === ''
+            || $this->username === ''
+            || $this->password === ''
+        ) {
+            throw new RuntimeException(
+                'Kimia API configuration is incomplete.'
+            );
+        }
     }
 
     public function client(): PendingRequest
