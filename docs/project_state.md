@@ -709,8 +709,19 @@ Kimia account synchronization and backend duplicate-path audit.
 ## Test status
 
 - Static source verification: completed.
-- Laravel/PHP automated tests: pending because the current Codex runtime does not contain PHP, Composer, or Docker.
+- Laravel/PHP automated tests: completed successfully by the owner in the
+  `goldplatform_php` Docker container on 2026-08-02.
+- Canonical full-suite result: `23 passed`, `160 assertions`, `0 failures`, duration
+  `19.52s` (`php artisan test`).
+- The complete Unit suite was also run twice with the same result: `13 passed`,
+  `87 assertions`, `0 failures`.
+- Targeted Kimia, currency synchronization, and PSR-4 checks all passed before the
+  full-suite run. These targeted results overlap with the full suite and are not added to
+  its totals.
 - Live Kimia account sync: pending; no Kimia credentials were available in the runtime and no credential was copied into source.
+
+The tests used fakes/test storage where applicable and did not create, edit, or delete a
+live Kimia financial voucher. Live voucher writes remain disabled.
 
 ## Remaining blockers
 

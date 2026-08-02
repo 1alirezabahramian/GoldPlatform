@@ -2951,3 +2951,61 @@ The current repository contains confirmed implementation conflicts that were not
 4. The active `verify-otp` and `logout` controller methods are still incomplete.
 
 These items affect security and customer experience and require an approved canonical authentication flow before implementation.
+
+---
+
+# 92. Full Automated Test Verification — 2026-08-02
+
+The owner executed the automated tests inside the project PHP Docker container after pulling
+the Kimia trade-action mapping checkpoint published as GitHub commit `98a7c40`.
+
+Canonical full-suite command and result:
+
+```text
+docker exec -it goldplatform_php php artisan test
+
+Tests:    23 passed (160 assertions)
+Duration: 19.52s
+Failures: 0
+```
+
+The successful full suite covered:
+
+- PSR-4 application path/class compliance.
+- Kimia account and account-group query parameter contracts.
+- Customer trade direction and API transport mapping (`buy -> 64`, `sell -> 32`).
+- Rejection of operational/form codes `3/4` as API trade Actions.
+- Voucher transaction endpoint, boolean query serialization, and pagination validation.
+- Account, coin, currency, and group synchronization without duplicates.
+- User wallet/default-account observer behavior.
+- Basic application response health.
+
+Supporting targeted evidence executed before the canonical full suite:
+
+```text
+KimiaApiTradeActionTest                 3 passed (6 assertions)
+tests/Unit/Kimia                       11 passed (16 assertions)
+SyncKimiaCurrenciesCommandTest          2 passed (13 assertions)
+Psr4ComplianceTest                      1 passed (70 assertions)
+Unit suite, run 1                      13 passed (87 assertions)
+Unit suite, run 2                      13 passed (87 assertions)
+```
+
+These are overlapping verification runs and must not be added to the canonical full-suite
+totals.
+
+Safety boundary:
+
+- The automated tests did not create, edit, or delete a live Kimia financial voucher.
+- Live voucher writing remains disabled.
+- The successful suite does not resolve the still-unverified live write payload,
+  idempotency, retry, failure-handling, and posting-time rules.
+
+Conclusion:
+
+```text
+Automated project test suite: PASS
+Tests: 23
+Assertions: 160
+Failures: 0
+```
