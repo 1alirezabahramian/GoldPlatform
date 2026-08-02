@@ -1,7 +1,7 @@
 # GoldPlatform
 ## Project State
 
-> **وضعیت مرجع جاری — 2026-08-03:** زیرساخت و پایه Kimia سالم است؛ آخرین اجرای کامل تأییدشده همچنان `23 passed / 160 assertions / 0 failures` است. پس از آن Balance، هویت/اتصال حساب و قفل کدی نوشتن Kimia آماده شده‌اند اما اجرای Docker جدید هنوز انجام نشده است. نگاشت API معامله `customer buy → 64` و `customer sell → 32` با خواندن تراکنش واقعی حساب `350` تأیید شده است. ممیزی Multi-tenancy تکمیل و ADR-026 به‌صورت `Proposed` آماده شده، اما هیچ Tenant Migration یا تغییر Runtime اعمال نشده است. Workflow تست Backend نیز آماده است و نخستین اجرای GitHub آن هنوز نتیجه ندارد. بخش‌های قدیمی‌تر این فایل تاریخچه Checkpointها هستند و در صورت تعارض، این خلاصه، `00_PROJECT_MEMORY.md` و ADRهای پذیرفته‌شده اولویت دارند.
+> **وضعیت مرجع جاری — 2026-08-03:** زیرساخت و پایه Kimia سالم است؛ آخرین اجرای کامل تأییدشده همچنان `23 passed / 160 assertions / 0 failures` است. پس از آن Balance، هویت/اتصال حساب و قفل کدی نوشتن Kimia آماده شده‌اند اما اجرای Docker جدید هنوز انجام نشده است. نگاشت API معامله `customer buy → 64` و `customer sell → 32` با خواندن تراکنش واقعی حساب `350` تأیید شده است. ADR-026 و هر پنج تصمیم مالک پذیرفته شده‌اند؛ Tenant root، دامنه معتبر، Context/Resolver و تست‌های جداسازی آماده‌اند، اما هیچ Migration اجرا و Middleware به Route تولیدی متصل نشده است. Workflow تست Backend نیز آماده است و نخستین اجرای GitHub آن هنوز نتیجه ندارد. بخش‌های قدیمی‌تر این فایل تاریخچه Checkpointها هستند و در صورت تعارض، این خلاصه، `00_PROJECT_MEMORY.md` و ADRهای پذیرفته‌شده اولویت دارند.
 
 ### Current milestone
 
@@ -19,7 +19,8 @@ Product Foundation + Kimia Read Stabilization
 - اسکریپت `scripts/run-shop-verification.ps1` همه تست‌ها و خواندن‌های مجاز را در یک
   گزارش جمع می‌کند.
 - ممیزی اثر Multi-tenancy همه یکتایی‌های جهانی و جدول‌های نیازمند جداسازی را ثبت کرده
-  است؛ ADR-026 تا پاسخ مالک پذیرفته نیست و هیچ Migration ندارد.
+  است؛ Tenant root/domain، Resolver، Context و تست‌های جداسازی Checkpoint نخست آماده شده،
+  ولی Middleware عمداً روی Routeهای تولیدی فعال نیست و هنوز هیچ Migration اجرا نشده است.
 - Workflow `.github/workflows/backend-tests.yml` تست‌های Laravel را بدون Secret و با
   `KIMIA_WRITES_ENABLED=false` اجرا خواهد کرد؛ نخستین اجرای GitHub هنوز انجام نشده است.
 - پایه Design System فارسی/RTL و White-label برای Customer/Operator/Admin مستند شده؛
@@ -811,19 +812,23 @@ These are documented stop conditions for the next authentication implementation 
 
 - The owner confirmed one GoldPlatform login/account may connect to only one Kimia
   `AccountId`.
-- A customer who requests two accounts must receive two independent platform accounts,
-  each with a distinct mobile number and a distinct Kimia `AccountId`.
+- A customer who requests two accounts inside one Tenant must receive two independent
+  platform accounts, each with a distinct mobile number and a distinct Kimia `AccountId`.
+  ADR-026 allows the same mobile to own one separate account in another Tenant after the
+  tenant-scoped user migration.
 - National-code reuse is explicitly allowed; national code and mobile remain editable
   profile fields, while `AccountId` is the immutable financial binding.
-- Mobile remains unique and is the current OTP login identifier.
+- Mobile remains the OTP login identifier and is unique inside each Tenant; the current
+  database constraint remains globally unique until the reviewed user migration.
 - Registration validation no longer rejects an already-used national code.
 - Two migrations are prepared: replace the `users.national_code` unique index with a
   normal lookup index and add a nullable unique index to `users.account_id` after an
   embedded duplicate-link preflight.
 - Eloquent guards are prepared to reject changes to a synchronized Kimia identifier or an
   established User-to-Account binding.
-- Targeted automated tests are prepared for duplicate national codes, unique mobiles,
-  editable profile identifiers, one-to-one binding, and immutable Kimia identifiers.
+- Targeted automated tests are prepared for duplicate national codes, the current interim
+  global mobile constraint, editable profile identifiers, one-to-one binding, and immutable
+  Kimia identifiers.
 - The future login/identity account list is documented as a deferred UX direction and is
   not current runtime behavior.
 - The active Kimia sync table remains `external_accounts`, while `users.account_id` points

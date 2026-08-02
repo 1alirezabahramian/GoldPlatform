@@ -170,8 +170,8 @@ support/reference code may be shown when Backend supplies one.
 
 ### Platform Super Admin
 
-This is a separate future shell only if ADR-026 confirms the role. It must not be hidden
-inside Tenant Admin navigation. Cross-tenant actions require explicit context and audit.
+ADR-026 confirms this as a separate future shell. It must not be hidden inside Tenant Admin
+navigation. Cross-tenant actions require explicit tenant context and audit.
 
 ## White-label bootstrap boundary
 
@@ -192,7 +192,8 @@ It must exclude:
 - other tenants or domains;
 - financial rules that Backend has not accepted.
 
-The endpoint name and exact schema remain pending ADR-026 and API-contract work.
+The endpoint name and exact schema remain pending the bounded tenancy implementation and
+API-contract work; ADR-026 has accepted the resolution and isolation boundary.
 
 ## RTL and accessibility baseline
 

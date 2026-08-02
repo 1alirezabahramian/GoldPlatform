@@ -37,7 +37,7 @@
 
 ## فاز 2 — پایه محصول و Multi-tenancy
 
-**وضعیت:** ممیزی اثر انجام‌شده؛ ADR پیشنهادی در انتظار تصمیم مالک؛ Migration شروع نشده
+**وضعیت:** ADR-026 پذیرفته‌شده؛ Tenant root/domain/Resolver آماده تست؛ Migration اجرا نشده
 
 - Tenant model و Tenant isolation
 - Branding، domain و module configuration
@@ -49,9 +49,15 @@
 [`architecture/MULTI_TENANCY_IMPACT_AUDIT.md`](architecture/MULTI_TENANCY_IMPACT_AUDIT.md)
 ثبت شده است.
 
-ADR-026 گزینه Shared DB/Shared Schema را پیشنهاد می‌کند، اما تا تعیین یکتایی موبایل،
-تعداد اتصال‌های Kimia هر Tenant، نقش Super Admin و روش Tenant resolution در وضعیت
-`Proposed` باقی می‌ماند. قبل از پذیرش آن هیچ `tenant_id` یا Migration اجرایی اضافه نمی‌شود.
+ADR-026، Shared DB/Shared Schema با `tenant_id` اجباری را تثبیت می‌کند. موبایل داخل هر
+Tenant یکتا است؛ نسخه اول برای هر Tenant یک اتصال فعال Kimia دارد؛ Platform Super Admin
+از Admin/Operator فروشگاه جداست؛ و Tenant از دامنه معتبر همراه با تطبیق کاربر واردشده
+شناسایی می‌شود.
+
+Checkpoint نخست شامل Tenant root، دامنه، Context/Resolver و تست‌های جداسازی آماده شده
+است، اما Middleware هنوز روی Routeهای تولیدی فعال نیست. انتقال جدول‌های موجود و تغییر
+Indexها باید در گروه‌های کوچک و پس از Preflight داده انجام شود؛ Migration یک‌جای همه
+جدول‌ها مجاز نیست.
 
 ## فاز 3 — تثبیت Kimia Connector
 

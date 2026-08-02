@@ -24,12 +24,13 @@
 - [`ADR/ADR-023-kimia-customer-trade-action-mapping.md`](ADR/ADR-023-kimia-customer-trade-action-mapping.md) — نگاشت قطعی `32/64`.
 - [`ADR/ADR-024-platform-user-kimia-account-binding.md`](ADR/ADR-024-platform-user-kimia-account-binding.md) — اتصال یک‌به‌یک اکانت پلتفرم و `AccountId` کیمیا.
 - [`ADR/ADR-025-kimia-live-write-safety-gate.md`](ADR/ADR-025-kimia-live-write-safety-gate.md) — قفل پیش‌فرض همه نوشتن‌های زنده Kimia.
-- [`ADR/ADR-026-multi-tenancy-isolation-strategy.md`](ADR/ADR-026-multi-tenancy-isolation-strategy.md) — پیشنهاد راهبرد جداسازی Tenant؛ هنوز پذیرفته نشده است.
+- [`ADR/ADR-026-multi-tenancy-isolation-strategy.md`](ADR/ADR-026-multi-tenancy-isolation-strategy.md) — راهبرد پذیرفته‌شده جداسازی Tenant و پنج تصمیم مالک.
 
 ## معماری و دامنه
 
 - [`architecture`](architecture) — معماری سیستم، Domain Model و Blueprintها.
 - [`architecture/MULTI_TENANCY_IMPACT_AUDIT.md`](architecture/MULTI_TENANCY_IMPACT_AUDIT.md) — ممیزی فرضیات تک‌Tenant فعلی و دامنه Migration آینده.
+- [`architecture/TENANCY_FOUNDATION.md`](architecture/TENANCY_FOUNDATION.md) — پیاده‌سازی محدود Tenant root، دامنه معتبر، Context/Resolver و مرز فعال‌سازی.
 - [`domain`](domain) — Auth، Wallet، Trading، Custody، Settlement، OMS و گزارش‌ها.
 - [`business/Business-Rules.md`](business/Business-Rules.md) — قواعد کسب‌وکار پذیرفته‌شده.
 - [`database`](database) — جدول‌ها، Migrationها، Indexها و ERD.

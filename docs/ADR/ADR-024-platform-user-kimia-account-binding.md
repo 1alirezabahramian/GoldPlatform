@@ -1,6 +1,6 @@
 # ADR-024 — Platform User to Kimia Account Binding
 
-Status: Accepted (implementation prepared; shop-runtime verification pending)
+Status: Accepted (tenant scope clarified by ADR-026; implementation verification pending)
 
 Date: 2026-08-03
 
@@ -19,12 +19,13 @@ the two account representations remains a separate architecture task.
 - In the current release, one GoldPlatform login/account is connected to no more than one
   local account and therefore no more than one Kimia `AccountId`.
 - One Kimia `AccountId` must not be connected to more than one GoldPlatform login/account.
-- If the same real customer requests a second account, a second GoldPlatform account is
-  created with a different mobile number and a different Kimia `AccountId`.
+- If the same real customer requests a second account inside one Tenant, a second
+  GoldPlatform account is created with a different mobile number and a different Kimia
+  `AccountId`.
 - `AccountId` is unique and immutable after synchronization/linking. Editing the user's
   mobile number or national code must never replace or relink that `AccountId`.
-- The mobile number remains unique among platform accounts and is the current OTP login
-  identifier. It is editable only through a separately secured change flow.
+- The mobile number remains unique among accounts inside the same Tenant and is the current
+  OTP login identifier. It is editable only through a separately secured change flow.
 - The national code is editable and is not unique: two independent accounts belonging to
   the same person may store the same national code.
 - `account_code` remains a separate display/search value and must not replace `AccountId`.
@@ -35,7 +36,7 @@ These rules were confirmed by the project owner on 2026-08-03.
 
 | Contract | Current implementation | Status |
 |---|---|---|
-| One platform account per mobile number | `users.mobile UNIQUE` | Enforced |
+| One account per mobile inside one Tenant | `users.mobile UNIQUE` globally | Interim single-Tenant enforcement; target is `(tenant_id, mobile)` |
 | One local account per Kimia identifier | `accounts.kimia_id UNIQUE` | Enforced |
 | One synchronized external identity | `external_accounts(provider, external_id) UNIQUE` | Enforced |
 | One Kimia/local account per platform user | Nullable `users.account_id` foreign key | Structurally represented |
@@ -67,8 +68,8 @@ context, audit logging, and a new ADR. It must not be implemented by attaching s
 
 - Authorization and every financial operation can resolve exactly one Kimia customer
   account from the authenticated platform account.
-- Mobile numbers and Kimia `AccountId` values for two independent accounts must both be
-  distinct; their national code may be the same.
+- Mobile numbers and Kimia `AccountId` values for two independent accounts inside one
+  Tenant must both be distinct; their national code may be the same.
 - Prepared migrations replace national-code uniqueness with a normal lookup index and add
   nullable uniqueness to `users.account_id`. The latter aborts if duplicate non-null links
   already exist.
@@ -76,6 +77,20 @@ context, audit logging, and a new ADR. It must not be implemented by attaching s
   record the action in the audit log.
 - Prepared Eloquent guards prevent an established binding or synchronized Kimia identity
   from being changed through model updates.
+
+## Multi-tenancy Scope Clarification — 2026-08-03
+
+ADR-026 supersedes only the old global scope of mobile uniqueness:
+
+- two independent accounts inside the same Tenant still require two distinct mobile
+  numbers and two distinct Kimia `AccountId` values;
+- the same mobile may own one separate account in another Tenant;
+- the future database constraint is `unique (tenant_id, mobile)`;
+- the current global `users.mobile` unique constraint remains an interim single-Tenant
+  implementation until the reviewed `users` table-group migration and backfill.
+
+The one-account-to-one-`AccountId`, immutable binding, and repeatable national-code rules
+of this ADR remain unchanged.
 
 ## Scope Boundary
 

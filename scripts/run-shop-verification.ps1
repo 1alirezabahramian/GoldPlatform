@@ -115,6 +115,7 @@ $LocalGateOk = (Invoke-DockerArtisan 'Kimia write safety status' @('kimia:safety
 $LocalGateOk = (Invoke-DockerArtisan 'Write safety tests' @('test', 'tests/Unit/Kimia/KimiaWriteSafetyGateTest.php')) -and $LocalGateOk
 $LocalGateOk = (Invoke-DockerArtisan 'Safety command tests' @('test', 'tests/Feature/KimiaSafetyStatusCommandTest.php')) -and $LocalGateOk
 $LocalGateOk = (Invoke-DockerArtisan 'Identity and binding tests' @('test', 'tests/Feature/UserIdentityConstraintsTest.php')) -and $LocalGateOk
+$LocalGateOk = (Invoke-DockerArtisan 'Tenant foundation isolation tests' @('test', 'tests/Feature/TenantDomainResolutionTest.php')) -and $LocalGateOk
 $LocalGateOk = (Invoke-DockerArtisan 'Balance repository tests' @('test', 'tests/Unit/Kimia/VoucherRepositoryTest.php')) -and $LocalGateOk
 $LocalGateOk = (Invoke-DockerArtisan 'Balance command tests' @('test', 'tests/Feature/KimiaInspectBalanceCommandTest.php')) -and $LocalGateOk
 $LocalGateOk = (Invoke-DockerArtisan 'Sync-state command tests' @('test', 'tests/Feature/KimiaInspectSyncStateCommandTest.php')) -and $LocalGateOk

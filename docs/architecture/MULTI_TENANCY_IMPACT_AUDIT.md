@@ -117,17 +117,24 @@ No large all-table Migration should be applied in one step.
   account, cached assets, or session state.
 - Navigation visibility improves UX but Backend policies remain authoritative.
 
-## Decisions still required from the owner
+## Owner decisions — accepted 2026-08-03
 
-1. **Isolation model:** shared database/shared schema or database per tenant.
-2. **Mobile uniqueness:** one mobile across the entire platform or one mobile per tenant.
-3. **Kimia connection cardinality:** exactly one connector/book per tenant in the first
-   release, or multiple connectors/branches from the start.
-4. **Tenant administration:** confirm separate platform Super Admin and tenant Admin roles.
-5. **Tenant resolution:** approve custom domain/subdomain as the public source of tenant
-   identity, with authenticated user-to-tenant cross-checking.
+1. **Isolation model:** shared database/shared schema with mandatory `tenant_id`.
+2. **Mobile uniqueness:** one mobile account per tenant; the same mobile may exist in a
+   different tenant.
+3. **Kimia connection cardinality:** one active connector/book per tenant in the first
+   release, with an extension path for multiple connectors later.
+4. **Tenant administration:** Platform Super Admin is separate from tenant Admin/Operator.
+5. **Tenant resolution:** verified custom domain/subdomain plus authenticated user-to-tenant
+   cross-checking.
 
-## Stop condition
+## Implementation guardrail
 
-Do not add `tenant_id`, change unique indexes, move credentials, or build tenant-specific
-Catalog/OMS behavior until ADR-026 is accepted and the open decisions above are closed.
+ADR-026 acceptance allows only bounded implementation checkpoints. Do not run an all-table
+tenancy migration, replace global unique indexes without duplicate preflight, move live
+credentials, or build tenant-specific Catalog/OMS runtime behavior outside the reviewed
+table group and isolation tests of the active checkpoint.
+
+Checkpoint 1 is now prepared and remains inside that boundary: it adds only the new Tenant
+root/domain tables, Models, Host Resolver, request-scoped Context, an inactive Middleware
+alias, and negative isolation tests. No existing business table or unique index is changed.

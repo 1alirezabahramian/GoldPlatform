@@ -6,8 +6,13 @@
 
 - Multi-tenancy impact audit covering current schema, Kimia projections, Auth, Catalog,
   Wallet/Ledger, integrations, queues, and Frontend boundaries.
-- Proposed ADR-026 comparing tenancy isolation options and recommending shared-schema
-  tenancy subject to explicit owner decisions.
+- Accepted ADR-026 selecting shared-schema tenancy and recording all five owner decisions:
+  tenant-scoped mobile uniqueness, one active Kimia connector per tenant in the first
+  release, separate Platform Super Admin, and verified-domain tenant resolution with
+  authenticated tenant cross-checking.
+- Tenant root and verified-domain foundation: `tenants`, `tenant_domains`, normalized Host,
+  fail-closed Resolver, request-scoped Context, inactive Middleware alias, and negative
+  isolation tests.
 - GitHub Actions Backend test workflow for Laravel 13 on PHP 8.4 with an in-memory SQLite
   database and Kimia writes disabled.
 - CI safety and verification runbook.
@@ -31,6 +36,13 @@
 
 ### Changed
 
+- Multi-tenancy moved from an owner-decision stop condition to bounded implementation;
+  all-table migration, unreviewed index replacement, and live credential movement remain
+  prohibited.
+- Clarified ADR-024 so mobile uniqueness applies inside one Tenant; the current global
+  database constraint remains interim until the reviewed user table-group migration.
+- Removed a duplicate `StoreOrderRequest::rules()` declaration that made the existing PHP
+  file unloadable; its authorization and validation rules were otherwise preserved.
 - Added `KIMIA_WRITES_ENABLED=false` to the configuration contract.
 - Account names are omitted from `kimia:inspect-balance` by default and require an explicit
   display option.
@@ -45,8 +57,9 @@
 
 ### Verification
 
-- Multi-tenancy changes are documentation-only; no Tenant model, Migration, unique-index
-  change, data backfill, or runtime tenant resolver has been applied.
+- Tenant root/domain code and two new-table migrations are prepared, but no Migration,
+  seed/backfill, existing unique-index change, or production-route Middleware activation
+  has been applied.
 - CI workflow structure and local references are prepared; its first GitHub Actions run is
   still pending and must not be reported as passed yet.
 - Previous canonical suite: `23 passed / 160 assertions / 0 failures`.

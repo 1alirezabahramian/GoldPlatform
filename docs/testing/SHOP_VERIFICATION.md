@@ -47,11 +47,12 @@ The report includes, in order:
 4. Runtime Kimia write-safety status.
 5. Targeted write-gate tests.
 6. Targeted identity/account-binding tests.
-7. Targeted Balance repository and command tests.
-8. Targeted local sync-state command tests.
-9. Full automated Laravel test suite.
-10. Current migration status.
-11. SQL preview of pending migrations using `migrate --pretend`.
+7. Targeted Tenant root/domain/isolation tests.
+8. Targeted Balance repository and command tests.
+9. Targeted local sync-state command tests.
+10. Full automated Laravel test suite.
+11. Current migration status.
+12. SQL preview of pending migrations using `migrate --pretend`.
 
 `migrate --pretend` displays the pending SQL and preflight result; it does not apply a
 Migration to the shop database.

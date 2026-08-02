@@ -1,8 +1,10 @@
 # ADR-026 — Multi-tenancy Isolation Strategy
 
-**Status:** Proposed — awaiting owner approval
+**Status:** Accepted
 
 **Date:** 2026-08-03
+
+**Accepted by:** Alireza Bahramian, project owner — 2026-08-03
 
 ## Context
 
@@ -19,7 +21,7 @@ rework.
 The evidence inventory is recorded in
 [`../architecture/MULTI_TENANCY_IMPACT_AUDIT.md`](../architecture/MULTI_TENANCY_IMPACT_AUDIT.md).
 
-## Decision under review
+## Decision
 
 Choose the first production isolation model and tenant-resolution contract before any
 tenancy Migration is created.
@@ -68,7 +70,7 @@ This provides strong separation but is not the shared Multi-tenant product direc
 already accepted for GoldPlatform. It multiplies release, monitoring, security-patch, and
 support work and is not recommended as the default product architecture.
 
-## Proposed decision
+## Accepted architecture
 
 Adopt **Option A: shared database/shared schema with mandatory tenant ownership** for the
 first production architecture, with these mandatory safeguards:
@@ -90,7 +92,7 @@ first production architecture, with these mandatory safeguards:
 9. Tenancy is migrated table group by table group with backfill and preflight checks; no
    all-table Migration is allowed.
 
-## Proposed tenant resolution
+## Tenant resolution contract
 
 ```text
 Public request
@@ -111,22 +113,39 @@ Queue / command
 A free-form browser header is not a trusted tenant source. An inactive or unknown domain
 must fail closed and must never fall back to Khalifeh Coin.
 
-## Open owner decisions
+## Accepted owner decisions
 
-The proposal cannot become `Accepted` and no tenancy Migration may be written until the
-owner confirms:
+On 2026-08-03, project owner Alireza Bahramian approved all five decisions:
 
-1. Approve or reject **Option A**.
-2. Is a mobile number unique across all GoldPlatform tenants, or may the same mobile have
-   one separate account in each tenant?
-3. In the first release, does each tenant have exactly one Kimia connection/book, or must
-   multiple branches/books be supported immediately?
-4. Confirm that `Platform Super Admin` is separate from each tenant's `Admin/Operator`.
-5. Approve domain/subdomain resolution plus authenticated user/tenant cross-checking.
+1. **Isolation:** use Option A — one shared database and shared schema with mandatory
+   `tenant_id` ownership and enforced cross-tenant isolation.
+2. **Mobile uniqueness:** a mobile number is unique inside one tenant, not globally. The
+   same mobile may own one separate platform account in another tenant. Future constraints
+   therefore use tenant-scoped uniqueness such as `(tenant_id, mobile)`.
+3. **Kimia connection cardinality:** the first release supports exactly one active Kimia
+   connector/book per tenant. The connector model and foreign-key boundaries must remain
+   ready for multiple branches/books in a later reviewed release without redefining
+   tenant ownership.
+4. **Administration:** `Platform Super Admin` is separate from every tenant's
+   `Admin/Operator`; cross-tenant access must be explicit and audited.
+5. **Tenant resolution:** public requests resolve from a verified active domain/subdomain,
+   and authenticated requests must cross-check that tenant against the user's tenant.
 
-## Consequences if accepted
+These decisions authorize the bounded tenancy foundation described below. They do not
+authorize an all-table migration, live Kimia writes, KYC reuse across tenants, branch
+accounting rules, or any new financial rule.
 
-- The next implementation checkpoint creates only the tenant root, domain resolution
+## Implementation status
+
+The first bounded checkpoint is prepared: new Tenant root/domain tables, Models, canonical
+Host resolution, request-scoped TenantContext, an inactive Middleware alias, and negative
+isolation tests. It does not modify any existing business table or unique index and is not
+attached to production routes. Runtime and migration verification remain pending. See
+[`../architecture/TENANCY_FOUNDATION.md`](../architecture/TENANCY_FOUNDATION.md).
+
+## Consequences
+
+- The first implementation checkpoint prepares only the tenant root, domain resolution
   foundation, and isolation tests.
 - Existing tables are migrated in later bounded groups after data preflight.
 - Catalog and Pricing can then be designed with stable tenant ownership.

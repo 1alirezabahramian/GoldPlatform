@@ -3106,13 +3106,14 @@ If the same real customer requests a second account:
 
 ```text
 second platform account
-+ distinct mobile number
++ distinct mobile number inside the same tenant
 + distinct Kimia AccountId
 ```
 
 Current implementation audit:
 
-- `users.mobile` is unique.
+- `users.mobile` is globally unique in the current interim single-Tenant schema; ADR-026
+  changes the target constraint to `unique (tenant_id, mobile)`.
 - `accounts.kimia_id` is unique.
 - `User::account()` and `Account::user()` express the intended relationship.
 - `users.account_id` is a nullable foreign key. A nullable unique-index migration is now
@@ -3143,7 +3144,7 @@ docs/ADR/ADR-024-platform-user-kimia-account-binding.md
 Owner-confirmed rules:
 
 ```text
-mobile = unique current OTP login identifier, editable through a secure future flow
+mobile = unique current OTP login identifier inside each tenant, editable through a secure future flow
 national_code = editable and non-unique across platform accounts
 Kimia AccountId = unique and immutable financial binding
 ```
@@ -3155,8 +3156,10 @@ one platform account -> zero or one Kimia AccountId
 one Kimia AccountId -> no more than one platform account
 ```
 
-If the same person requests a second account in the current release, it uses a second
-mobile number and a second Kimia `AccountId`; the national code may be the same.
+If the same person requests a second account inside the same tenant, it uses a second
+mobile number and a second Kimia `AccountId`; the national code may be the same. ADR-026
+allows the same mobile to own a separate account in another tenant after the user-table
+tenancy migration.
 
 Prepared implementation:
 
@@ -3278,7 +3281,7 @@ implementing any additional Balance mapping.
 
 ---
 
-# 99. Multi-tenancy Impact Audit and Proposed Strategy — 2026-08-03
+# 99. Multi-tenancy Impact Audit and Accepted Strategy — 2026-08-03
 
 Confirmed product direction:
 
@@ -3311,27 +3314,24 @@ Canonical audit:
 docs/architecture/MULTI_TENANCY_IMPACT_AUDIT.md
 ```
 
-ADR-026 is currently `Proposed`, not `Accepted`. It recommends a shared database/shared
-schema with mandatory tenant ownership, domain-based public resolution, authenticated
-user/tenant cross-checks, explicit tenant context for jobs/commands, and tenant/connector
-scoped Kimia identifiers.
+ADR-026 was accepted by project owner Alireza Bahramian on 2026-08-03. The five locked
+decisions are:
 
-The recommendation must not be implemented until the owner decides:
+1. shared database/shared schema with mandatory `tenant_id` ownership;
+2. mobile uniqueness inside each tenant, allowing the same mobile in another tenant;
+3. exactly one active Kimia connector/book per tenant in the first release, with the model
+   prepared for multiple connections in a later reviewed release;
+4. Platform Super Admin separated from tenant Admin/Operator;
+5. verified domain/subdomain resolution plus authenticated user/tenant cross-checking.
 
-1. shared-schema or database-per-tenant isolation;
-2. global mobile uniqueness or uniqueness inside each tenant;
-3. one Kimia connector/book per tenant or multiple connections from the first release;
-4. separation of Platform Super Admin from tenant Admin/Operator;
-5. approval of domain/subdomain resolution and authenticated tenant cross-checking.
-
-Stop condition:
+Accepted implementation boundary:
 
 ```text
-No Tenant model/Migration
-No tenant_id backfill
-No unique-index replacement
-No tenant-specific Catalog/OMS runtime behavior
-until ADR-026 is accepted and its owner decisions are closed.
+Next checkpoint = Tenant root + verified domain + explicit context/resolver + isolation tests
+No all-table Migration
+No tenant_id backfill outside the reviewed table group
+No unique-index replacement without duplicate preflight
+No live credential movement or tenant-specific Catalog/OMS behavior in this checkpoint
 ```
 
 ---
@@ -3393,7 +3393,7 @@ Accepted experience invariants carried into the foundation:
 - Backend authorization remains authoritative.
 
 The foundation also defines semantic token names, shared Loading/Empty/Error/Stale/Disabled
-states, Customer/Operator/Tenant Admin shells, conditional Platform Super Admin separation,
+states, Customer/Operator/Tenant Admin shells, accepted Platform Super Admin separation,
 White-label bootstrap boundaries, accessibility, and responsive behavior.
 
 Decisions intentionally not guessed:
@@ -3406,3 +3406,56 @@ Decisions intentionally not guessed:
 6. light-only or light/dark themes.
 
 These decisions block visual implementation, not the documented experience invariants.
+
+---
+
+# 102. Tenant Root and Domain Resolution Foundation — 2026-08-03
+
+ADR-026 and all five owner decisions are accepted. The first bounded implementation
+checkpoint is prepared with:
+
+```text
+backend/app/Models/Tenant.php
+backend/app/Models/TenantDomain.php
+backend/app/Tenancy/TenantHost.php
+backend/app/Tenancy/TenantResolver.php
+backend/app/Tenancy/TenantContext.php
+backend/app/Http/Middleware/ResolveTenantFromDomain.php
+backend/database/migrations/2026_08_03_130000_create_tenants_table.php
+backend/database/migrations/2026_08_03_130100_create_tenant_domains_table.php
+backend/tests/Feature/TenantDomainResolutionTest.php
+```
+
+Locked behavior:
+
+- a Host resolves only through an active, verified, globally unique domain owned by an
+  active Tenant;
+- Host values are canonicalized to lowercase without a port or trailing dot;
+- unknown, inactive, and unverified domains fail closed with no Khalifeh Coin fallback;
+- TenantContext cannot switch Tenant inside one execution scope;
+- the `tenant.resolve` alias is registered but not attached to production routes;
+- current Auth, mobile uniqueness, Kimia, Catalog, Order, Wallet, Ledger, and Custody tables
+  are unchanged in this checkpoint.
+
+Accepted but deferred to bounded follow-up table groups:
+
+- `users.tenant_id` backfill and `unique (tenant_id, mobile)`;
+- authenticated user/tenant cross-check activation;
+- tenant/connector ownership for Kimia projections and commands;
+- other business-table ownership and composite indexes;
+- public branding/bootstrap API and Frontend integration.
+
+Verification status:
+
+```text
+PHP parse and duplicate-method check: 166 files / PASS
+Tenant Laravel tests: prepared, not executed
+SQLite/MySQL migration execution: not executed
+Shop database migration: not applied
+Production route activation: not applied
+Kimia write: blocked and not authorized
+```
+
+During the expanded static parse, an older duplicate `StoreOrderRequest::rules()` method
+was found. The empty duplicate was removed while preserving `authorize=false` and the
+existing validation rules.
