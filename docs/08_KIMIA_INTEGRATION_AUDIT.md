@@ -1186,4 +1186,33 @@ Automated tests were added for the endpoint, optional query, boolean serializati
 negative money preservation, and invalid account identifier. Execution in the real Laravel
 container is still pending and must not be reported as passed until the owner runs it.
 
+## 21. Executable live-write safety boundary — 2026-08-03
+
+The accepted documentation-only write restriction is now represented in code:
+
+```text
+KIMIA_WRITES_ENABLED=false
+App\Integrations\Kimia\Safety\KimiaWriteGate
+php artisan kimia:safety-status
+```
+
+Known write paths protected by this checkpoint:
+
+- `KimiaService::post/put/delete`;
+- non-GET requests through the public `KimiaService::client()` pending request;
+- the preserved `App\Integrations\Kimia\Client\KimiaClient` write methods.
+
+The gate fails closed when the configuration value is absent, false, or malformed. GET and
+HEAD remain available. No endpoint payload, financial rule, or write permission is inferred
+by this change.
+
+The shop runner performs targeted and full automated tests, `migrate --pretend`, local
+projection syncs, and the approved Balance GET in one sequence. Live reads only begin after
+the local phase and `kimia:safety-status` succeed. Results are not considered verified until
+the generated shop report is reviewed.
+
+Static verification completed with 150 PHP files parsed, 75 PSR-4 declarations checked,
+the PowerShell runner parsed without syntax errors, 24 changed-document links resolved,
+and no changed-file Diff or secret-scan error. Laravel/Docker execution remains pending.
+
 **End of document**

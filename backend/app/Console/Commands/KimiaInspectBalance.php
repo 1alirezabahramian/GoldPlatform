@@ -10,7 +10,8 @@ class KimiaInspectBalance extends Command
 {
     protected $signature = 'kimia:inspect-balance
                             {accountId : Kimia account identifier}
-                            {--include-peaks : Include Kimia gold and money peaks}';
+                            {--include-peaks : Include Kimia gold and money peaks}
+                            {--show-account-name : Display the Kimia account name}';
 
     protected $description = 'Read a Kimia account balance without changing any voucher';
 
@@ -46,6 +47,22 @@ class KimiaInspectBalance extends Command
             return self::SUCCESS;
         }
 
+        $showAccountName = (bool) $this->option('show-account-name');
+        $headers = ['AccountId'];
+
+        if ($showAccountName) {
+            $headers[] = 'AccountName';
+        }
+
+        $headers = [
+            ...$headers,
+            'GroupId',
+            'Weight',
+            'Money',
+            'CurrencyId',
+            'CurrencySymbol',
+        ];
+
         $rows = [];
 
         foreach ($balances as $balance) {
@@ -53,9 +70,16 @@ class KimiaInspectBalance extends Command
                 continue;
             }
 
-            $rows[] = [
+            $row = [
                 $balance['AccountId'] ?? null,
-                $balance['AccountName'] ?? null,
+            ];
+
+            if ($showAccountName) {
+                $row[] = $balance['AccountName'] ?? null;
+            }
+
+            $rows[] = [
+                ...$row,
                 $balance['GroupId'] ?? null,
                 $balance['Weight'] ?? null,
                 $balance['Money'] ?? null,
@@ -71,21 +95,17 @@ class KimiaInspectBalance extends Command
         }
 
         $this->table(
-            [
-                'AccountId',
-                'AccountName',
-                'GroupId',
-                'Weight',
-                'Money',
-                'CurrencyId',
-                'CurrencySymbol',
-            ],
+            $headers,
             $rows
         );
 
         $this->line(
             'Raw Kimia values are shown without sign or unit conversion.'
         );
+
+        if (! $showAccountName) {
+            $this->line('Account names are omitted by default for safe report sharing.');
+        }
 
         return self::SUCCESS;
     }

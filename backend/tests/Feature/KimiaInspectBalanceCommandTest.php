@@ -40,7 +40,10 @@ class KimiaInspectBalanceCommandTest extends TestCase
 
         $this->artisan('kimia:inspect-balance', [
             'accountId' => 350,
-        ])->assertExitCode(0);
+        ])
+            ->expectsOutputToContain('Account names are omitted by default')
+            ->doesntExpectOutputToContain('Read Only Test')
+            ->assertExitCode(0);
 
         Http::assertSent(function (Request $request): bool {
             parse_str(

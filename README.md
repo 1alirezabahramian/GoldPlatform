@@ -4,7 +4,7 @@ GoldPlatform یک سامانه White-label و Multi-tenant برای معامله
 
 `Khalifeh Coin` نخستین Tenant واقعی و محیط پایلوت محصول است؛ قوانین اختصاصی آن نباید در هسته پلتفرم Hard-code شوند.
 
-## وضعیت جاری — 2026-08-02
+## وضعیت جاری — 2026-08-03
 
 | بخش | وضعیت |
 |---|---|
@@ -12,15 +12,25 @@ GoldPlatform یک سامانه White-label و Multi-tenant برای معامله
 | Kimia Read/Sync | در حال تثبیت؛ Account/Coin/Currency/Group تست‌شده و Balance آماده تست Runtime |
 | نگاشت معامله Kimia | تأییدشده: خرید مشتری `→ 64`، فروش مشتری `→ 32` |
 | تست کامل | `23 passed`, `160 assertions`, `0 failures` |
-| ارسال سند مالی زنده به Kimia | غیرفعال تا تکمیل قرارداد Payload و Idempotency |
+| ارسال سند مالی زنده به Kimia | با قفل پیش‌فرض کدی غیرفعال؛ تست Runtime جدید در انتظار مغازه |
 | Frontend | پیاده‌سازی تولیدی شروع نشده؛ طراحی می‌تواند موازی با Backend پیش برود |
 | White-label / Multi-tenancy | جهت معماری پذیرفته شده؛ هنوز پیاده‌سازی نشده |
 
-شاخه مرجع فعلی توسعه Kimia:
+شاخه مرجع فعلی این Checkpoint:
 
 ```text
-audit/kimia-foundation
+work/product-kimia-next
 ```
+
+اجرای همه بررسی‌های مغازه و ساخت یک گزارش واحد:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run-shop-verification.ps1 -IncludeLiveKimia -AccountId 350
+```
+
+این اسکریپت Migration را اعمال نمی‌کند و هیچ درخواست `POST/PUT/DELETE` به Kimia
+نمی‌فرستد. جزئیات در [`docs/testing/SHOP_VERIFICATION.md`](docs/testing/SHOP_VERIFICATION.md)
+ثبت شده است.
 
 ## مرز معماری
 
@@ -38,6 +48,7 @@ audit/kimia-foundation
 - [`docs/08_KIMIA_INTEGRATION_AUDIT.md`](docs/08_KIMIA_INTEGRATION_AUDIT.md) — ممیزی Kimia
 - [`docs/PROJECT_PRINCIPLES.md`](docs/PROJECT_PRINCIPLES.md) — اصول الزام‌آور فعلی
 - [`docs/ADR`](docs/ADR) — تصمیم‌های معماری پذیرفته‌شده
+- [`docs/testing/SHOP_VERIFICATION.md`](docs/testing/SHOP_VERIFICATION.md) — اجرای یک‌مرحله‌ای تست‌های مغازه و گزارش خروجی
 
 ## قانون توسعه
 

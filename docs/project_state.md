@@ -1,7 +1,7 @@
 # GoldPlatform
 ## Project State
 
-> **وضعیت مرجع جاری — 2026-08-02:** زیرساخت و پایه Kimia سالم است؛ آخرین اجرای کامل خودکار `23 passed / 160 assertions / 0 failures` بوده است. نگاشت API معامله `customer buy → 64` و `customer sell → 32` با خواندن تراکنش واقعی حساب `350` تأیید شده است. ارسال سند مالی زنده همچنان غیرفعال است. بخش‌های قدیمی‌تر این فایل تاریخچه Checkpointها هستند و در صورت تعارض، این خلاصه، `00_PROJECT_MEMORY.md` و ADRهای پذیرفته‌شده اولویت دارند.
+> **وضعیت مرجع جاری — 2026-08-03:** زیرساخت و پایه Kimia سالم است؛ آخرین اجرای کامل تأییدشده همچنان `23 passed / 160 assertions / 0 failures` است. پس از آن Balance، هویت/اتصال حساب و قفل کدی نوشتن Kimia آماده شده‌اند اما اجرای Docker جدید هنوز انجام نشده است. نگاشت API معامله `customer buy → 64` و `customer sell → 32` با خواندن تراکنش واقعی حساب `350` تأیید شده است. بخش‌های قدیمی‌تر این فایل تاریخچه Checkpointها هستند و در صورت تعارض، این خلاصه، `00_PROJECT_MEMORY.md` و ADRهای پذیرفته‌شده اولویت دارند.
 
 ### Current milestone
 
@@ -14,6 +14,10 @@ Product Foundation + Kimia Read Stabilization
 - مسیر `GET /api/voucher/balance/{id}` در `VoucherRepository` اضافه شد.
 - Query اختیاری `includePeaks` با literalهای `true/false` سازگار با Kimia ارسال می‌شود.
 - فرمان فقط‌خواندنی `kimia:inspect-balance` و تست‌های Mock آماده شده‌اند.
+- قفل fail-closed برای همه مسیرهای شناخته‌شده `POST/PUT/DELETE` کیمیا آماده شده است.
+- فرمان‌های `kimia:safety-status` و `kimia:inspect-sync-state` آماده شده‌اند.
+- اسکریپت `scripts/run-shop-verification.ps1` همه تست‌ها و خواندن‌های مجاز را در یک
+  گزارش جمع می‌کند.
 - اجرای این تست‌های جدید در Docker هنوز انجام نشده و نتیجه آن نباید Pass فرض شود.
 
 ### Current execution split
@@ -830,3 +834,38 @@ New automated Laravel tests: pending shop Docker runtime
 Database migrations: prepared, not applied to shop data
 Live Kimia read/write: not used by this identity checkpoint
 ```
+
+---
+
+# Kimia Write Safety and Shop Batch — 2026-08-03
+
+## Prepared
+
+- `KIMIA_WRITES_ENABLED=false` is the fail-closed default.
+- `KimiaWriteGate` blocks active service writes, direct pending-client writes, and the
+  preserved legacy client before an HTTP request is sent.
+- `kimia:safety-status` fails if the runtime configuration enables writes.
+- `kimia:inspect-sync-state` reports local projection counts and verifies AccountId
+  presence without printing customer identity fields.
+- `kimia:inspect-balance` omits account names by default.
+- `scripts/run-shop-verification.ps1` runs local checks, full tests, safe migration preview,
+  and—only after success—approved GET/sync/Balance checks. Output is written to one ignored
+  text file.
+
+## Verification status
+
+```text
+Static review: completed
+PHP parser: 150 files / 0 failures
+PSR-4: 75 declarations / 0 mismatches
+PowerShell parser: 0 syntax errors
+Changed-document links: 24 / 0 missing
+Diff and changed-file secret scan: passed
+New automated Laravel tests: pending shop Docker runtime
+Migration SQL preview: pending shop Docker runtime
+Live Kimia GET/local projection sync: pending shop Docker runtime
+Live Kimia POST/PUT/DELETE: blocked and not authorized
+```
+
+ADR-025 records the executable safety boundary. The next step is report generation on the
+shop computer; no Migration will be applied until that report is reviewed.

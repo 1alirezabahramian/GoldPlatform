@@ -3183,3 +3183,95 @@ Known architecture boundary:
 The active Kimia account sync writes `external_accounts`, while the current `users.account_id`
 foreign key targets `accounts`. This checkpoint does not silently merge or replace those
 models. Their consolidation requires a separate code-path and migration audit.
+
+---
+
+# 97. Executable Kimia Live-write Safety Gate — 2026-08-03
+
+Accepted safety rule:
+
+```text
+Kimia GET / HEAD = available for approved read-only stabilization
+Kimia POST / PUT / DELETE = fail-closed and blocked by default
+```
+
+Configuration contract:
+
+```text
+KIMIA_WRITES_ENABLED=false
+```
+
+Only an explicitly recognized boolean `true` can open the technical gate. Missing,
+malformed, and false values keep it closed. Opening the technical gate in the future is not
+business authorization to post a financial document; a separate approved write milestone
+is still mandatory.
+
+Prepared implementation protects all currently known outbound write surfaces:
+
+```text
+App\Services\KimiaService::post/put/delete
+App\Services\KimiaService::client() non-read requests
+App\Integrations\Kimia\Client\KimiaClient::post/put/delete
+```
+
+Runtime preflight:
+
+```bash
+php artisan kimia:safety-status
+```
+
+If writes are enabled, the command fails and the shop live-read phase is not allowed to
+continue. ADR-025 is the canonical decision record.
+
+Verification status:
+
+```text
+Implementation and tests: prepared
+Static verification: completed
+PHP parser: 150 files, 0 syntax failures
+PSR-4 path/class check: 75 declarations, 0 mismatches
+PowerShell AST parse: 0 syntax errors
+Changed-document links: 24 checked, 0 missing
+Diff/secret scan: passed
+Laravel/Docker execution: pending shop computer
+Live Kimia write: blocked and not authorized
+```
+
+---
+
+# 98. Single-report Shop Verification — 2026-08-03
+
+Prepared runner:
+
+```text
+scripts/run-shop-verification.ps1
+```
+
+Purpose:
+
+- run targeted tests for Balance, identity binding, and the write gate;
+- run the complete automated suite;
+- show migration status and pending SQL with `migrate --pretend` only;
+- verify write-safe runtime configuration;
+- after local success, perform approved Kimia GETs and local projection updates;
+- verify `AccountId=350` in the local projection;
+- read the Balance for account `350`;
+- collect all console output in one ignored UTF-8 text report.
+
+Privacy boundary:
+
+- no `.env`, credential, token, password, customer name, mobile, national code, or raw
+  account payload is intentionally printed;
+- `kimia:inspect-balance` omits account names by default;
+- `kimia:inspect-sync-state` prints only projection counts and non-personal sync metadata.
+
+Safety boundary:
+
+- the script refuses the wrong branch or tracked local changes;
+- the live phase is skipped after any local verification failure;
+- no Migration is applied;
+- no Kimia `POST`, `PUT`, or `DELETE` is run;
+- synchronization changes only GoldPlatform local projections.
+
+The generated report must be reviewed before applying the pending identity migrations or
+implementing any additional Balance mapping.

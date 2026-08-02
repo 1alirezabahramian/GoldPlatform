@@ -23,6 +23,7 @@
 - [`integrations/41_KIMIA_UI_EVIDENCE_2026-08-02.md`](integrations/41_KIMIA_UI_EVIDENCE_2026-08-02.md) — شواهد فرم‌های واقعی تعریف حساب و جنس.
 - [`ADR/ADR-023-kimia-customer-trade-action-mapping.md`](ADR/ADR-023-kimia-customer-trade-action-mapping.md) — نگاشت قطعی `32/64`.
 - [`ADR/ADR-024-platform-user-kimia-account-binding.md`](ADR/ADR-024-platform-user-kimia-account-binding.md) — اتصال یک‌به‌یک اکانت پلتفرم و `AccountId` کیمیا.
+- [`ADR/ADR-025-kimia-live-write-safety-gate.md`](ADR/ADR-025-kimia-live-write-safety-gate.md) — قفل پیش‌فرض همه نوشتن‌های زنده Kimia.
 
 ## معماری و دامنه
 
@@ -31,6 +32,7 @@
 - [`business/Business-Rules.md`](business/Business-Rules.md) — قواعد کسب‌وکار پذیرفته‌شده.
 - [`database`](database) — جدول‌ها، Migrationها، Indexها و ERD.
 - [`ui/UI-UX.md`](ui/UI-UX.md) — تصمیم‌ها و ایده‌های Frontend.
+- [`testing/SHOP_VERIFICATION.md`](testing/SHOP_VERIFICATION.md) — تست‌های Docker/Kimia مغازه با خروجی واحد و قابل اشتراک.
 
 ## قاعده نگهداری
 

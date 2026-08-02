@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Integrations\Kimia\Safety\KimiaWriteGate;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 
 class KimiaService
@@ -15,7 +17,9 @@ class KimiaService
     protected string $password;
     protected int $timeout;
 
-    public function __construct()
+    public function __construct(
+        protected KimiaWriteGate $writeGate
+    )
     {
         $this->baseUrl = rtrim(
             (string) config('services.kimia.base_url'),
@@ -45,7 +49,23 @@ class KimiaService
             ->withBasicAuth(
                 $this->username,
                 $this->password
-            );
+            )
+            ->withRequestMiddleware(function (
+                RequestInterface $request
+            ): RequestInterface {
+                if (! in_array(
+                    strtoupper($request->getMethod()),
+                    ['GET', 'HEAD'],
+                    true
+                )) {
+                    $this->writeGate->assertAllowed(
+                        $request->getMethod(),
+                        $request->getUri()->getPath()
+                    );
+                }
+
+                return $request;
+            });
     }
 
     public function get(string $uri, array $query = []): array
@@ -61,6 +81,8 @@ class KimiaService
 
     public function post(string $uri, array $data = []): array
     {
+        $this->writeGate->assertAllowed('POST', $uri);
+
         $response = $this->client()->post($uri, $data);
 
         $this->log($response);
@@ -72,6 +94,8 @@ class KimiaService
 
     public function put(string $uri, array $data = []): array
     {
+        $this->writeGate->assertAllowed('PUT', $uri);
+
         $response = $this->client()->put($uri, $data);
 
         $this->log($response);
@@ -83,6 +107,8 @@ class KimiaService
 
     public function delete(string $uri): array
     {
+        $this->writeGate->assertAllowed('DELETE', $uri);
+
         $response = $this->client()->delete($uri);
 
         $this->log($response);

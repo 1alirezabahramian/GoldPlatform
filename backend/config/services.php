@@ -45,6 +45,13 @@ return [
 
         'timeout' => env('KIMIA_TIMEOUT', 30),
 
+        /*
+         * Fail closed. Live Kimia writes remain disabled until the complete
+         * payload, idempotency, retry, audit, and reconciliation contracts
+         * are approved and verified independently.
+         */
+        'writes_enabled' => env('KIMIA_WRITES_ENABLED', false),
+
     ],
     'smsir' => [
 
