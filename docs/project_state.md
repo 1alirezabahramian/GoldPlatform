@@ -796,3 +796,19 @@ live Kimia financial voucher. Live voucher writes remain disabled.
 - Active OTP verification and logout methods are incomplete.
 
 These are documented stop conditions for the next authentication implementation pass.
+
+## Account binding decision — 2026-08-03
+
+- The owner confirmed one GoldPlatform login/account may connect to only one Kimia
+  `AccountId`.
+- A customer who requests two accounts must receive two independent platform accounts,
+  each with a distinct mobile number and a distinct Kimia `AccountId`.
+- `users.mobile UNIQUE` and `accounts.kimia_id UNIQUE` already enforce two parts of this
+  contract.
+- `users.account_id` is not currently unique; database enforcement is pending a
+  duplicate-data preflight and migration test.
+- `users.national_code` is currently unique, which conflicts with a second account for the
+  same physical person if the same national code must be reused. National-code/KYC reuse
+  remains an explicit owner decision before implementation.
+- ADR-024 records the accepted cardinality and the unresolved identity boundary.
+- No schema or runtime behavior changed in this checkpoint.

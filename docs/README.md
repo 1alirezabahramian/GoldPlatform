@@ -22,6 +22,7 @@
 - [`integrations/40_KIMIA_REVERSE_ENGINEERING.md`](integrations/40_KIMIA_REVERSE_ENGINEERING.md) — داده‌های Reverse Engineering.
 - [`integrations/41_KIMIA_UI_EVIDENCE_2026-08-02.md`](integrations/41_KIMIA_UI_EVIDENCE_2026-08-02.md) — شواهد فرم‌های واقعی تعریف حساب و جنس.
 - [`ADR/ADR-023-kimia-customer-trade-action-mapping.md`](ADR/ADR-023-kimia-customer-trade-action-mapping.md) — نگاشت قطعی `32/64`.
+- [`ADR/ADR-024-platform-user-kimia-account-binding.md`](ADR/ADR-024-platform-user-kimia-account-binding.md) — اتصال یک‌به‌یک اکانت پلتفرم و `AccountId` کیمیا.
 
 ## معماری و دامنه
 

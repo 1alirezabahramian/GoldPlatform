@@ -3086,3 +3086,51 @@ Automated Laravel execution: pending shop Docker runtime
 Live Kimia read: pending after automated tests
 Live Kimia write: disabled
 ```
+
+---
+
+# 95. Platform User to Kimia Account Binding — 2026-08-03
+
+Owner-confirmed cardinality:
+
+```text
+one GoldPlatform login/account -> zero or one local Account -> zero or one Kimia AccountId
+one Kimia AccountId -> no more than one GoldPlatform login/account
+```
+
+After an account is approved and linked, the platform account has exactly one Kimia
+`AccountId`. Multiple Kimia account identifiers or account switching under one login are
+not allowed.
+
+If the same real customer requests a second account:
+
+```text
+second platform account
++ distinct mobile number
++ distinct Kimia AccountId
+```
+
+Current implementation audit:
+
+- `users.mobile` is unique.
+- `accounts.kimia_id` is unique.
+- `User::account()` and `Account::user()` express the intended relationship.
+- `users.account_id` is a nullable foreign key but is not yet unique, so the reverse
+  one-to-one rule is not database-enforced.
+- `users.national_code` is currently unique. Reusing the same national code for a second
+  account belonging to the same physical person is therefore an unresolved KYC/schema
+  decision and must not be guessed.
+
+Implementation boundary:
+
+- No database migration is included in this documentation checkpoint.
+- Before adding a nullable unique constraint to `users.account_id`, run a duplicate-data
+  preflight and test the migration in the shop Docker runtime.
+- National-code and Jibit/KYC behavior for the second account requires separate owner
+  confirmation.
+
+Canonical decision record:
+
+```text
+docs/ADR/ADR-024-platform-user-kimia-account-binding.md
+```
