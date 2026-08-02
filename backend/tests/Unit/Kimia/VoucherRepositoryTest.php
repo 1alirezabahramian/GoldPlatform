@@ -24,6 +24,73 @@ class VoucherRepositoryTest extends TestCase
     }
 
     #[Test]
+    public function balance_uses_the_swagger_defined_path_without_an_optional_query(): void
+    {
+        Http::fake([
+            'https://kimia.test/api/voucher/balance/350' => Http::response([
+                [
+                    'AccountId' => 350,
+                    'Weight' => '13.670',
+                    'Money' => '-1065900000',
+                    'CurrencyId' => 11,
+                    'CurrencySymbol' => 'ریال',
+                ],
+            ]),
+        ]);
+
+        $result = app(VoucherRepository::class)
+            ->balance(350);
+
+        $this->assertSame(350, $result[0]['AccountId']);
+        $this->assertSame('-1065900000', $result[0]['Money']);
+
+        Http::assertSent(function (Request $request): bool {
+            return $request->method() === 'GET'
+                && $request->url() === 'https://kimia.test/api/voucher/balance/350';
+        });
+    }
+
+    #[Test]
+    public function balance_serializes_include_peaks_as_kimia_boolean_literals(): void
+    {
+        Http::fake([
+            'https://kimia.test/api/voucher/balance/350*' => Http::response([]),
+        ]);
+
+        $repository = app(VoucherRepository::class);
+
+        $repository->balance(350, true);
+        $repository->balance(350, false);
+
+        Http::assertSent(function (Request $request): bool {
+            parse_str(
+                (string) parse_url($request->url(), PHP_URL_QUERY),
+                $query
+            );
+
+            return ($query['includePeaks'] ?? null) === 'true';
+        });
+
+        Http::assertSent(function (Request $request): bool {
+            parse_str(
+                (string) parse_url($request->url(), PHP_URL_QUERY),
+                $query
+            );
+
+            return ($query['includePeaks'] ?? null) === 'false';
+        });
+    }
+
+    #[Test]
+    public function balance_rejects_a_non_positive_account_id(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        app(VoucherRepository::class)
+            ->balance(0);
+    }
+
+    #[Test]
     public function transactions_use_the_swagger_defined_path_and_query_names(): void
     {
         Http::fake([

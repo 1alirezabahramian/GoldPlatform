@@ -12,6 +12,28 @@ class VoucherRepository
     ) {
     }
 
+    public function balance(
+        int $accountId,
+        ?bool $includePeaks = null
+    ): array {
+        if ($accountId <= 0) {
+            throw new InvalidArgumentException('Kimia account ID must be positive.');
+        }
+
+        $query = [];
+
+        if ($includePeaks !== null) {
+            // Kimia requires ASP.NET boolean literals rather than Guzzle's
+            // default integer serialization for PHP booleans.
+            $query['includePeaks'] = $includePeaks ? 'true' : 'false';
+        }
+
+        return $this->kimia->get(
+            "/api/voucher/balance/{$accountId}",
+            $query
+        );
+    }
+
     public function transactions(
         int $accountId,
         int $pageNumber = 0,

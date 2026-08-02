@@ -1,6 +1,29 @@
 # GoldPlatform
 ## Project State
 
+> **وضعیت مرجع جاری — 2026-08-02:** زیرساخت و پایه Kimia سالم است؛ آخرین اجرای کامل خودکار `23 passed / 160 assertions / 0 failures` بوده است. نگاشت API معامله `customer buy → 64` و `customer sell → 32` با خواندن تراکنش واقعی حساب `350` تأیید شده است. ارسال سند مالی زنده همچنان غیرفعال است. بخش‌های قدیمی‌تر این فایل تاریخچه Checkpointها هستند و در صورت تعارض، این خلاصه، `00_PROJECT_MEMORY.md` و ADRهای پذیرفته‌شده اولویت دارند.
+
+### Current milestone
+
+```text
+Product Foundation + Kimia Read Stabilization
+```
+
+### Prepared next checkpoint
+
+- مسیر `GET /api/voucher/balance/{id}` در `VoucherRepository` اضافه شد.
+- Query اختیاری `includePeaks` با literalهای `true/false` سازگار با Kimia ارسال می‌شود.
+- فرمان فقط‌خواندنی `kimia:inspect-balance` و تست‌های Mock آماده شده‌اند.
+- اجرای این تست‌های جدید در Docker هنوز انجام نشده و نتیجه آن نباید Pass فرض شود.
+
+### Current execution split
+
+- Codex/خانه: بررسی کد، طراحی، مستندسازی، تست‌های Mock و آماده‌سازی تغییرات.
+- سیستم مغازه: Docker/full suite و درخواست‌های زنده Kimia فقط خواندنی، هر بار یک دستور.
+- هیچ Secret از سیستم مغازه به کد، مستندات یا گفتگو منتقل نمی‌شود.
+
+---
+
 آخرین بروزرسانی:
 2026-07-18
 

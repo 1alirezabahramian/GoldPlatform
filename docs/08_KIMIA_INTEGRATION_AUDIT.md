@@ -3,8 +3,9 @@
 **Document type:** Technical audit and integration reference  
 **Project:** GoldPlatform  
 **Module:** Kimia Accounting API Integration  
-**Status:** Draft based on reviewed Swagger, runtime logs, and current repository structure  
-**Last updated:** 2026-07-27
+**Status:** Living audit; read paths under controlled stabilization
+
+**Last updated:** 2026-08-02
 
 ---
 
@@ -12,11 +13,13 @@
 
 This document records the current verified understanding of the Kimia API and how it should be integrated into GoldPlatform.
 
-The document is based on three sources:
+The document is based on these sources:
 
-1. Kimia Swagger documentation
-2. Runtime logs from the Kimia API
-3. Current GoldPlatform source structure
+1. Real Kimia API responses
+2. Kimia Swagger documentation
+3. Owner-confirmed operational evidence
+4. Accepted project memory and ADRs
+5. Current GoldPlatform source structure
 
 This document is an audit and design reference. It does not mean that the current implementation is already complete or correct.
 
@@ -26,12 +29,15 @@ This document is an audit and design reference. It does not mean that the curren
 
 When sources disagree, use this priority:
 
-1. **Swagger JSON**
-2. **Observed runtime logs**
-3. **Current GoldPlatform code**
-4. **Older Markdown documentation**
+1. **Real Kimia API response**
+2. **Official Swagger JSON**
+3. **Accepted project memory and ADRs**
+4. **Owner-confirmed operational evidence**
+5. **Current GoldPlatform code**
+6. **Older documentation**
 
-Swagger defines the official contract. Runtime logs show actual server behavior. Current project code must be reviewed against both.
+Swagger defines the official transport contract; real responses confirm server behavior.
+Operational/form codes and API Action values are separate contracts and must not be merged.
 
 ---
 
@@ -444,48 +450,41 @@ Embedded in `BalanceDto`.
 
 ## 7. Current GoldPlatform code audit
 
-The active account flow identified in the repository is:
+The active read/synchronization flow confirmed on `audit/kimia-foundation` is:
 
 ```text
-KimiaController
-    ↓
-Repositories/Kimia/AccountRepository
-    ↓
 App\Services\KimiaService
+    ↓
+App\Repositories\Kimia\AccountRepository
+App\Repositories\Kimia\VoucherRepository
+    ↓
+Console sync/inspection commands
 ```
 
-Confirmed current account repository behavior:
-
-```php
-$this->kimia->client()->get(...)
-```
-
-Current endpoints used:
+Current verified endpoints and query contracts:
 
 ```text
-GET  /api/account
-GET  /api/account/{id}
-GET  /api/account/groups
-POST /api/account
-PUT  /api/account
+GET /api/account                       → Type
+GET /api/account/groups                → accountType
+GET /api/voucher/transactions/{id}     → pageNumber/pageSize/descending
+GET /api/voucher/balance/{id}          → includePeaks (optional)
 ```
 
 Current concerns:
 
 1. `GET /api/account/{id}` is unverified.
-2. `all()` reportedly uses `accountType` while Swagger expects `Type`.
-3. Error handling returns `[]` or `null`, which may hide API errors.
-4. Multiple duplicate Kimia service/client/repository classes exist.
-5. No duplicate implementation should be deleted before usage verification.
+2. `AccountRepository::all()` and `groups()` still use tolerant empty results on HTTP failure;
+   this conflicts with the accepted error policy and requires a separate tested correction.
+3. The self-contained `App\Integrations\Kimia` account tree has no external references in
+   the current repository, but deletion remains a separate controlled cleanup.
+4. Live voucher writes remain disabled.
 
-Known duplicate or overlapping classes include:
+Legacy paths already removed during stabilization:
 
 ```text
-App\Services\KimiaService
 App\Services\Kimia\KimiaService
 App\Clients\KimiaClient
 App\Services\Kimia\KimiaClient
-App\Repositories\Kimia\AccountRepository
 App\Services\Kimia\AccountRepository
 App\Services\Kimia\AccountService
 App\Services\Kimia\CustomerService
@@ -665,15 +664,15 @@ Additional security rules:
 
 | Area | Swagger reviewed | Runtime observed | GoldPlatform reviewed | Status |
 |---|---:|---:|---:|---|
-| Account list | Yes | Yes | Yes | Needs correction |
+| Account list | Yes | Yes | Yes | Query fixed and mock-tested; live revalidation pending |
 | Account create | Yes | No | Yes | Contract review pending |
 | Account update | Yes | No | Yes | Contract review pending |
-| Account groups | Yes | No | Yes | Partially reviewed |
-| Product list | Yes | Yes | Not fully | Ready for implementation audit |
-| Coin list | Yes | Yes | Not fully | Schema details pending |
-| Currency list | Yes | Yes | Not fully | Schema details pending |
-| Balance | Partial | Yes | Not fully | Schema known |
-| Transactions | Endpoint visible | Yes | Not fully | Response schema pending |
+| Account groups | Yes | Historical live sync | Yes | Query fixed and mock-tested; live revalidation pending |
+| Product list | Yes | Yes | Partial | Catalog mapping pending |
+| Coin list | Yes | Yes | Yes | Sync command mock-tested |
+| Currency list | Yes | Yes | Yes | Sync command mock-tested |
+| Balance | Yes | Yes | Yes | Read path and mock tests prepared; runtime test pending |
+| Transactions | Yes | Yes | Yes | Read path verified on account `350` |
 | Money transfer | Endpoint visible | Yes | Not fully | Request schema must be reconciled |
 | Adjustment | Schema known | No | Not fully | Ready for design |
 | Wallet | Endpoint map visible | No | Not fully | Detailed audit pending |
@@ -685,51 +684,38 @@ Additional security rules:
 
 ## 15. Pending schema extraction
 
-The following schemas still need full extraction:
+The Swagger schemas were exported into:
 
 ```text
-BarcodeDto
-CoinDto
-CurrencyDto
-ExchangeCurrencyRequest
-ExchangeRequest
-RecordDto
-RecordDtoPagedList
-RFIDDto
-TradeBarcodeRequest
-TradeCashRequest
-TradeCurrencyRequest
-TransferRequest
-VoucherDto
-WalletDto
-WalletPaymentRequest
-WalletPaymentTransferRequest
-WalletRequest
+kimia-schemas-full.json
+kimia-schemas-full.md
 ```
 
-`PeakDto`, `ProductDto`, `AccountDto`, `AccountGroupDto`, `AdjustmentRequest`, and `BalanceDto` have been partially or fully documented.
+Extraction is complete for the schemas present in the reviewed Swagger snapshot. Business
+semantics, required runtime behavior, response edge cases, and mutation safety remain
+separate verification work; schema extraction alone does not authorize implementation.
 
 ---
 
 ## 16. Required next audit steps
 
-1. Export the full Swagger path list from `swagger.json`.
-2. Export each request and response schema.
-3. Match every endpoint to current project classes.
-4. Identify dead or duplicate Kimia implementations.
-5. Create an endpoint implementation matrix.
-6. Add integration tests against mocked Kimia responses.
-7. Add a controlled live connection test.
-8. Refactor only after the audit is complete.
-9. Commit each domain refactor separately.
-10. Update this document after every verified change.
+1. Run the prepared balance mock tests in the Laravel container.
+2. Perform one controlled, read-only balance inspection for account `350`.
+3. Revalidate Account and AccountGroup synchronization after stabilization.
+4. Correct tolerant AccountRepository error handling with tests.
+5. Remove the unused `App\Integrations\Kimia` account tree only in a separate commit after
+   test verification.
+6. Build DTO/Mapper boundaries from verified read responses.
+7. Keep all write endpoints disabled until payload, idempotency, retry, failure, and posting
+   time are independently accepted.
 
 ---
 
 ## 17. Decisions recorded
 
 ### Decision 1
-Swagger JSON is the primary source of truth.
+Real Kimia API output is the primary source of truth; Swagger JSON defines the official
+transport contract beneath that evidence.
 
 ### Decision 2
 No duplicate Kimia class will be deleted before usage verification.
@@ -1175,5 +1161,29 @@ POST /api/voucher/exchangegold
 - The Swagger specification describes `Value` only as "the amount to be monetized" and does not explicitly define whether it represents weight or monetary value.
 
 
+
+## 20. Read-only balance checkpoint — 2026-08-02
+
+The following implementation was prepared from the official Swagger contract:
+
+```text
+App\Repositories\Kimia\VoucherRepository::balance()
+GET /api/voucher/balance/{accountId}
+includePeaks = omitted | "true" | "false"
+```
+
+Safety and behavior:
+
+- Rejects non-positive account identifiers.
+- Omits `includePeaks` when no value is requested.
+- Serializes explicit booleans as Kimia-compatible literals instead of `1/0`.
+- Returns the raw `BalanceDto[]` response without interpreting signs or converting Rial to
+  Toman.
+- Adds `kimia:inspect-balance {accountId}` as a read-only evidence command.
+- Does not create, update, or delete any voucher.
+
+Automated tests were added for the endpoint, optional query, boolean serialization, raw
+negative money preservation, and invalid account identifier. Execution in the real Laravel
+container is still pending and must not be reported as passed until the owner runs it.
 
 **End of document**

@@ -3009,3 +3009,80 @@ Tests: 23
 Assertions: 160
 Failures: 0
 ```
+
+---
+
+# 93. Development Operating Model — 2026-08-02
+
+The project owner approved a split workflow so development can continue while he is away
+from the shop computer.
+
+## Codex / Home Work
+
+- Review the current GitHub branch and existing files before creating new classes.
+- Design and implement small, reversible changes.
+- Add fake/mock tests and perform every static check available in the Codex runtime.
+- Keep Backend, Frontend ideas, architecture, ADRs, project state, and Library evidence synchronized.
+- Prepare changes on an isolated branch/worktree; never overwrite unrelated or uncommitted work.
+
+## Shop Computer Work
+
+- Run Docker/Laravel commands that require the real project runtime.
+- Perform controlled live Kimia checks only when explicitly listed.
+- Live Kimia work remains read-only during the stabilization phase.
+- Give the owner one command at a time and wait for its complete output.
+- Never copy credentials, `.env` contents, passwords, tokens, or sensitive customer data into Git or documentation.
+
+## Current Verification Queue
+
+1. Re-run the full automated suite after the next prepared code checkpoint.
+2. Revalidate account synchronization after stabilization. A historical owner-run sync on
+   2026-07-28 reported `414` Kimia accounts synchronized, including account `350`; the
+   post-stabilization code path still requires a new live read-only run.
+3. Verify the read-only balance endpoint for account `350` after its repository path and
+   mock tests are committed.
+
+## Safety Boundary
+
+```text
+Kimia GET / Read / Inspect / Sync = allowed in the controlled stabilization flow
+Kimia POST / PUT / DELETE / financial voucher write = disabled until separate approval
+```
+
+---
+
+# 94. Kimia Read-only Balance Path — 2026-08-02
+
+Swagger-confirmed contract:
+
+```text
+GET /api/voucher/balance/{id}
+id = positive Kimia AccountId
+includePeaks = optional nullable boolean
+response = BalanceDto[]
+```
+
+Prepared implementation:
+
+```text
+App\Repositories\Kimia\VoucherRepository::balance()
+App\Console\Commands\KimiaInspectBalance
+php artisan kimia:inspect-balance {accountId} [--include-peaks]
+```
+
+Rules locked by mock tests:
+
+- An omitted `includePeaks` query remains omitted.
+- Explicit booleans use the literal strings `true/false`; `1/0` is not sent.
+- Non-positive AccountId values fail before an HTTP request.
+- Raw negative `Money` and raw `Weight` values are preserved without financial
+  interpretation or unit conversion.
+
+Verification status:
+
+```text
+Static review: completed
+Automated Laravel execution: pending shop Docker runtime
+Live Kimia read: pending after automated tests
+Live Kimia write: disabled
+```
