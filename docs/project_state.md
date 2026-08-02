@@ -714,7 +714,6 @@ Kimia account synchronization and backend duplicate-path audit.
 
 ## Remaining blockers
 
-- Numeric trade Action encoding is not runtime-confirmed: the owner-confirmed operational/form codes are `3/4`, while Swagger API schemas define `32/64`.
 - The complete Kimia voucher write payload, retry behavior, and verified write flow are not yet confirmed. Swagger does confirm `RequestId` UUID support for idempotency.
 - Live Kimia account sync remains pending because credentials are not available in this runtime.
 - Authentication decisions below remain unresolved and separate from the Kimia transaction mapping.
@@ -727,18 +726,25 @@ Kimia account synchronization and backend duplicate-path audit.
 - Added unit tests for both directions and rejection of unsupported order types.
 - Added accepted decision record `ADR-023` and reconciled the conflicting Ground Truth and Business Rules sections.
 - No live Kimia financial write was enabled in this step.
-- Numeric API Action remains blocked pending real transaction evidence (`3/4` operational codes versus Swagger `32/64`).
+- Added separate `App\Enums\KimiaApiTradeAction` transport mapping: customer
+  `buy → sell/64` and customer `sell → buy/32`; operational/form values `3/4` are rejected
+  as API trade Actions.
 - Added read-only `VoucherRepository::transactions()` using the exact Swagger endpoint and query names.
 - Added `kimia:inspect-transactions {accountId}` to display the evidence fields needed for Action verification without mutating Kimia.
 - Added HTTP-fake tests for the transaction path, zero-based pagination, descending order, and pass-through of raw Action values.
-- Owner confirmed `AccountId=350` as the read-only evidence account. No live response has
-  been captured in the current Codex runtime, so the `3/4` versus `32/64` transport mapping
-  remains intentionally unresolved.
+- Owner confirmed `AccountId=350` as the read-only evidence account.
 - The first owner-run live request on 2026-08-02 reached Kimia but returned HTTP 400 because
   Laravel/Guzzle serialized `descending=true` as `descending=1`. Swagger and the observed
   Kimia request format require the literal `true`/`false` query values.
 - `VoucherRepository` now normalizes the typed boolean to Kimia-compatible query literals,
-  and tests cover both `true` and `false`. A second owner-run live read is still pending.
+  and tests cover both `true` and `false`.
+- The second owner-run read succeeded on 2026-08-02. Record `75796` returned
+  `Action=32`/`خرید` for `ProductId=4` (`پولی`), and record `74007` returned
+  `Action=64`/`فروش` for the same product.
+- Added tests locking customer `buy → 64`, customer `sell → 32`, and rejection of
+  operational/form codes `3/4` as API trade Actions.
+- No live Kimia financial write was enabled. Complete payload, idempotency, retry, failure,
+  and posting-time rules remain separate stop conditions.
 
 ## Authentication/SMS structural follow-up
 

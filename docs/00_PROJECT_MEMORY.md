@@ -504,7 +504,7 @@ Kimia Buy  = 3
 Kimia Sell = 4
 ```
 
-Swagger API transport code (requires runtime confirmation before write):
+Confirmed API transport code:
 
 ```text
 API Buy  = 32
@@ -545,7 +545,7 @@ Fineness = 750
 ```text
 Kimia business side = Sell
 Operational/form code = 4
-Swagger API Action = 64 (runtime confirmation pending)
+Swagger API Action = 64 (runtime-confirmed from AccountId 350)
 Money Product = 4
 Weight = 2
 Fineness = 750
@@ -560,7 +560,8 @@ Money Balance -= 360,000,000
 Gold Balance  += 2.000 g
 ```
 
-> در این سند، مثال مطابق توضیح واقعی پروژه ثبت شده است؛ در implementation نهایی نام‌گذاری Buy/Sell باید با API و رفتار واقعی کیمیا یک‌بار end-to-end تأیید شود.
+> جهت Buy/Sell و مقدار Action با Swagger و پاسخ واقعی خواندنی Kimia تأیید شده است.
+> payload کامل و جریان نوشتن سند هنوز جداگانه مسدود است.
 
 ---
 
@@ -591,7 +592,7 @@ Fineness = 750
 ```text
 Kimia business side = Buy
 Operational/form code = 3
-Swagger API Action = 32 (runtime confirmation pending)
+Swagger API Action = 32 (runtime-confirmed from AccountId 350)
 Money Product = 4
 Weight = 1.5
 Fineness = 750
@@ -642,7 +643,7 @@ ProductId = 10006
 
 ```text
 Operational/form code = 3
-Swagger API Action = 32 (runtime confirmation pending)
+Swagger API Action = 32 (trade code confirmed; coin payload not runtime-verified)
 Conversion = 8
 ProductId = 10006
 Quantity = 2
@@ -665,7 +666,7 @@ Money Balance += Total
 
 ```text
 Operational/form code = 4
-Swagger API Action = 64 (runtime confirmation pending)
+Swagger API Action = 64 (trade code confirmed; coin payload not runtime-verified)
 Conversion = 8
 ProductId = 10006
 Quantity = ...
@@ -1058,7 +1059,7 @@ pageNumber starts at 0
 descending must be serialized in the query as the literal true or false
 ```
 
-Live evidence captured on 2026-08-02 for `AccountId=350`:
+Initial live evidence captured on 2026-08-02 for `AccountId=350`:
 
 ```text
 HTTP 400
@@ -1070,6 +1071,32 @@ Kimia endpoint accepts the standard boolean literals `true` or `false`. The
 canonical `VoucherRepository` therefore converts the typed boolean to those
 literal query strings at the Kimia boundary. This is a transport-format rule;
 it does not change any financial or trade Action mapping.
+
+After serializing `descending` correctly, the same read-only request returned the decisive
+trade evidence:
+
+```text
+RecordId 75796: Action 32, ActionName خرید, ProductId 4, ProductName پولی,
+                Weight 0.2, SumMoney 36200000
+RecordId 74007: Action 64, ActionName فروش, ProductId 4, ProductName پولی,
+                Weight -1, SumMoney -184219914
+```
+
+This confirms the API contract independently from the operational/form codes:
+
+```text
+Customer Buy  -> Kimia Sell -> API Action 64
+Customer Sell -> Kimia Buy  -> API Action 32
+```
+
+Canonical transport mapping:
+
+```text
+App\Enums\KimiaApiTradeAction
+```
+
+This evidence resolves only the numeric trade Action discrepancy. It does not authorize
+or enable a live Kimia voucher write.
 
 نمونه Response:
 
@@ -2020,12 +2047,12 @@ Commit.
 Customer Buy:
 Kimia business side = Sell
 Operational/form code = 4
-Swagger API Action = 64 (runtime confirmation pending)
+Swagger API Action = 64 (runtime-confirmed from AccountId 350)
 
 Customer Sell:
 Kimia business side = Buy
 Operational/form code = 3
-Swagger API Action = 32 (runtime confirmation pending)
+Swagger API Action = 32 (runtime-confirmed from AccountId 350)
 
 Money Product:
 Code = 4
@@ -2054,12 +2081,12 @@ Money ↑
 Customer Buy:
 Kimia business side = Sell
 Operational/form code = 4
-Swagger API Action = 64 (runtime confirmation pending)
+Swagger API Action = 64 (trade code confirmed; coin/currency payload not runtime-verified)
 
 Customer Sell:
 Kimia business side = Buy
 Operational/form code = 3
-Swagger API Action = 32 (runtime confirmation pending)
+Swagger API Action = 32 (trade code confirmed; coin/currency payload not runtime-verified)
 
 Conversion:
 Code = 8
@@ -2755,11 +2782,11 @@ Gold / Coin / Currency
 
 Paper Gold:
 Operational/form code 3/4 + Money Product 4
-Swagger API Action 32/64 (runtime confirmation pending)
+Swagger API Action 32/64 (runtime-confirmed from AccountId 350)
 
 Coin/Currency Conversion:
 Operational/form code 3/4 + Code 8
-Swagger API Action 32/64 (runtime confirmation pending)
+Swagger API Action 32/64 (trade code confirmed; coin/currency payload still unverified)
 
 Physical Receive/Pay:
 Operational/form code 1/2
@@ -2839,7 +2866,7 @@ Correct query parameter for GET /api/account
 No change to financial write operations
 ```
 
-## Resolved Owner Decisions and Remaining Transport Stop Condition
+## Resolved Trade Action and Remaining Write Stop Conditions
 
 The previous Trading Engine stop conditions were resolved from approved project rules and
 owner confirmation on 2026-08-02:
@@ -2849,15 +2876,15 @@ owner confirmation on 2026-08-02:
 3. Money, Gold, Coin, and Currency balances may be negative only for approved credit groups
    and only within their configured limits. Custody remains a separate physical asset model.
 
-The semantic trade direction is resolved. Numeric API transport encoding is still a stop
-condition because owner-confirmed operational/form codes `3/4` differ from Swagger API
-codes `32/64`. One real buy and one real sell transaction response are required before a
-live voucher write is enabled.
+The semantic trade direction and numeric API transport encoding are resolved. A real
+read-only response from account `350` confirmed `Action 32=خرید` and `Action 64=فروش`,
+matching Swagger while remaining separate from operational/form codes `3/4`.
 
 Canonical implementation contract:
 
 ```text
 App\Enums\KimiaTradeSide
+App\Enums\KimiaApiTradeAction
 ```
 
 Full decision record:
@@ -2890,9 +2917,17 @@ php artisan kimia:inspect-transactions 350 --page=0 --size=50
 ```
 
 This account identifier is approved only for the read-only transaction inspection above.
-No runtime response for account `350` has been captured yet. The numeric Action mapping
-must remain unconfirmed until the command runs in a Kimia-connected environment and its
-real response contains the relevant customer buy and sell records.
+The owner-run response on 2026-08-02 captured the required records:
+
+```text
+RecordId 75796 -> Action 32 -> خرید -> ProductId 4 (پولی)
+RecordId 74007 -> Action 64 -> فروش -> ProductId 4 (پولی)
+```
+
+The API mapping is therefore final: customer `buy` maps to Kimia `sell`/`64`, and customer
+`sell` maps to Kimia `buy`/`32`. Operational/form codes `3/4` remain a separate contract.
+Live voucher writes remain disabled until the complete payload and write workflow are
+verified independently.
 
 It displays the raw evidence fields `RecordId`, `Action`, `ActionName`, `ProductId`,
 `ProductName`, `Weight`, `Quantity`, and `SumMoney`. The command is read-only and does not

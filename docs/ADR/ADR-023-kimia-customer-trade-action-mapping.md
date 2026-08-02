@@ -23,9 +23,10 @@ The confirmed mapping is:
 This mapping was confirmed by the project owner on 2026-08-02.
 
 The canonical domain code contract is `App\Enums\KimiaTradeSide`. It intentionally contains
-no numeric API value.
+no numeric API value. The separate transport contract is
+`App\Enums\KimiaApiTradeAction`.
 
-## Transport Encoding Stop Condition
+## Confirmed Transport Encoding
 
 Two different numeric systems are present in the accepted sources:
 
@@ -36,23 +37,39 @@ Two different numeric systems are present in the accepted sources:
 
 Swagger defines `32/64` for `ExchangeRequest`, `ExchangeCurrencyRequest`, and `RecordDto`.
 The project owner confirmed `3/4` for the operational Kimia workflow. These representations
-must not be treated as interchangeable.
+are separate contracts and must not be treated as interchangeable.
 
-No numeric trade Action may be encoded into a live API request until one real paper-gold
-buy record and one real paper-gold sell record are read from
-`GET /api/voucher/transactions/{id}` and compared with the Swagger contract.
+The stop condition was resolved on 2026-08-02 by a read-only response from
+`GET /api/voucher/transactions/350`:
+
+| RecordId | API Action | ActionName | ProductId | ProductName | Evidence |
+|---:|---:|---|---:|---|---|
+| `75796` | `32` | خرید | `4` | پولی | Kimia buys from the customer |
+| `74007` | `64` | فروش | `4` | پولی | Kimia sells to the customer |
+
+Therefore the API trade encoding is final:
+
+| Customer order | Kimia business side | `KimiaApiTradeAction` | API value |
+|---|---|---|---:|
+| `buy` | Sell to customer | `SellToCustomer` | `64` |
+| `sell` | Buy from customer | `BuyFromCustomer` | `32` |
+
+Operational/form codes `3/4` remain valid only in their own workflow context and are not
+valid `KimiaApiTradeAction` values.
 
 ## Consequences
 
 - UI and Order values remain customer-oriented: `buy` and `sell`.
 - Kimia payloads remain business/accounting-oriented.
 - Unsupported order types fail explicitly instead of silently choosing an Action.
+- Unit tests lock customer `buy → 64` and customer `sell → 32` and reject `3/4` as API
+  trade values.
 - Kimia Action codes must never be shown to the customer.
-- The semantic trade side can be implemented without prematurely choosing an API number.
+- Confirming the numeric mapping does not enable any live Kimia write.
 
 ## Scope Boundary
 
-This ADR confirms only the trade direction mapping. It does not yet define the complete
-voucher payload, idempotency key, retry policy, product/conversion codes, or the moment at
-which an approved order is posted to Kimia. Those items require separate verified API
-evidence before enabling live financial writes.
+This ADR confirms only the trade direction and numeric API trade Action mapping. It does
+not yet define the complete voucher payload, idempotency key, retry policy,
+product/conversion codes, or the moment at which an approved order is posted to Kimia.
+Those items require separate verified API evidence before enabling live financial writes.
