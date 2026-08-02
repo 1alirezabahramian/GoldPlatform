@@ -59,7 +59,29 @@ class VoucherRepositoryTest extends TestCase
                 )
                 && ($query['pageNumber'] ?? null) === '0'
                 && ($query['pageSize'] ?? null) === '20'
-                && ($query['descending'] ?? null) === '1';
+                && ($query['descending'] ?? null) === 'true';
+        });
+    }
+
+    #[Test]
+    public function transactions_serialize_false_as_a_kimia_boolean_literal(): void
+    {
+        Http::fake([
+            'https://kimia.test/api/voucher/transactions/350*' => Http::response([
+                'Items' => [],
+            ]),
+        ]);
+
+        app(VoucherRepository::class)
+            ->transactions(350, 0, 20, false);
+
+        Http::assertSent(function (Request $request): bool {
+            parse_str(
+                (string) parse_url($request->url(), PHP_URL_QUERY),
+                $query
+            );
+
+            return ($query['descending'] ?? null) === 'false';
         });
     }
 

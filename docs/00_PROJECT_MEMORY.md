@@ -1055,7 +1055,21 @@ descending
 
 ```text
 pageNumber starts at 0
+descending must be serialized in the query as the literal true or false
 ```
+
+Live evidence captured on 2026-08-02 for `AccountId=350`:
+
+```text
+HTTP 400
+{"descending":["The value '1' is not valid."]}
+```
+
+Laravel/Guzzle serializes a PHP boolean query value as `1` or `0`, while the
+Kimia endpoint accepts the standard boolean literals `true` or `false`. The
+canonical `VoucherRepository` therefore converts the typed boolean to those
+literal query strings at the Kimia boundary. This is a transport-format rule;
+it does not change any financial or trade Action mapping.
 
 نمونه Response:
 

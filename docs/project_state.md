@@ -734,6 +734,11 @@ Kimia account synchronization and backend duplicate-path audit.
 - Owner confirmed `AccountId=350` as the read-only evidence account. No live response has
   been captured in the current Codex runtime, so the `3/4` versus `32/64` transport mapping
   remains intentionally unresolved.
+- The first owner-run live request on 2026-08-02 reached Kimia but returned HTTP 400 because
+  Laravel/Guzzle serialized `descending=true` as `descending=1`. Swagger and the observed
+  Kimia request format require the literal `true`/`false` query values.
+- `VoucherRepository` now normalizes the typed boolean to Kimia-compatible query literals,
+  and tests cover both `true` and `false`. A second owner-run live read is still pending.
 
 ## Authentication/SMS structural follow-up
 

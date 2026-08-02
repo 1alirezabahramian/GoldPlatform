@@ -35,7 +35,10 @@ class VoucherRepository
             [
                 'pageNumber' => $pageNumber,
                 'pageSize' => $pageSize,
-                'descending' => $descending,
+                // Kimia's ASP.NET binder accepts the boolean query literals
+                // "true"/"false". Laravel/Guzzle serializes a PHP boolean as
+                // "1"/"0", which Kimia rejects with HTTP 400.
+                'descending' => $descending ? 'true' : 'false',
             ]
         );
     }
