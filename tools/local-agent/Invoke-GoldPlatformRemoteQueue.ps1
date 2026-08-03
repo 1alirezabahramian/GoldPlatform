@@ -24,9 +24,17 @@ catch {
 function Invoke-NativeCapture {
     param([Parameter(Mandatory)][scriptblock]$Command)
 
-    $output = & $Command 2>&1 | Out-String
-    $exitCode = $LASTEXITCODE
-    return [pscustomobject]@{ Output = $output.TrimEnd(); ExitCode = $exitCode }
+    try {
+        $output = & $Command 2>&1 | Out-String
+        $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+        return [pscustomobject]@{ Output = $output.TrimEnd(); ExitCode = $exitCode }
+    }
+    catch {
+        return [pscustomobject]@{
+            Output = ($_ | Out-String).TrimEnd()
+            ExitCode = 1
+        }
+    }
 }
 
 function Invoke-AllowedCommand {
@@ -68,6 +76,18 @@ function Invoke-AllowedCommand {
     }
 }
 
+function Add-IssueComment {
+    param(
+        [Parameter(Mandatory)][int]$IssueNumber,
+        [Parameter(Mandatory)][string]$Body
+    )
+
+    & gh issue comment $IssueNumber --repo $Repository --body $Body | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not comment on issue #$IssueNumber."
+    }
+}
+
 try {
     if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
         throw 'GitHub CLI (gh) is not installed.'
@@ -90,25 +110,51 @@ try {
     } | Sort-Object number
 
     foreach ($issue in $issues) {
+        $issueNumber = [int]$issue.number
+
+        $commentsJson = & gh api "repos/$Repository/issues/$issueNumber/comments?per_page=100"
+        if ($LASTEXITCODE -ne 0) {
+            continue
+        }
+
+        $comments = @($commentsJson | ConvertFrom-Json)
+        $alreadyClaimed = $comments | Where-Object {
+            ([string]$_.body).StartsWith('Agent on ', [System.StringComparison]::OrdinalIgnoreCase) -or
+            ([string]$_.body).StartsWith('## Agent result:', [System.StringComparison]::OrdinalIgnoreCase)
+        } | Select-Object -First 1
+
+        if ($null -ne $alreadyClaimed) {
+            continue
+        }
+
         $body = [string]$issue.body
         $match = [regex]::Match($body, '(?im)^COMMAND\s*=\s*([a-z0-9-]+)\s*$')
         if (-not $match.Success) {
-            & gh issue comment $issue.number --repo $Repository --body "Agent rejected this request: missing exact COMMAND=<allowed-command> line."
-            & gh issue close $issue.number --repo $Repository --reason 'not planned'
+            Add-IssueComment -IssueNumber $issueNumber -Body 'Agent rejected this request: missing exact COMMAND=<allowed-command> line.'
+            & gh issue close $issueNumber --repo $Repository --reason 'not planned' | Out-Null
             continue
         }
 
         $commandName = $match.Groups[1].Value.ToLowerInvariant()
         $allowed = @('health-check', 'tests', 'docker-status', 'git-status', 'kimia-readonly', 'recent-logs')
         if ($commandName -notin $allowed) {
-            & gh issue comment $issue.number --repo $Repository --body "Agent rejected command '$commandName'. Allowed: $($allowed -join ', ')"
-            & gh issue close $issue.number --repo $Repository --reason 'not planned'
+            Add-IssueComment -IssueNumber $issueNumber -Body "Agent rejected command '$commandName'. Allowed: $($allowed -join ', ')"
+            & gh issue close $issueNumber --repo $Repository --reason 'not planned' | Out-Null
             continue
         }
 
-        & gh issue comment $issue.number --repo $Repository --body "Agent on $env:COMPUTERNAME accepted '$commandName' at $(Get-Date -Format o)."
+        Add-IssueComment -IssueNumber $issueNumber -Body "Agent on $env:COMPUTERNAME accepted '$commandName' at $(Get-Date -Format o)."
 
-        $result = Invoke-AllowedCommand -CommandName $commandName
+        try {
+            $result = Invoke-AllowedCommand -CommandName $commandName
+        }
+        catch {
+            $result = [pscustomobject]@{
+                Output = ($_ | Out-String).TrimEnd()
+                ExitCode = 1
+            }
+        }
+
         $status = if ($result.ExitCode -eq 0) { 'PASSED' } else { 'FAILED' }
         $text = [string]$result.Output
         if ($text.Length -gt 45000) {
@@ -127,13 +173,13 @@ try {
 $text
 ```
 "@
-        & gh issue comment $issue.number --repo $Repository --body $comment
+        Add-IssueComment -IssueNumber $issueNumber -Body $comment
 
         if ($result.ExitCode -eq 0) {
-            & gh issue close $issue.number --repo $Repository --reason 'completed'
+            & gh issue close $issueNumber --repo $Repository --reason 'completed' | Out-Null
         }
         else {
-            & gh issue close $issue.number --repo $Repository --reason 'not planned'
+            & gh issue close $issueNumber --repo $Repository --reason 'not planned' | Out-Null
         }
     }
 }
