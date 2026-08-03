@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Kimia;
 
-use App\Repositories\Kimia\VoucherRepository;
+use App\Integrations\Kimia\Repositories\VoucherRepository;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
