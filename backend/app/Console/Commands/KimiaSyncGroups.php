@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Integrations\Kimia\Repositories\KimiaAccountRepository;
 use App\Models\AccountGroup;
-use App\Repositories\Kimia\AccountRepository;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -14,7 +14,7 @@ class KimiaSyncGroups extends Command
     protected $description = 'Synchronize account groups from Kimia';
 
     public function __construct(
-        protected AccountRepository $repository
+        protected KimiaAccountRepository $repository
     ) {
         parent::__construct();
     }
@@ -33,14 +33,11 @@ class KimiaSyncGroups extends Command
                 $groups = $this->repository->groups($type);
 
                 foreach ($groups as $group) {
-                    if (
-                        ! is_array($group)
-                        || ! isset(
-                            $group['Id'],
-                            $group['Name'],
-                            $group['AccountType']
-                        )
-                    ) {
+                    if (! isset(
+                        $group['Id'],
+                        $group['Name'],
+                        $group['AccountType']
+                    )) {
                         $skipped++;
 
                         continue;
