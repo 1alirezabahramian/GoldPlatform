@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Integrations\Kimia\Repositories\KimiaAccountRepository;
 use App\Models\AccountGroup;
-use App\Repositories\Kimia\AccountRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -14,7 +14,7 @@ class SyncKimiaGroupsCommandTest extends TestCase
 
     public function test_it_creates_and_updates_kimia_groups_without_duplicates(): void
     {
-        $repository = Mockery::mock(AccountRepository::class);
+        $repository = Mockery::mock(KimiaAccountRepository::class);
 
         $repository->shouldReceive('groups')
             ->with(1)
@@ -39,7 +39,7 @@ class SyncKimiaGroupsCommandTest extends TestCase
                 ->andReturn([]);
         }
 
-        $this->app->instance(AccountRepository::class, $repository);
+        $this->app->instance(KimiaAccountRepository::class, $repository);
 
         $this->artisan('kimia:sync-groups')
             ->assertSuccessful();
@@ -81,7 +81,7 @@ class SyncKimiaGroupsCommandTest extends TestCase
         $originalUpdatedAt = $group->updated_at;
         $originalSyncedAt = $group->synced_at;
 
-        $repository = Mockery::mock(AccountRepository::class);
+        $repository = Mockery::mock(KimiaAccountRepository::class);
 
         foreach ([1, 5, 6, 8, 9, 10, 11, 12] as $type) {
             $repository->shouldReceive('groups')
@@ -99,7 +99,7 @@ class SyncKimiaGroupsCommandTest extends TestCase
                 'AccountType' => 3,
             ]]);
 
-        $this->app->instance(AccountRepository::class, $repository);
+        $this->app->instance(KimiaAccountRepository::class, $repository);
 
         $this->artisan('kimia:sync-groups')
             ->assertSuccessful();
