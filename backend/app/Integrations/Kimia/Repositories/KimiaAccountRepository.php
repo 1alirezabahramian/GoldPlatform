@@ -28,7 +28,7 @@ class KimiaAccountRepository
             ->json();
 
         return $this->mapper->mapCollection(
-            $this->accountRows(is_array($response) ? $response : [])
+            $this->rows(is_array($response) ? $response : [])
         );
     }
 
@@ -39,10 +39,29 @@ class KimiaAccountRepository
     }
 
     /**
+     * @return list<array<string, mixed>>
+     */
+    public function groups(?int $accountType = null): array
+    {
+        $query = $accountType === null
+            ? []
+            : ['accountType' => $accountType];
+
+        $response = $this->client
+            ->get('/api/account/groups', $query)
+            ->json();
+
+        return array_values(array_filter(
+            $this->rows(is_array($response) ? $response : []),
+            fn (mixed $row): bool => is_array($row)
+        ));
+    }
+
+    /**
      * @param array<string, mixed>|list<mixed> $response
      * @return array<int, mixed>
      */
-    private function accountRows(array $response): array
+    private function rows(array $response): array
     {
         foreach (['data', 'items', 'result'] as $key) {
             if (isset($response[$key]) && is_array($response[$key])) {
