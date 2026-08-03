@@ -11,13 +11,13 @@ The backend had two parallel Kimia access paths:
 1. `App\Services\KimiaService` with repositories under `App\Repositories\Kimia`
 2. `App\Integrations\Kimia` containing the client, DTOs, mappers, repositories, adapters, and services
 
-The account synchronization command still used the first path while the second path was intended to become the structured integration boundary. Keeping both paths active risks inconsistent query serialization, error handling, mapping, logging, and tests.
+Keeping both paths active risked inconsistent query serialization, error handling, mapping, logging, and tests.
 
 ## Decision
 
-`App\Integrations\Kimia` is the canonical integration boundary for new and migrated Kimia behavior.
+`App\Integrations\Kimia` is the canonical integration boundary.
 
-The account synchronization execution path now uses:
+The migrated execution paths are:
 
 ```text
 SyncKimiaAccountsCommand
@@ -26,35 +26,70 @@ SyncKimiaAccountsCommand
   → Kimia API
 ```
 
-Account payloads are mapped to `AccountDTO`, but the original raw API row is retained for audit evidence and sync hashing.
+```text
+KimiaSyncGroups / KimiaController
+  → KimiaAccountRepository
+  → KimiaClient
+  → Kimia API
+```
+
+```text
+KimiaInspectTransactions
+  → VoucherRepository
+  → KimiaClient
+  → Kimia API
+```
+
+Account payloads are mapped to `AccountDTO`, while the original raw API row is retained for audit evidence and sync hashing.
 
 The exact Kimia query names remain endpoint-specific:
 
 - `GET /api/account` uses `Type`
 - `GET /api/account/groups` uses `accountType`
 
-No financial voucher write path is enabled by this decision.
+## Client Safety Contract
+
+The canonical `KimiaClient` now provides:
+
+- one consistent error contract for `GET`, `POST`, `PUT`, and `DELETE`
+- rejection of incomplete Kimia configuration
+- logs limited to HTTP method, relative URI, and status
+- no credentials, request payloads, national identifiers, or upstream response bodies in exception messages or logs
+- no automatic retry on write requests
+
+Automatic write retry is intentionally disabled because a timed-out financial request may have reached Kimia even when GoldPlatform did not receive the response. Retry policy for financial writes requires verified idempotency and `RequestId` behavior before implementation.
 
 ## Migration Rules
 
-- Existing legacy Kimia classes must not be deleted until all consumers are identified and migrated.
-- New controllers, commands, and domain services must not call `App\Services\KimiaService` directly.
+- New controllers, commands, and domain services must not call legacy Kimia paths.
 - Raw Kimia transport codes and payloads must remain inside the integration boundary.
 - Every migrated path requires automated tests before legacy removal.
-- Live Kimia write operations remain blocked until payload, idempotency, retry, failure, and audit behavior are verified.
+- Live Kimia write operations remain blocked until payload, idempotency, retry, failure, posting-time, and audit behavior are verified.
+- Architecture tests must reject reintroduction of legacy Kimia imports.
+
+## Completed Migration
+
+- Account synchronization migrated to `KimiaAccountRepository`.
+- Account-group synchronization and API reads migrated to `KimiaAccountRepository`.
+- Read-only voucher transaction inspection migrated to canonical `VoucherRepository`.
+- `App\Services\KimiaService` removed.
+- Legacy account and voucher repositories removed.
+- Architecture tests prevent legacy imports from returning.
+- Full Laravel suite and live read-only Kimia checks passed after migration.
 
 ## Consequences
 
 ### Positive
 
-- One intended location for Kimia transport and mapping behavior
+- One Kimia transport and mapping boundary
 - DTO-based boundary without losing raw API evidence
-- Easier prevention of raw Kimia concepts leaking into the domain and frontend
-- Account sync tests now exercise the canonical repository
+- Consistent safe errors and logs
+- Reduced risk of duplicate behavior and silent divergence
+- Raw Kimia concepts remain out of the domain and frontend
 
 ### Remaining Work
 
-- Migrate remaining consumers of `App\Services\KimiaService` and `App\Repositories\Kimia`
-- Consolidate group and voucher repositories under the canonical integration path
-- Standardize retry, timeout, exception, logging, and `X-Book-Id` behavior
-- Remove legacy classes only after full-suite tests pass on the shop Docker runtime
+- Verify and standardize optional `X-Book-Id` behavior from official evidence.
+- Define correlation and audit identifiers for future financial writes.
+- Verify complete voucher-write payload and `RequestId` idempotency semantics.
+- Keep live voucher writes disabled until those stop conditions are resolved.
