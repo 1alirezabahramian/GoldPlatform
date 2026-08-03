@@ -2,17 +2,18 @@
 
 namespace App\Console\Commands;
 
-use App\Services\KimiaService;
+use App\Integrations\Kimia\Client\KimiaClient;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Throwable;
 
 #[Signature('kimia:test')]
 #[Description('Test connection to Kimia API')]
 class TestKimiaConnection extends Command
 {
     public function __construct(
-        protected KimiaService $kimiaService
+        protected KimiaClient $client
     ) {
         parent::__construct();
     }
@@ -22,37 +23,19 @@ class TestKimiaConnection extends Command
         $this->info('Connecting to Kimia API...');
 
         try {
+            $response = $this->client->get('/swagger/v1/swagger.json');
 
-            $response = $this->kimiaService->test();
-
-            $this->line('');
-
+            $this->newLine();
             $this->info('HTTP Status : '.$response->status());
-
-            $this->line('');
-
-            if ($response->successful()) {
-
-                $this->info('Connection Successful.');
-
-                $this->line('');
-
-                $this->line(substr($response->body(), 0, 500));
-
-            } else {
-
-                $this->error('Connection Failed.');
-
-                $this->line($response->body());
-
-            }
-
-        } catch (\Throwable $e) {
-
-            $this->error($e->getMessage());
+            $this->newLine();
+            $this->info('Connection Successful.');
+            $this->newLine();
+            $this->line(substr($response->body(), 0, 500));
+        } catch (Throwable $exception) {
+            report($exception);
+            $this->error($exception->getMessage());
 
             return self::FAILURE;
-
         }
 
         return self::SUCCESS;
