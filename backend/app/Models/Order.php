@@ -18,6 +18,13 @@ class Order extends Model
         'description',
     ];
 
+    protected $casts = [
+        'gold_weight' => 'decimal:3',
+        'gold_price' => 'decimal:0',
+        'commission' => 'decimal:0',
+        'total_price' => 'decimal:0',
+    ];
+
     public function trades(): HasMany
     {
         return $this->hasMany(Trade::class);
