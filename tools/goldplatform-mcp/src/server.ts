@@ -35,7 +35,7 @@ function createServer(): McpServer {
       const result = await getProjectStatus(config);
       return {
         structuredContent: result,
-        content: [{ type: 'text', text: result.summary }],
+        content: [{ type: 'text' as const, text: result.summary }],
         isError: !result.ok,
       };
     },
@@ -67,7 +67,7 @@ app.post('/mcp', async (request, response) => {
     };
 
     const server = createServer();
-    await server.connect(transport);
+    await server.connect(transport as Parameters<McpServer['connect']>[0]);
   }
 
   if (!transport) {
