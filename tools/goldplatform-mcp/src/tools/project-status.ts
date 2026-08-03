@@ -2,6 +2,7 @@ import type { AppConfig } from '../config.js';
 import { runProcess } from '../services/process-runner.js';
 
 export interface ToolResult {
+  [key: string]: unknown;
   ok: boolean;
   operation: string;
   summary: string;
