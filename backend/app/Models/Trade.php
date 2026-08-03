@@ -19,6 +19,9 @@ class Trade extends Model
     ];
 
     protected $casts = [
+        'quantity' => 'decimal:6',
+        'unit_price' => 'decimal:2',
+        'total_amount' => 'decimal:2',
         'executed_at' => 'datetime',
     ];
 
