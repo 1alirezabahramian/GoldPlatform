@@ -13,11 +13,11 @@ class KimiaAccountService
     }
 
     /**
-     * @return AccountDTO[]
+     * @return list<AccountDTO>
      */
-    public function all(): array
+    public function all(?int $accountType = null): array
     {
-        return $this->repository->all();
+        return $this->repository->all($accountType);
     }
 
     public function find(int $accountId): ?AccountDTO
