@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\KimiaController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\Auth\RegistrationController;
 
 /*
@@ -14,12 +15,8 @@ use App\Http\Controllers\Api\Auth\RegistrationController;
 */
 
 Route::prefix('auth')->group(function () {
-
-    // OTP
     Route::post('/send-otp', [AuthController::class, 'sendOtp']);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-
-    // Registration
     Route::post('/register', [RegistrationController::class, 'register']);
 });
 
@@ -30,13 +27,13 @@ Route::prefix('auth')->group(function () {
 */
 
 Route::middleware('auth:sanctum')->group(function () {
-
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
+    Route::post('/orders', [OrderController::class, 'store']);
 });
 
 /*
@@ -46,9 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
 */
 
 Route::prefix('kimia')->group(function () {
-
     Route::get('/account-groups', [KimiaController::class, 'accountGroups']);
-
 });
 
 /*
@@ -60,7 +55,3 @@ Route::prefix('kimia')->group(function () {
 if (file_exists(__DIR__.'/kimia.php')) {
     require __DIR__.'/kimia.php';
 }
-
-use App\Http\Controllers\Api\OrderController;
-
-Route::post('/orders', [OrderController::class, 'store']);
