@@ -47,10 +47,7 @@ function Invoke-ProcessCapture {
     $started = Get-Date
 
     try {
-        if (-not $process.Start()) {
-            throw "Could not start process: $FilePath"
-        }
-
+        if (-not $process.Start()) { throw "Could not start process: $FilePath" }
         $stdoutTask = $process.StandardOutput.ReadToEndAsync()
         $stderrTask = $process.StandardError.ReadToEndAsync()
         $finished = $process.WaitForExit($TimeoutSeconds * 1000)
@@ -94,17 +91,22 @@ function Invoke-AllowedCommand {
     param([Parameter(Mandatory)][string]$CommandName)
 
     $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
-    $docker = (Get-Command docker -ErrorAction Stop).Source
     $healthScript = Join-Path $PSScriptRoot 'Invoke-GoldPlatformHealthCheck.ps1'
+    $selfUpdateScript = Join-Path $PSScriptRoot 'Invoke-GoldPlatformSelfUpdate.ps1'
 
     switch ($CommandName) {
+        'self-update' {
+            return Invoke-ProcessCapture -FilePath $pwsh -Arguments @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $selfUpdateScript, '-ProjectRoot', $ProjectRoot) -TimeoutSeconds 300
+        }
         'health-check' {
-            return Invoke-ProcessCapture -FilePath $pwsh -Arguments @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $healthScript) -TimeoutSeconds 1200
+            return Invoke-ProcessCapture -FilePath $pwsh -Arguments @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $healthScript, '-ProjectRoot', $ProjectRoot) -TimeoutSeconds 1200
         }
         'tests' {
+            $docker = (Get-Command docker -ErrorAction Stop).Source
             return Invoke-ProcessCapture -FilePath $docker -Arguments @('compose', 'exec', '-T', 'php', 'php', 'artisan', 'test', '--no-ansi') -TimeoutSeconds 900
         }
         'docker-status' {
+            $docker = (Get-Command docker -ErrorAction Stop).Source
             return Invoke-ProcessCapture -FilePath $docker -Arguments @('compose', 'ps') -TimeoutSeconds 120
         }
         'git-status' {
@@ -116,6 +118,7 @@ function Invoke-AllowedCommand {
             return Invoke-ProcessCapture -FilePath $pwsh -Arguments @('-NoProfile', '-NonInteractive', '-Command', $command) -TimeoutSeconds 300
         }
         'recent-logs' {
+            $docker = (Get-Command docker -ErrorAction Stop).Source
             return Invoke-ProcessCapture -FilePath $docker -Arguments @('compose', 'exec', '-T', 'php', 'sh', '-lc', 'test -f storage/logs/laravel.log && tail -n 160 storage/logs/laravel.log || true') -TimeoutSeconds 120
         }
         default {
@@ -125,11 +128,7 @@ function Invoke-AllowedCommand {
 }
 
 function Add-IssueComment {
-    param(
-        [Parameter(Mandatory)][int]$IssueNumber,
-        [Parameter(Mandatory)][string]$Body
-    )
-
+    param([int]$IssueNumber, [string]$Body)
     $tempFile = Join-Path $env:TEMP ("goldplatform-agent-comment-{0}-{1}.md" -f $IssueNumber, [guid]::NewGuid())
     try {
         [System.IO.File]::WriteAllText($tempFile, $Body, [System.Text.UTF8Encoding]::new($false))
@@ -186,13 +185,13 @@ try {
         $body = [string]$issue.body
         $match = [regex]::Match($body, '(?im)^COMMAND\s*=\s*([a-z0-9-]+)\s*$')
         if (-not $match.Success) {
-            Add-IssueComment -IssueNumber $issueNumber -Body '## Agent result: FAILED`n`nMissing exact `COMMAND=<allowed-command>` line.'
+            Add-IssueComment -IssueNumber $issueNumber -Body "## Agent result: FAILED`n`nMissing exact ``COMMAND=<allowed-command>`` line."
             Close-AgentIssue -IssueNumber $issueNumber -Succeeded $false
             continue
         }
 
         $commandName = $match.Groups[1].Value.ToLowerInvariant()
-        $allowed = @('health-check', 'tests', 'docker-status', 'git-status', 'kimia-readonly', 'recent-logs')
+        $allowed = @('self-update', 'health-check', 'tests', 'docker-status', 'git-status', 'kimia-readonly', 'recent-logs')
         if ($commandName -notin $allowed) {
             Add-IssueComment -IssueNumber $issueNumber -Body "## Agent result: FAILED`n`nRejected command '$commandName'. Allowed: $($allowed -join ', ')"
             Close-AgentIssue -IssueNumber $issueNumber -Succeeded $false
