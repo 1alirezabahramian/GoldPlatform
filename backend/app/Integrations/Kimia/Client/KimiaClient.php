@@ -2,9 +2,12 @@
 
 namespace App\Integrations\Kimia\Client;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Client\Response;
 use App\Integrations\Kimia\Exceptions\KimiaException;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class KimiaClient
 {
@@ -15,13 +18,22 @@ class KimiaClient
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.kimia.base_url'), '/');
-        $this->username = config('services.kimia.username');
-        $this->password = config('services.kimia.password');
-        $this->timeout = config('services.kimia.timeout', 30);
+        $this->baseUrl = rtrim((string) config('services.kimia.base_url'), '/');
+        $this->username = (string) config('services.kimia.username');
+        $this->password = (string) config('services.kimia.password');
+        $this->timeout = (int) config('services.kimia.timeout', 30);
+
+        if (
+            $this->baseUrl === ''
+            || $this->username === ''
+            || $this->password === ''
+            || $this->timeout <= 0
+        ) {
+            throw new KimiaException('Kimia API configuration is incomplete.');
+        }
     }
 
-    protected function request()
+    protected function request(): PendingRequest
     {
         return Http::baseUrl($this->baseUrl)
             ->timeout($this->timeout)
@@ -30,38 +42,60 @@ class KimiaClient
     }
 
     public function get(string $uri, array $query = []): Response
-{
-    $response = $this->request()->get($uri, $query);
-
-    if ($response->failed()) {
-        throw new KimiaException(
-            "Kimia GET {$uri} failed: {$response->status()} {$response->body()}"
-        );
+    {
+        return $this->send('GET', $uri, $query);
     }
-
-    return $response;
-}
 
     public function post(string $uri, array $data = []): Response
-{
-    $response = $this->request()->post($uri, $data);
-
-    if ($response->failed()) {
-        throw new KimiaException(
-            "Kimia POST {$uri} failed: {$response->status()} {$response->body()}"
-        );
+    {
+        return $this->send('POST', $uri, $data);
     }
-
-    return $response;
-}
 
     public function put(string $uri, array $data = []): Response
     {
-        return $this->request()->put($uri, $data);
+        return $this->send('PUT', $uri, $data);
     }
 
     public function delete(string $uri, array $data = []): Response
     {
-        return $this->request()->delete($uri, $data);
+        return $this->send('DELETE', $uri, $data);
+    }
+
+    private function send(string $method, string $uri, array $payload = []): Response
+    {
+        try {
+            $response = match ($method) {
+                'GET' => $this->request()->get($uri, $payload),
+                'POST' => $this->request()->post($uri, $payload),
+                'PUT' => $this->request()->put($uri, $payload),
+                'DELETE' => $this->request()->delete($uri, $payload),
+                default => throw new KimiaException('Unsupported Kimia HTTP method.'),
+            };
+        } catch (ConnectionException $exception) {
+            Log::warning('Kimia API connection failed.', [
+                'method' => $method,
+                'uri' => $uri,
+                'exception' => $exception::class,
+            ]);
+
+            throw new KimiaException(
+                "Kimia {$method} {$uri} connection failed.",
+                previous: $exception
+            );
+        }
+
+        Log::info('Kimia API request completed.', [
+            'method' => $method,
+            'uri' => $uri,
+            'status' => $response->status(),
+        ]);
+
+        if ($response->failed()) {
+            throw new KimiaException(
+                "Kimia {$method} {$uri} failed with HTTP {$response->status()}."
+            );
+        }
+
+        return $response;
     }
 }
