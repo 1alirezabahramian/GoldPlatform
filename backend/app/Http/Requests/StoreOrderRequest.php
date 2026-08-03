@@ -2,37 +2,26 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreOrderRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return $this->user() !== null;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'type' => ['required', 'in:buy,sell'],
+            'gold_weight' => ['required', 'decimal:0,3', 'gt:0'],
+            'gold_price' => ['required', 'integer', 'min:0'],
+            'commission' => ['sometimes', 'integer', 'min:0'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'user_id' => ['prohibited'],
+            'status' => ['prohibited'],
+            'total_price' => ['prohibited'],
         ];
     }
-    public function rules(): array
-{
-    return [
-        'type' => 'required|in:buy,sell',
-        'asset_type' => 'required|string',
-        'quantity' => 'required|numeric|gt:0',
-        'unit_price' => 'required|numeric|gt:0',
-    ];
-}
 }
