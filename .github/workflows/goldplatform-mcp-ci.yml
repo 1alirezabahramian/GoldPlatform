@@ -1,0 +1,45 @@
+name: GoldPlatform MCP CI
+
+on:
+  push:
+    branches:
+      - feature/goldplatform-developer-mcp
+    paths:
+      - 'tools/goldplatform-mcp/**'
+      - '.github/workflows/goldplatform-mcp-ci.yml'
+  pull_request:
+    paths:
+      - 'tools/goldplatform-mcp/**'
+      - '.github/workflows/goldplatform-mcp-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Install, type-check, and test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/goldplatform-mcp
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/goldplatform-mcp/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Run tests
+        run: npm test
