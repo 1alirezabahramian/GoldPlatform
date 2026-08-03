@@ -3,8 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Enums\AccountType;
+use App\Integrations\Kimia\Adapters\AccountAdapter;
+use App\Integrations\Kimia\DTO\AccountDTO;
+use App\Integrations\Kimia\Repositories\KimiaAccountRepository;
 use App\Models\ExternalAccount;
-use App\Services\KimiaService;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -15,21 +17,18 @@ class SyncKimiaAccountsCommand extends Command
 
     protected $description = 'Synchronize Kimia accounts with the local external_accounts table';
 
-    public function handle(KimiaService $kimia): int
-    {
+    public function handle(
+        KimiaAccountRepository $accountsRepository,
+        AccountAdapter $adapter,
+    ): int {
         $types = $this->requestedTypes();
         $accounts = [];
 
         try {
             foreach ($types as $type) {
-                $response = $kimia->get('/api/account', [
-                    'Type' => $type,
-                ]);
-
-                $accounts = array_merge(
-                    $accounts,
-                    $this->accountRows($response)
-                );
+                foreach ($accountsRepository->all($type) as $account) {
+                    $accounts[(string) $account->id] = $account;
+                }
             }
         } catch (Throwable $exception) {
             report($exception);
@@ -42,17 +41,7 @@ class SyncKimiaAccountsCommand extends Command
             return self::FAILURE;
         }
 
-        $accounts = collect($accounts)
-            ->filter(
-                fn (mixed $account): bool => is_array($account)
-                    && isset($account['AccountId'])
-            )
-            ->keyBy(
-                fn (array $account): string => (string) $account['AccountId']
-            )
-            ->values();
-
-        if ($accounts->isEmpty()) {
+        if ($accounts === []) {
             $this->error('No accounts received from Kimia.');
 
             return self::FAILURE;
@@ -62,19 +51,14 @@ class SyncKimiaAccountsCommand extends Command
         $updated = 0;
         $skipped = 0;
 
+        /** @var AccountDTO $account */
         foreach ($accounts as $account) {
-            if (! isset($account['Name'], $account['Type'])) {
-                $skipped++;
-
-                continue;
-            }
-
-            $externalId = (int) $account['AccountId'];
-            $syncHash = $this->makeSyncHash($account);
+            $data = $adapter->toArray($account);
+            $syncHash = $this->makeSyncHash($account->rawData);
 
             $model = ExternalAccount::query()
                 ->where('provider', 'kimia')
-                ->where('external_id', $externalId)
+                ->where('external_id', $account->id)
                 ->first();
 
             if (
@@ -87,17 +71,8 @@ class SyncKimiaAccountsCommand extends Command
                 continue;
             }
 
-            $data = [
-                'external_id' => $externalId,
-                'code' => isset($account['AccountCode'])
-                    ? (string) $account['AccountCode']
-                    : null,
-                'name' => (string) $account['Name'],
-                'type' => (int) $account['Type'],
-                'mobile' => $account['Mobile'] ?? null,
-                'national_id' => $account['NationalCode'] ?? null,
-                'is_active' => (bool) ($account['IsVisible'] ?? true),
-                'raw_data' => $account,
+            $persisted = [
+                ...$data,
                 'sync_hash' => $syncHash,
                 'sync_status' => 'synced',
                 'sync_error' => null,
@@ -107,7 +82,7 @@ class SyncKimiaAccountsCommand extends Command
             if ($model === null) {
                 ExternalAccount::create([
                     'provider' => 'kimia',
-                    ...$data,
+                    ...$persisted,
                 ]);
 
                 $created++;
@@ -115,18 +90,13 @@ class SyncKimiaAccountsCommand extends Command
                 continue;
             }
 
-            $model->update($data);
+            $model->update($persisted);
             $updated++;
         }
 
         $this->table(
             ['Received', 'Created', 'Updated', 'Skipped'],
-            [[
-                $accounts->count(),
-                $created,
-                $updated,
-                $skipped,
-            ]]
+            [[count($accounts), $created, $updated, $skipped]]
         );
 
         $this->info('Kimia account synchronization finished.');
@@ -161,20 +131,6 @@ class SyncKimiaAccountsCommand extends Command
                 )
             )
         );
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function accountRows(array $response): array
-    {
-        foreach (['data', 'items', 'result'] as $key) {
-            if (isset($response[$key]) && is_array($response[$key])) {
-                return $response[$key];
-            }
-        }
-
-        return array_is_list($response) ? $response : [];
     }
 
     /**
