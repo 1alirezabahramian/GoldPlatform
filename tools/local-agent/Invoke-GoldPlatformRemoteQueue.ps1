@@ -2,16 +2,19 @@
 param(
     [string]$ProjectRoot = (Resolve-Path "$PSScriptRoot\..\..").Path,
     [string]$Repository = '1alirezabahramian/GoldPlatform',
-    [string]$AllowedAuthor = '1alirezabahramian'
+    [string]$AllowedAuthor = '1alirezabahramian',
+    [int]$ClaimTtlMinutes = 30
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
-$OutputEncoding = [System.Text.UTF8Encoding]::new()
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$env:NO_COLOR = '1'
 
-$lockPath = Join-Path $ProjectRoot 'storage\agent-reports\remote-queue.lock'
-New-Item -ItemType Directory -Force -Path (Split-Path $lockPath) | Out-Null
+$reportDir = Join-Path $ProjectRoot 'storage\agent-reports'
+$lockPath = Join-Path $reportDir 'remote-queue.lock'
+New-Item -ItemType Directory -Force -Path $reportDir | Out-Null
 $lockStream = $null
 
 try {
@@ -21,58 +24,103 @@ catch {
     exit 0
 }
 
-function Invoke-NativeCapture {
-    param([Parameter(Mandatory)][scriptblock]$Command)
+function Invoke-ProcessCapture {
+    param(
+        [Parameter(Mandatory)][string]$FilePath,
+        [Parameter(Mandatory)][string[]]$Arguments,
+        [Parameter(Mandatory)][int]$TimeoutSeconds
+    )
+
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = $FilePath
+    $psi.WorkingDirectory = $ProjectRoot
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.StandardOutputEncoding = [System.Text.UTF8Encoding]::new($false)
+    $psi.StandardErrorEncoding = [System.Text.UTF8Encoding]::new($false)
+    foreach ($argument in $Arguments) { [void]$psi.ArgumentList.Add($argument) }
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $psi
+    $started = Get-Date
 
     try {
-        $output = & $Command 2>&1 | Out-String
-        $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
-        return [pscustomobject]@{ Output = $output.TrimEnd(); ExitCode = $exitCode }
+        if (-not $process.Start()) {
+            throw "Could not start process: $FilePath"
+        }
+
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        $finished = $process.WaitForExit($TimeoutSeconds * 1000)
+
+        if (-not $finished) {
+            try { $process.Kill($true) } catch { }
+            try { $process.WaitForExit(5000) | Out-Null } catch { }
+            $stdout = $stdoutTask.GetAwaiter().GetResult()
+            $stderr = $stderrTask.GetAwaiter().GetResult()
+            return [pscustomobject]@{
+                Output = (($stdout + "`n" + $stderr).Trim() + "`n[TIMEOUT] Process exceeded $TimeoutSeconds seconds and was terminated.")
+                ExitCode = 124
+                TimedOut = $true
+                DurationSeconds = [math]::Round(((Get-Date) - $started).TotalSeconds, 1)
+            }
+        }
+
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        return [pscustomobject]@{
+            Output = ($stdout + "`n" + $stderr).Trim()
+            ExitCode = $process.ExitCode
+            TimedOut = $false
+            DurationSeconds = [math]::Round(((Get-Date) - $started).TotalSeconds, 1)
+        }
     }
     catch {
         return [pscustomobject]@{
-            Output = ($_ | Out-String).TrimEnd()
+            Output = ($_ | Out-String).Trim()
             ExitCode = 1
+            TimedOut = $false
+            DurationSeconds = [math]::Round(((Get-Date) - $started).TotalSeconds, 1)
         }
+    }
+    finally {
+        $process.Dispose()
     }
 }
 
 function Invoke-AllowedCommand {
     param([Parameter(Mandatory)][string]$CommandName)
 
-    Push-Location $ProjectRoot
-    try {
-        switch ($CommandName) {
-            'health-check' {
-                return Invoke-NativeCapture { pwsh -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\Invoke-GoldPlatformHealthCheck.ps1" }
-            }
-            'tests' {
-                return Invoke-NativeCapture { docker compose exec -T php php artisan test --no-ansi }
-            }
-            'docker-status' {
-                return Invoke-NativeCapture { docker compose ps }
-            }
-            'git-status' {
-                return Invoke-NativeCapture { git status --short --branch }
-            }
-            'kimia-readonly' {
-                return Invoke-NativeCapture {
-                    docker compose exec -T php php artisan kimia:test
-                    if ($LASTEXITCODE -eq 0) {
-                        docker compose exec -T php php artisan kimia:inspect-transactions 350 --page=0 --size=10
-                    }
-                }
-            }
-            'recent-logs' {
-                return Invoke-NativeCapture { docker compose exec -T php sh -lc 'test -f storage/logs/laravel.log && tail -n 160 storage/logs/laravel.log || true' }
-            }
-            default {
-                return [pscustomobject]@{ Output = "Rejected command: $CommandName"; ExitCode = 64 }
-            }
+    $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
+    $docker = (Get-Command docker -ErrorAction Stop).Source
+    $healthScript = Join-Path $PSScriptRoot 'Invoke-GoldPlatformHealthCheck.ps1'
+
+    switch ($CommandName) {
+        'health-check' {
+            return Invoke-ProcessCapture -FilePath $pwsh -Arguments @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $healthScript) -TimeoutSeconds 1200
         }
-    }
-    finally {
-        Pop-Location
+        'tests' {
+            return Invoke-ProcessCapture -FilePath $docker -Arguments @('compose', 'exec', '-T', 'php', 'php', 'artisan', 'test', '--no-ansi') -TimeoutSeconds 900
+        }
+        'docker-status' {
+            return Invoke-ProcessCapture -FilePath $docker -Arguments @('compose', 'ps') -TimeoutSeconds 120
+        }
+        'git-status' {
+            $git = (Get-Command git -ErrorAction Stop).Source
+            return Invoke-ProcessCapture -FilePath $git -Arguments @('status', '--short', '--branch') -TimeoutSeconds 120
+        }
+        'kimia-readonly' {
+            $command = "Set-Location -LiteralPath '$($ProjectRoot.Replace("'", "''"))'; docker compose exec -T php php artisan kimia:test --no-ansi; if (`$LASTEXITCODE -eq 0) { docker compose exec -T php php artisan kimia:inspect-transactions 350 --page=0 --size=10 --no-ansi; exit `$LASTEXITCODE }; exit `$LASTEXITCODE"
+            return Invoke-ProcessCapture -FilePath $pwsh -Arguments @('-NoProfile', '-NonInteractive', '-Command', $command) -TimeoutSeconds 300
+        }
+        'recent-logs' {
+            return Invoke-ProcessCapture -FilePath $docker -Arguments @('compose', 'exec', '-T', 'php', 'sh', '-lc', 'test -f storage/logs/laravel.log && tail -n 160 storage/logs/laravel.log || true') -TimeoutSeconds 120
+        }
+        default {
+            return [pscustomobject]@{ Output = "Rejected command: $CommandName"; ExitCode = 64; TimedOut = $false; DurationSeconds = 0 }
+        }
     }
 }
 
@@ -82,21 +130,28 @@ function Add-IssueComment {
         [Parameter(Mandatory)][string]$Body
     )
 
-    & gh issue comment $IssueNumber --repo $Repository --body $Body | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Could not comment on issue #$IssueNumber."
+    $tempFile = Join-Path $env:TEMP ("goldplatform-agent-comment-{0}-{1}.md" -f $IssueNumber, [guid]::NewGuid())
+    try {
+        [System.IO.File]::WriteAllText($tempFile, $Body, [System.Text.UTF8Encoding]::new($false))
+        & gh issue comment $IssueNumber --repo $Repository --body-file $tempFile | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "Could not comment on issue #$IssueNumber." }
+    }
+    finally {
+        Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
     }
 }
 
-try {
-    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-        throw 'GitHub CLI (gh) is not installed.'
-    }
+function Close-AgentIssue {
+    param([int]$IssueNumber, [bool]$Succeeded)
+    $reason = if ($Succeeded) { 'completed' } else { 'not planned' }
+    & gh issue close $IssueNumber --repo $Repository --reason $reason | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Could not close issue #$IssueNumber." }
+}
 
+try {
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { throw 'GitHub CLI (gh) is not installed.' }
     & gh auth status --hostname github.com *> $null
-    if ($LASTEXITCODE -ne 0) {
-        throw 'GitHub CLI is not authenticated. Run: gh auth login'
-    }
+    if ($LASTEXITCODE -ne 0) { throw 'GitHub CLI is not authenticated. Run: gh auth login' }
 
     $issuesJson = & gh api "repos/$Repository/issues?state=open&per_page=50"
     if ($LASTEXITCODE -ne 0) { throw 'Could not read GitHub issues.' }
@@ -111,77 +166,71 @@ try {
 
     foreach ($issue in $issues) {
         $issueNumber = [int]$issue.number
-
         $commentsJson = & gh api "repos/$Repository/issues/$issueNumber/comments?per_page=100"
-        if ($LASTEXITCODE -ne 0) {
+        if ($LASTEXITCODE -ne 0) { continue }
+        $comments = @($commentsJson | ConvertFrom-Json)
+
+        $finalComment = $comments | Where-Object { ([string]$_.body).StartsWith('## Agent result:', [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -Last 1
+        if ($null -ne $finalComment) {
+            Close-AgentIssue -IssueNumber $issueNumber -Succeeded (([string]$finalComment.body) -match '^## Agent result: PASSED')
             continue
         }
 
-        $comments = @($commentsJson | ConvertFrom-Json)
-        $alreadyClaimed = $comments | Where-Object {
-            ([string]$_.body).StartsWith('Agent on ', [System.StringComparison]::OrdinalIgnoreCase) -or
-            ([string]$_.body).StartsWith('## Agent result:', [System.StringComparison]::OrdinalIgnoreCase)
-        } | Select-Object -First 1
-
-        if ($null -ne $alreadyClaimed) {
-            continue
+        $claim = $comments | Where-Object { ([string]$_.body).StartsWith('[AGENT-CLAIM]', [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -Last 1
+        if ($null -ne $claim) {
+            $claimTime = [datetimeoffset]$claim.created_at
+            if ((([datetimeoffset]::UtcNow) - $claimTime).TotalMinutes -lt $ClaimTtlMinutes) { continue }
+            Add-IssueComment -IssueNumber $issueNumber -Body "[AGENT-RECOVERY] Previous claim became stale after $ClaimTtlMinutes minutes. Reclaiming safely at $(Get-Date -Format o)."
         }
 
         $body = [string]$issue.body
         $match = [regex]::Match($body, '(?im)^COMMAND\s*=\s*([a-z0-9-]+)\s*$')
         if (-not $match.Success) {
-            Add-IssueComment -IssueNumber $issueNumber -Body 'Agent rejected this request: missing exact COMMAND=<allowed-command> line.'
-            & gh issue close $issueNumber --repo $Repository --reason 'not planned' | Out-Null
+            Add-IssueComment -IssueNumber $issueNumber -Body '## Agent result: FAILED`n`nMissing exact `COMMAND=<allowed-command>` line.'
+            Close-AgentIssue -IssueNumber $issueNumber -Succeeded $false
             continue
         }
 
         $commandName = $match.Groups[1].Value.ToLowerInvariant()
         $allowed = @('health-check', 'tests', 'docker-status', 'git-status', 'kimia-readonly', 'recent-logs')
         if ($commandName -notin $allowed) {
-            Add-IssueComment -IssueNumber $issueNumber -Body "Agent rejected command '$commandName'. Allowed: $($allowed -join ', ')"
-            & gh issue close $issueNumber --repo $Repository --reason 'not planned' | Out-Null
+            Add-IssueComment -IssueNumber $issueNumber -Body "## Agent result: FAILED`n`nRejected command '$commandName'. Allowed: $($allowed -join ', ')"
+            Close-AgentIssue -IssueNumber $issueNumber -Succeeded $false
             continue
         }
 
-        Add-IssueComment -IssueNumber $issueNumber -Body "Agent on $env:COMPUTERNAME accepted '$commandName' at $(Get-Date -Format o)."
+        $runId = [guid]::NewGuid().ToString('N')
+        Add-IssueComment -IssueNumber $issueNumber -Body "[AGENT-CLAIM] run=$runId computer=$env:COMPUTERNAME command=$commandName started=$(Get-Date -Format o) timeout-protected=true"
 
-        try {
-            $result = Invoke-AllowedCommand -CommandName $commandName
-        }
-        catch {
-            $result = [pscustomobject]@{
-                Output = ($_ | Out-String).TrimEnd()
-                ExitCode = 1
-            }
-        }
-
-        $status = if ($result.ExitCode -eq 0) { 'PASSED' } else { 'FAILED' }
+        $result = Invoke-AllowedCommand -CommandName $commandName
+        $status = if ($result.ExitCode -eq 0) { 'PASSED' } elseif ($result.TimedOut) { 'TIMED_OUT' } else { 'FAILED' }
         $text = [string]$result.Output
-        if ($text.Length -gt 45000) {
-            $text = "[Output truncated to last 45000 characters]`n" + $text.Substring($text.Length - 45000)
-        }
+        if ([string]::IsNullOrWhiteSpace($text)) { $text = '[No process output]' }
+        if ($text.Length -gt 45000) { $text = "[Output truncated to last 45000 characters]`n" + $text.Substring($text.Length - 45000) }
 
         $comment = @"
 ## Agent result: $status
 
+- Run ID: `$runId`
 - Command: `$commandName`
 - Computer: `$env:COMPUTERNAME`
 - Finished: `$(Get-Date -Format o)`
+- Duration: `$($result.DurationSeconds) seconds`
 - Exit code: `$($result.ExitCode)`
+- Timed out: `$($result.TimedOut)`
 
 ```text
 $text
 ```
 "@
         Add-IssueComment -IssueNumber $issueNumber -Body $comment
-
-        if ($result.ExitCode -eq 0) {
-            & gh issue close $issueNumber --repo $Repository --reason 'completed' | Out-Null
-        }
-        else {
-            & gh issue close $issueNumber --repo $Repository --reason 'not planned' | Out-Null
-        }
+        Close-AgentIssue -IssueNumber $issueNumber -Succeeded ($result.ExitCode -eq 0)
     }
+}
+catch {
+    $fatalPath = Join-Path $reportDir ("remote-queue-fatal-{0}.log" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+    ($_ | Out-String) | Set-Content -Path $fatalPath -Encoding utf8
+    throw
 }
 finally {
     if ($null -ne $lockStream) { $lockStream.Dispose() }
