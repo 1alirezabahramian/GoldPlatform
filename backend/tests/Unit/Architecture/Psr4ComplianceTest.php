@@ -49,4 +49,33 @@ class Psr4ComplianceTest extends TestCase
             );
         }
     }
+
+    #[Test]
+    public function application_does_not_reference_legacy_kimia_paths(): void
+    {
+        $appPath = dirname(__DIR__, 3).'/app';
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($appPath)
+        );
+        $forbidden = [
+            'App\\Services\\KimiaService',
+            'App\\Repositories\\Kimia\\AccountRepository',
+        ];
+
+        foreach ($iterator as $file) {
+            if (! $file instanceof SplFileInfo || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $contents = (string) file_get_contents($file->getPathname());
+
+            foreach ($forbidden as $legacyPath) {
+                $this->assertStringNotContainsString(
+                    $legacyPath,
+                    $contents,
+                    'Legacy Kimia dependency found in '.$file->getPathname()
+                );
+            }
+        }
+    }
 }
