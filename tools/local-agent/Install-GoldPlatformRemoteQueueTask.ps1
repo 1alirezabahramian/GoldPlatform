@@ -22,9 +22,13 @@ $action = New-ScheduledTaskAction `
     -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -ProjectRoot `"$ProjectRoot`""
 
 $startupTrigger = New-ScheduledTaskTrigger -AtStartup
+
+# Windows Task Scheduler rejects TimeSpan::MaxValue because it serializes to an
+# out-of-range ISO-8601 duration. Ten years is effectively permanent here and
+# remains within the scheduler's accepted range.
 $repeatTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
-    -RepetitionDuration ([TimeSpan]::MaxValue)
+    -RepetitionDuration (New-TimeSpan -Days 3650)
 
 $settings = New-ScheduledTaskSettingsSet `
     -AllowStartIfOnBatteries `
