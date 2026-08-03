@@ -6,16 +6,22 @@ use App\Integrations\Kimia\DTO\AccountDTO;
 
 class AccountAdapter
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(AccountDTO $account): array
     {
         return [
             'external_id' => $account->id,
-            'code'        => $account->code,
-            'name'        => $account->name,
-            'type'        => $account->type,
-            'mobile'      => $account->mobile,
+            'code' => $account->code === null
+                ? null
+                : (string) $account->code,
+            'name' => $account->name,
+            'type' => $account->type,
+            'mobile' => $account->mobile,
             'national_id' => $account->nationalCode,
-            'is_active'   => $account->isVisible,
+            'is_active' => $account->isVisible,
+            'raw_data' => $account->rawData,
         ];
     }
 }
