@@ -3,7 +3,7 @@
 namespace Tests\Unit\Kimia;
 
 use App\Enums\AccountType;
-use App\Repositories\Kimia\AccountRepository;
+use App\Integrations\Kimia\Repositories\KimiaAccountRepository;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
@@ -36,10 +36,12 @@ class AccountRepositoryTest extends TestCase
             ]),
         ]);
 
-        $accounts = app(AccountRepository::class)
+        $accounts = app(KimiaAccountRepository::class)
             ->all(AccountType::Retail->value);
 
-        $this->assertSame(350, $accounts[0]['AccountId']);
+        $this->assertSame(350, $accounts[0]->id);
+        $this->assertSame('Test Account', $accounts[0]->name);
+        $this->assertSame(350, $accounts[0]->rawData['AccountId']);
 
         Http::assertSent(function (Request $request): bool {
             parse_str(
@@ -48,30 +50,31 @@ class AccountRepositoryTest extends TestCase
             );
 
             return $request->method() === 'GET'
-                && $request->url() !== ''
                 && ($query['Type'] ?? null) === '3'
                 && ! array_key_exists('accountType', $query);
         });
     }
 
     #[Test]
-    public function account_groups_use_account_type_query_parameter(): void
+    public function accounts_accept_wrapped_response_rows(): void
     {
         Http::fake([
-            'https://kimia.test/api/account/groups*' => Http::response([]),
+            'https://kimia.test/api/account*' => Http::response([
+                'data' => [
+                    [
+                        'AccountId' => 351,
+                        'Type' => AccountType::Retail->value,
+                        'Name' => 'Wrapped Account',
+                        'AccountCode' => 9001,
+                    ],
+                ],
+            ]),
         ]);
 
-        app(AccountRepository::class)
-            ->groups(AccountType::Retail->value);
+        $accounts = app(KimiaAccountRepository::class)->all();
 
-        Http::assertSent(function (Request $request): bool {
-            parse_str(
-                (string) parse_url($request->url(), PHP_URL_QUERY),
-                $query
-            );
-
-            return ($query['accountType'] ?? null) === '3'
-                && ! array_key_exists('Type', $query);
-        });
+        $this->assertCount(1, $accounts);
+        $this->assertSame(351, $accounts[0]->id);
+        $this->assertSame(9001, $accounts[0]->code);
     }
 }
