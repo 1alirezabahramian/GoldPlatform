@@ -16,6 +16,10 @@ class LedgerEntry extends Model
         'description',
     ];
 
+    protected $casts = [
+        'amount' => 'decimal:6',
+    ];
+
     public function financialTransaction(): BelongsTo
     {
         return $this->belongsTo(
