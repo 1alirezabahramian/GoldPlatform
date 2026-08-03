@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Repositories\Kimia\VoucherRepository;
+use App\Integrations\Kimia\Repositories\VoucherRepository;
 use Illuminate\Console\Command;
 use Throwable;
 
