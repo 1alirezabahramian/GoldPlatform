@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Str;
 
 class FinancialTransaction extends Model
 {
@@ -22,12 +23,18 @@ class FinancialTransaction extends Model
         'metadata' => 'array',
     ];
 
-    public function trade(): BelongsTo
+    protected static function booted(): void
     {
-        return $this->belongsTo(
-            Trade::class,
-            'reference_id'
-        );
+        static::creating(function (FinancialTransaction $transaction): void {
+            if (blank($transaction->uuid)) {
+                $transaction->uuid = (string) Str::uuid();
+            }
+        });
+    }
+
+    public function reference(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     public function ledgerEntries(): HasMany
