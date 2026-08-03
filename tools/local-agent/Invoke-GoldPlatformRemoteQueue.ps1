@@ -12,6 +12,7 @@ $OutputEncoding = [System.Text.UTF8Encoding]::new()
 
 $lockPath = Join-Path $ProjectRoot 'storage\agent-reports\remote-queue.lock'
 New-Item -ItemType Directory -Force -Path (Split-Path $lockPath) | Out-Null
+$lockStream = $null
 
 try {
     $lockStream = [System.IO.File]::Open($lockPath, 'OpenOrCreate', 'ReadWrite', 'None')
@@ -80,10 +81,12 @@ try {
     $issuesJson = & gh api "repos/$Repository/issues?state=open&per_page=50"
     if ($LASTEXITCODE -ne 0) { throw 'Could not read GitHub issues.' }
 
-    $issues = $issuesJson | ConvertFrom-Json | Where-Object {
-        -not $_.pull_request -and
-        $_.title -like '[AGENT]*' -and
-        $_.user.login -eq $AllowedAuthor
+    $allIssues = @($issuesJson | ConvertFrom-Json)
+    $issues = $allIssues | Where-Object {
+        $hasPullRequest = $_.PSObject.Properties.Name -contains 'pull_request'
+        (-not $hasPullRequest) -and
+        ([string]$_.title).StartsWith('[AGENT]', [System.StringComparison]::OrdinalIgnoreCase) -and
+        ([string]$_.user.login -eq $AllowedAuthor)
     } | Sort-Object number
 
     foreach ($issue in $issues) {
