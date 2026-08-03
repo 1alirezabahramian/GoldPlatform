@@ -60,6 +60,7 @@ class Psr4ComplianceTest extends TestCase
         $forbidden = [
             'App\\Services\\KimiaService',
             'App\\Repositories\\Kimia\\AccountRepository',
+            'App\\Repositories\\Kimia\\VoucherRepository',
         ];
 
         foreach ($iterator as $file) {
