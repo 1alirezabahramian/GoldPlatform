@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\Kimia\AccountRepository;
+use App\Integrations\Kimia\Repositories\KimiaAccountRepository;
 use Illuminate\Http\JsonResponse;
 
 class KimiaController extends Controller
 {
     public function __construct(
-        protected AccountRepository $accounts
+        protected KimiaAccountRepository $accounts
     ) {
     }
 
