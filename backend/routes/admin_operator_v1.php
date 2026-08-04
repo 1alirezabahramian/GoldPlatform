@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminCustomerGroupReadController;
 use App\Http\Controllers\Api\V1\AdminDashboardController;
 use App\Http\Controllers\Api\V1\AdminOperatorOperationalQueueController;
 use App\Http\Controllers\Api\V1\AdminUserReadController;
@@ -27,6 +28,8 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::ADMIN_DASHBOARD_VIEW);
         Route::get('/users', AdminUserReadController::class)
             ->middleware('permission:'.AdminOperatorPermissionCatalog::USERS_VIEW);
+        Route::get('/customer-groups', AdminCustomerGroupReadController::class)
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::CUSTOMER_GROUPS_VIEW);
         Route::get('/audit-logs', [AdminOperatorOperationalQueueController::class, 'audit'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::AUDIT_VIEW);
         Route::get('/outbox', [AdminOperatorOperationalQueueController::class, 'outbox'])
