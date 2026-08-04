@@ -1,4 +1,4 @@
-name: Backend Validation
+name: Backend RC1 Validation
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - feature/goldplatform-developer-mcp
 
 jobs:
-  backend:
+  backend-rc1:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -60,6 +60,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -76,20 +78,53 @@ jobs:
       - name: Prepare environment
         run: |
           cp .env.example .env
-          php artisan key:generate --force
           php artisan config:clear
 
       - name: Migration fresh
         run: php artisan migrate:fresh --force --no-interaction
 
-      - name: PHPUnit
+      - name: Unit Tests
+        run: php artisan test --testsuite=Unit --no-ansi
+
+      - name: Feature Tests
+        run: php artisan test --testsuite=Feature --no-ansi
+
+      - name: Financial and Ledger Tests
+        run: php artisan test --no-ansi --filter='Financial|Decimal|Ledger|BalanceProjection'
+
+      - name: Order Lifecycle Tests
+        run: php artisan test --no-ansi --filter='OrderStateMachine|OrderCreationSecurity'
+
+      - name: Trade Idempotency and Settlement Tests
+        run: php artisan test --no-ansi --filter='TradeEngineCompletion|Settlement'
+
+      - name: Custody and Delivery Tests
+        run: php artisan test --no-ansi --filter='Stages789Completion'
+
+      - name: Permission Tests
+        run: php artisan test --no-ansi --filter='BackendRc1GateTest|Stages1011CompletionTest'
+
+      - name: Kimia Mock Tests
+        run: php artisan test tests/Unit/Kimia --no-ansi
+
+      - name: Kimia Read-Only Integration Contract
+        run: php artisan test --no-ansi --filter='kimia_read_only_flow_uses_only_get_requests'
+
+      - name: Full Regression Suite
         run: php artisan test --no-ansi
 
-      - name: Laravel health
+      - name: Laravel Health Check
         run: |
           php artisan about --only=environment,cache,drivers
           php artisan route:list --except-vendor
+          php artisan migrate:status
 
-      - name: Docker compose validation
+      - name: Docker Compose Validation
         working-directory: .
         run: docker compose config --quiet
+
+      - name: Secret Scan
+        working-directory: .
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.2 \
+            detect --source=/repo --no-git --redact --exit-code=1
