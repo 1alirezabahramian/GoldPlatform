@@ -1,0 +1,81 @@
+openapi: 3.1.0
+info:
+  title: GoldPlatform Backoffice API
+  version: 0.1.0-op-01
+  description: |
+    قرارداد اولیه Admin و Operator. این سند هیچ قانون مالی، عملیات Ledger یا رفتار Kimia جدیدی تعریف نمی‌کند.
+servers:
+  - url: /api/v1
+security:
+  - sanctum: []
+paths:
+  /admin/bootstrap:
+    get:
+      operationId: getAdminBootstrap
+      summary: دریافت Navigation و Capabilityهای تأییدشده پنل مدیریت
+      responses:
+        '200':
+          $ref: '#/components/responses/BootstrapSuccess'
+        '401':
+          description: احراز هویت نشده
+        '403':
+          description: نقش admin ندارد
+  /operator/bootstrap:
+    get:
+      operationId: getOperatorBootstrap
+      summary: دریافت Navigation و Capabilityهای تأییدشده پنل اپراتور
+      responses:
+        '200':
+          $ref: '#/components/responses/BootstrapSuccess'
+        '401':
+          description: احراز هویت نشده
+        '403':
+          description: نقش operator یا admin ندارد
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+  responses:
+    BootstrapSuccess:
+      description: پاسخ Bootstrap نسخه‌دار
+      headers:
+        X-Request-ID:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelope'
+  schemas:
+    SuccessEnvelope:
+      type: object
+      required: [data, meta, message]
+      properties:
+        data:
+          type: object
+          required: [panel, navigation, capabilities]
+          properties:
+            panel:
+              type: string
+              enum: [admin, operator]
+            navigation:
+              type: array
+              items:
+                type: object
+                required: [code, path]
+                properties:
+                  code: { type: string }
+                  path: { type: string }
+            capabilities:
+              type: array
+              items: { type: string }
+        meta:
+          type: object
+          required: [request_id, generated_at, api_version]
+          properties:
+            request_id: { type: string }
+            generated_at: { type: string, format: date-time }
+            api_version: { type: string, const: v1 }
+        message:
+          type: ['string', 'null']
