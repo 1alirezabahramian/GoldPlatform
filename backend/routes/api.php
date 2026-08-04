@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\CustomerPanelController;
 use App\Http\Controllers\Api\KimiaController;
 use App\Http\Controllers\Api\OperatorPanelController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\V1\CustomerDashboardController;
+use App\Http\Controllers\Api\V1\CustomerReadController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +30,13 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
         Route::get('/deliveries', [CustomerPanelController::class, 'deliveries']);
         Route::post('/custody/{custodyAsset}/delivery', [CustomerPanelController::class, 'requestDelivery'])
             ->middleware('idempotency:delivery.request');
+    });
+
+    Route::prefix('v1/customer')->middleware('role:customer')->group(function () {
+        Route::get('/dashboard', CustomerDashboardController::class);
+        Route::get('/orders', [CustomerReadController::class, 'orders']);
+        Route::get('/custodies', [CustomerReadController::class, 'custodies']);
+        Route::get('/deliveries', [CustomerReadController::class, 'deliveries']);
     });
 });
 
