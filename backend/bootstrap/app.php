@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CustomerNoStore;
 use App\Http\Middleware\IdempotencyMiddleware;
 use App\Http\Middleware\RequestContext;
 use App\Http\Middleware\SecurityHeaders;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(RequestContext::class);
         $middleware->append(SecurityHeaders::class);
         $middleware->alias([
+            'customer.no-store' => CustomerNoStore::class,
             'idempotency' => IdempotencyMiddleware::class,
             'role' => RoleMiddleware::class,
         ]);
