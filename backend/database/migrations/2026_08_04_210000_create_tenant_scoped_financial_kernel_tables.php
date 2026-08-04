@@ -23,8 +23,8 @@ return new class extends Migration
             $table->timestamp('posted_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['scope_key', 'trace_id'], 'financial_journals_scope_trace_unique');
-            $table->unique(['scope_key', 'idempotency_key'], 'financial_journals_scope_idempotency_unique');
+            $table->unique(['scope_hash', 'trace_id'], 'financial_journals_scope_trace_unique');
+            $table->unique(['scope_hash', 'idempotency_key'], 'financial_journals_scope_idempotency_unique');
             $table->index(['tenant_id', 'company_id', 'branch_id'], 'financial_journals_scope_index');
             $table->index('correlation_id');
             $table->index('status');
@@ -68,8 +68,8 @@ return new class extends Migration
             $table->timestamp('occurred_at');
             $table->timestamps();
 
-            $table->index(['scope_key', 'correlation_id'], 'financial_events_scope_correlation_index');
-            $table->index(['scope_key', 'trace_id'], 'financial_events_scope_trace_index');
+            $table->index(['scope_hash', 'correlation_id'], 'financial_events_scope_correlation_index');
+            $table->index(['scope_hash', 'trace_id'], 'financial_events_scope_trace_index');
             $table->index(['tenant_id', 'company_id', 'branch_id'], 'financial_events_scope_index');
         });
 
@@ -87,11 +87,11 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(
-                ['scope_key', 'idempotency_key'],
+                ['scope_hash', 'idempotency_key'],
                 'financial_idempotency_scope_key_unique',
             );
             $table->index(['tenant_id', 'company_id', 'branch_id'], 'financial_idempotency_scope_index');
-            $table->index(['scope_key', 'operation'], 'financial_idempotency_scope_operation_index');
+            $table->index(['scope_hash', 'operation'], 'financial_idempotency_scope_operation_index');
         });
 
         Schema::create('financial_balance_projections', function (Blueprint $table) {
@@ -111,7 +111,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(
-                ['scope_key', 'ledger_account_id', 'asset_type', 'asset_id'],
+                ['scope_hash', 'ledger_account_id', 'asset_type', 'asset_id'],
                 'financial_balance_scope_account_asset_unique',
             );
             $table->index(['tenant_id', 'company_id', 'branch_id'], 'financial_balance_scope_index');
@@ -130,6 +130,7 @@ return new class extends Migration
     private function addScopeColumns(Blueprint $table): void
     {
         $table->string('scope_key', 512);
+        $table->char('scope_hash', 64);
         $table->string('tenant_id', 191);
         $table->string('company_id', 191)->nullable();
         $table->string('branch_id', 191)->nullable();
