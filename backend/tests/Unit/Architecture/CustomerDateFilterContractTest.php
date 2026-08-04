@@ -21,8 +21,8 @@ final class CustomerDateFilterContractTest extends TestCase
     {
         $controller = (string) file_get_contents(app_path('Http/Controllers/Api/V1/CustomerReadController.php'));
 
-        self::assertSame(3, substr_count($controller, "whereDate('created_at', '>=', $from)"));
-        self::assertSame(3, substr_count($controller, "whereDate('created_at', '<=', $to)"));
+        self::assertSame(3, substr_count($controller, 'whereDate(\'created_at\', \'>=\', $from)'));
+        self::assertSame(3, substr_count($controller, 'whereDate(\'created_at\', \'<=\', $to)'));
         self::assertStringNotContainsString('whereRaw', $controller);
     }
 
@@ -31,7 +31,7 @@ final class CustomerDateFilterContractTest extends TestCase
     {
         $controller = (string) file_get_contents(app_path('Http/Controllers/Api/V1/CustomerReadController.php'));
 
-        self::assertStringContainsString("'from' => $from", $controller);
-        self::assertStringContainsString("'to' => $to", $controller);
+        self::assertStringContainsString("'from' => \$from", $controller);
+        self::assertStringContainsString("'to' => \$to", $controller);
     }
 }
