@@ -3,14 +3,21 @@
 namespace App\Services\Settlement;
 
 use App\Enums\SettlementStatus;
+use App\Models\FinancialTransaction;
 use App\Models\Order;
 use App\Models\Settlement;
+use App\Services\LedgerService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
 class SettlementService
 {
+    public function __construct(
+        private readonly LedgerService $ledgerService
+    ) {
+    }
+
     public function createPending(
         Order $order,
         string $assetType,
@@ -63,6 +70,36 @@ class SettlementService
         });
     }
 
+    public function attachFinancialTransaction(
+        Settlement $settlement,
+        FinancialTransaction $transaction
+    ): Settlement {
+        return DB::transaction(function () use ($settlement, $transaction): Settlement {
+            $locked = $this->lock($settlement);
+
+            if ($locked->status === SettlementStatus::Completed) {
+                throw new LogicException("Completed settlement {$locked->uuid} cannot be relinked.");
+            }
+
+            if (! $transaction->exists || $transaction->getKey() === null) {
+                throw new LogicException('Settlement requires a persisted financial transaction.');
+            }
+
+            if (
+                $locked->financial_transaction_id !== null
+                && $locked->financial_transaction_id !== $transaction->getKey()
+            ) {
+                throw new LogicException("Settlement {$locked->uuid} is already linked to another financial transaction.");
+            }
+
+            $locked->forceFill([
+                'financial_transaction_id' => $transaction->getKey(),
+            ])->save();
+
+            return $locked->refresh();
+        });
+    }
+
     public function startProcessing(Settlement $settlement): Settlement
     {
         return DB::transaction(function () use ($settlement): Settlement {
@@ -85,6 +122,22 @@ class SettlementService
 
             return $locked->refresh();
         });
+    }
+
+    public function completeWithLedger(
+        Settlement $settlement,
+        ?string $kimiaReference = null,
+        array $metadata = []
+    ): Settlement {
+        $transaction = $settlement->financialTransaction;
+
+        if ($transaction === null) {
+            throw new LogicException("Settlement {$settlement->uuid} has no financial transaction.");
+        }
+
+        $this->ledgerService->assertBalanced($transaction);
+
+        return $this->complete($settlement, $kimiaReference, $metadata);
     }
 
     public function complete(
