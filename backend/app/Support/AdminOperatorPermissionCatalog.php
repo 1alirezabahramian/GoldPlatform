@@ -19,6 +19,8 @@ final class AdminOperatorPermissionCatalog
     public const CUSTODIES_DETAIL_VIEW = 'custodies.detail.view';
     public const DELIVERIES_VIEW = 'deliveries.view';
     public const DELIVERIES_DETAIL_VIEW = 'deliveries.detail.view';
+    public const SETTLEMENTS_VIEW = 'settlements.view';
+    public const SETTLEMENTS_DETAIL_VIEW = 'settlements.detail.view';
     public const POLICY_CHANGES_VIEW = 'customer-policy-changes.view';
     public const POLICY_CHANGES_CREATE = 'customer-policy-changes.create';
     public const POLICY_CHANGES_SUBMIT = 'customer-policy-changes.submit';
@@ -51,6 +53,8 @@ final class AdminOperatorPermissionCatalog
             self::CUSTODIES_DETAIL_VIEW,
             self::DELIVERIES_VIEW,
             self::DELIVERIES_DETAIL_VIEW,
+            self::SETTLEMENTS_VIEW,
+            self::SETTLEMENTS_DETAIL_VIEW,
             self::POLICY_CHANGES_VIEW,
             self::POLICY_CHANGES_CREATE,
             self::POLICY_CHANGES_SUBMIT,
