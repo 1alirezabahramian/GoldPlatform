@@ -1,0 +1,64 @@
+:root {
+  color-scheme: light;
+
+  /* Direction and typography */
+  --gp-direction: rtl;
+  --gp-font-family: "Vazirmatn", "IRANSansX", Tahoma, sans-serif;
+  --gp-font-size-xs: 0.75rem;
+  --gp-font-size-sm: 0.875rem;
+  --gp-font-size-md: 1rem;
+  --gp-font-size-lg: 1.125rem;
+  --gp-font-size-xl: 1.5rem;
+
+  /* Spacing */
+  --gp-space-1: 0.25rem;
+  --gp-space-2: 0.5rem;
+  --gp-space-3: 0.75rem;
+  --gp-space-4: 1rem;
+  --gp-space-5: 1.5rem;
+  --gp-space-6: 2rem;
+
+  /* Shape */
+  --gp-radius-sm: 0.5rem;
+  --gp-radius-md: 0.875rem;
+  --gp-radius-lg: 1.25rem;
+
+  /* Semantic colors — white-label values may override these variables */
+  --gp-color-bg: #f7f7f5;
+  --gp-color-surface: #ffffff;
+  --gp-color-text: #171717;
+  --gp-color-muted: #6b6b6b;
+  --gp-color-border: #e4e1d9;
+  --gp-color-brand: #9a7228;
+  --gp-color-brand-contrast: #ffffff;
+  --gp-color-success: #16794b;
+  --gp-color-warning: #9a5b00;
+  --gp-color-danger: #b42318;
+  --gp-color-focus: #2563eb;
+
+  /* Motion */
+  --gp-motion-fast: 120ms;
+  --gp-motion-normal: 200ms;
+
+  /* Layout */
+  --gp-content-max-width: 72rem;
+  --gp-touch-target-min: 2.75rem;
+}
+
+html {
+  direction: var(--gp-direction);
+  font-family: var(--gp-font-family);
+  background: var(--gp-color-bg);
+  color: var(--gp-color-text);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 3px solid var(--gp-color-focus);
+  outline-offset: 2px;
+}

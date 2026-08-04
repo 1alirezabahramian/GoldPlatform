@@ -1,0 +1,41 @@
+{
+  "navigation": {
+    "dashboard": "خانه",
+    "assets": "دارایی‌های من",
+    "orders": "سفارش‌های من",
+    "custodies": "امانات من",
+    "deliveries": "تحویل‌ها",
+    "profile": "حساب کاربری"
+  },
+  "assets": {
+    "money": "پول من",
+    "gold": "طلای من",
+    "coins": "سکه‌های من",
+    "currencies": "ارزهای من"
+  },
+  "actions": {
+    "buy": "خرید",
+    "sell": "فروش",
+    "convert_to_gold": "تبدیل به طلا",
+    "convert_to_money": "تبدیل به پول",
+    "request_delivery": "درخواست تحویل"
+  },
+  "states": {
+    "ready_for_pickup": "آماده تحویل",
+    "pending": "در انتظار بررسی",
+    "completed": "انجام‌شده",
+    "rejected": "ردشده",
+    "expired": "منقضی‌شده"
+  },
+  "forbidden_primary_terms": [
+    "Voucher",
+    "AccountId",
+    "AccountType",
+    "GroupId",
+    "Transaction Code",
+    "Debit",
+    "Credit",
+    "ProductId",
+    "VoucherId"
+  ]
+}
