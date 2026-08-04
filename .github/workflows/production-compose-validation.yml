@@ -28,7 +28,7 @@ jobs:
           APP_ENV=production
           APP_KEY=base64:REREREREREREREREREREREREREREREREREREREREREQ=
           APP_DEBUG=false
-          APP_URL=http://localhost:18080
+          APP_URL=https://goldplatform.test
           LOG_CHANNEL=stderr
           LOG_LEVEL=info
           DB_CONNECTION=mysql
@@ -42,6 +42,7 @@ jobs:
           REDIS_PORT=6379
           CACHE_STORE=redis
           SESSION_DRIVER=database
+          SESSION_SECURE_COOKIE=true
           QUEUE_CONNECTION=database
           KIMIA_BASE_URL=https://kimia.invalid
           KIMIA_USERNAME=test
@@ -58,6 +59,9 @@ jobs:
 
       - name: Start production-like stack
         run: docker compose -f docker-compose.production.yml up -d
+
+      - name: Validate production configuration
+        run: docker compose -f docker-compose.production.yml exec -T php php artisan ops:validate-production-config
 
       - name: Wait for application health
         shell: bash
