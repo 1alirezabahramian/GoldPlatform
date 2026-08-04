@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminAccessControlReadController;
+use App\Http\Controllers\Api\V1\AdminBranchReadController;
 use App\Http\Controllers\Api\V1\AdminCustodyDeliveryReadController;
 use App\Http\Controllers\Api\V1\AdminCustomerGroupReadController;
 use App\Http\Controllers\Api\V1\AdminDashboardController;
@@ -70,6 +71,8 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::PRODUCTS_VIEW);
         Route::get('/pricing/overview', [AdminProductPricingReadController::class, 'pricing'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::PRICING_VIEW);
+        Route::get('/branches', AdminBranchReadController::class)
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::BRANCHES_VIEW);
 
         Route::get('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'index'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_VIEW);
