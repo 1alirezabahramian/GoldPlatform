@@ -2,7 +2,7 @@
 param(
     [string]$ProjectRoot = (Resolve-Path "$PSScriptRoot\..\..").Path,
     [string]$ExpectedRepository = 'https://github.com/1alirezabahramian/GoldPlatform.git',
-    [string]$ExpectedBranch = 'feature/local-agent-runner',
+    [string]$ExpectedBranch = 'feature/goldplatform-developer-mcp',
     [string]$TaskName = 'GoldPlatform Remote Command Queue'
 )
 
