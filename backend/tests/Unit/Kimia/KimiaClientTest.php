@@ -21,6 +21,7 @@ class KimiaClientTest extends TestCase
             'username' => 'test-user',
             'password' => 'test-password',
             'timeout' => 5,
+            'read_only' => false,
         ]);
     }
 
@@ -45,6 +46,27 @@ class KimiaClientTest extends TestCase
                 fn (Request $request): bool => $request->method() === $method
             );
         }
+    }
+
+    #[Test]
+    public function read_only_mode_blocks_write_methods_before_http_dispatch(): void
+    {
+        config()->set('services.kimia.read_only', true);
+        Http::fake();
+
+        foreach (['post', 'put', 'delete'] as $method) {
+            try {
+                app(KimiaClient::class)->{$method}('/api/blocked', ['value' => 1]);
+                $this->fail("Expected {$method} to be blocked.");
+            } catch (KimiaException $exception) {
+                $this->assertSame(
+                    'Kimia write operations are disabled in read-only mode.',
+                    $exception->getMessage()
+                );
+            }
+        }
+
+        Http::assertNothingSent();
     }
 
     #[Test]
