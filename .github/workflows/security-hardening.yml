@@ -10,6 +10,16 @@ jobs:
   security-hardening:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:REREREREREREREREREREREREREREREREREREREREREQ=
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      KIMIA_BASE_URL: https://kimia.invalid
+      KIMIA_USERNAME: test
+      KIMIA_PASSWORD: test
+      KIMIA_READ_ONLY: 'true'
+      KIMIA_WRITE_ENABLED: 'false'
 
     steps:
       - uses: actions/checkout@v4
@@ -34,14 +44,4 @@ jobs:
 
       - name: Run security-focused tests
         working-directory: backend
-        env:
-          APP_ENV: testing
-          APP_KEY: base64:REREREREREREREREREREREREREREREREREREREREREQ=
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ':memory:'
-          KIMIA_BASE_URL: https://kimia.invalid
-          KIMIA_USERNAME: test
-          KIMIA_PASSWORD: test
-          KIMIA_READ_ONLY: 'true'
-          KIMIA_WRITE_ENABLED: 'false'
         run: php artisan test --filter='SecurityHeadersTest|Permission|OrderCreationSecurity|KimiaClientTest|ProductionConfigurationGuardTest'
