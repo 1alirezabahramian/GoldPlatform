@@ -1,0 +1,143 @@
+name: Backend RC2 Candidate
+
+on:
+  pull_request:
+    branches:
+      - feature/goldplatform-developer-mcp
+  workflow_dispatch:
+
+jobs:
+  full-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: goldplatform_rc2
+          MYSQL_USER: goldplatform
+          MYSQL_PASSWORD: goldplatform
+          MYSQL_ROOT_PASSWORD: root
+        ports: [3306:3306]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports: [6379:6379]
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      APP_KEY: base64:QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkI=
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: goldplatform_rc2
+      DB_USERNAME: goldplatform
+      DB_PASSWORD: goldplatform
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      REDIS_HOST: 127.0.0.1
+      KIMIA_BASE_URL: https://kimia.invalid
+      KIMIA_USERNAME: test
+      KIMIA_PASSWORD: test
+      KIMIA_READ_ONLY: 'true'
+      KIMIA_WRITE_ENABLED: 'false'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, zip
+          coverage: none
+      - name: Validate and install locked dependencies
+        run: |
+          composer validate --strict
+          composer install --no-interaction --prefer-dist --no-progress
+          composer audit --locked --no-interaction
+      - name: Fresh database and full regression
+        run: |
+          php artisan migrate:fresh --force --no-interaction
+          php artisan test --no-ansi
+      - name: Final Laravel health
+        run: |
+          php artisan about --only=environment,cache,drivers --no-ansi
+          php artisan route:list --json > /tmp/routes.json
+          test -s /tmp/routes.json
+      - name: Secret scan
+        working-directory: .
+        shell: bash
+        run: |
+          ! git grep -nE '(sk-proj-|ghp_|github_pat_|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY)' -- \
+            ':!backend/composer.lock' ':!docs' ':!*.example' ':!.github/workflows'
+          ! git grep -nE 'KIMIA_PASSWORD=[^$[:space:]]+' -- \
+            ':!backend/composer.lock' ':!docs' ':!*.example' ':!.github/workflows' ':!docker/php/Dockerfile.production'
+
+  deployment-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HTTP_PORT: 18080
+      DB_DATABASE: goldplatform_rc2_deploy
+      DB_USERNAME: goldplatform
+      DB_PASSWORD: validation-password
+      DB_ROOT_PASSWORD: validation-root-password
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare ephemeral production environment
+        shell: bash
+        run: |
+          cat > backend/.env.production <<'ENV'
+          APP_NAME=GoldPlatform
+          APP_ENV=production
+          APP_KEY=base64:REREREREREREREREREREREREREREREREREREREREREQ=
+          APP_DEBUG=false
+          APP_URL=https://goldplatform.test
+          LOG_CHANNEL=stderr
+          LOG_LEVEL=info
+          DB_CONNECTION=mysql
+          DB_HOST=mysql
+          DB_PORT=3306
+          DB_DATABASE=goldplatform_rc2_deploy
+          DB_USERNAME=goldplatform
+          DB_PASSWORD=validation-password
+          REDIS_CLIENT=phpredis
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          CACHE_STORE=redis
+          SESSION_DRIVER=database
+          SESSION_SECURE_COOKIE=true
+          QUEUE_CONNECTION=database
+          KIMIA_BASE_URL=https://kimia.invalid
+          KIMIA_USERNAME=test
+          KIMIA_PASSWORD=test
+          KIMIA_READ_ONLY=true
+          KIMIA_WRITE_ENABLED=false
+          ENV
+      - name: Validate private service exposure
+        shell: bash
+        run: |
+          docker compose -f docker-compose.production.yml config --format json > /tmp/compose.json
+          test "$(jq '.services.mysql.ports // [] | length' /tmp/compose.json)" -eq 0
+          test "$(jq '.services.redis.ports // [] | length' /tmp/compose.json)" -eq 0
+      - name: Run clean deployment and restart test
+        shell: bash
+        run: |
+          chmod +x tools/ops/rc2-deployment-test.sh
+          tools/ops/rc2-deployment-test.sh
+      - name: Stop stack
+        if: always()
+        run: docker compose -f docker-compose.production.yml down -v --remove-orphans
