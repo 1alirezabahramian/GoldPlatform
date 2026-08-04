@@ -14,9 +14,3 @@ class AccountService
         return $this->client->get('account-groups');
     }
 }
-public function accountGroups()
-{
-    return $this->client
-        ->get('account-groups')
-        ->json();
-}
