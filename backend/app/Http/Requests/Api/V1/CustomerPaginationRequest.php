@@ -17,6 +17,7 @@ class CustomerPaginationRequest extends FormRequest
         return [
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'sort' => ['sometimes', 'string', 'in:newest,oldest'],
         ];
     }
 
@@ -30,5 +31,17 @@ class CustomerPaginationRequest extends FormRequest
         $status = $this->validated('status');
 
         return is_string($status) ? $status : null;
+    }
+
+    public function sort(): string
+    {
+        $sort = $this->validated('sort', 'newest');
+
+        return $sort === 'oldest' ? 'oldest' : 'newest';
+    }
+
+    public function sortDirection(): string
+    {
+        return $this->sort() === 'oldest' ? 'asc' : 'desc';
     }
 }
