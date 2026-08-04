@@ -12,9 +12,9 @@ final class CustomerTraceHeaderContractTest extends TestCase
     {
         $response = (string) file_get_contents(app_path('Support/CustomerApiResponse.php'));
 
-        self::assertSame(2, substr_count($response, "header('X-Request-ID', $requestId)"));
-        self::assertStringContainsString("'request_id' => $requestId", $response);
-        self::assertStringNotContainsString("header('X-Request-ID', $request->header", $response);
+        self::assertSame(2, substr_count($response, "header('X-Request-ID', \$requestId)"));
+        self::assertStringContainsString("'request_id' => \$requestId", $response);
+        self::assertStringNotContainsString("header('X-Request-ID', \$request->header", $response);
     }
 
     #[Test]
