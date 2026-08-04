@@ -43,6 +43,13 @@ Stage 22 فقط وقتی Complete اعلام می‌شود که:
 - Pull Request Merge شود.
 - Candidate SHA و محدودیت‌های باقی‌مانده ثبت شوند.
 
+## Validation evidence — 2026-08-04
+
+- Agent Host و GitHub Issue Queue با اجرای موفق `git-status` تأیید شدند.
+- Health Check روی شاخه مبنا اجرا شد و نشان داد شاخه محلی Candidate را در اختیار ندارد؛ بنابراین خروجی آن معیار پذیرش RC2 نیست.
+- این Commit برای ایجاد SHA تازه Candidate و اجرای مجدد تمام GitHub Actions مرتبط با PR #78 ثبت شده است.
+- نتیجه نهایی فقط از Workflowهای همان SHA و بدون تکیه بر وضعیت قدیمی Agent اعلام می‌شود.
+
 ## Environment-specific release blockers
 
 موارد زیر فقط در محیط مقصد قابل تأییدند و خارج از ادعای CI هستند:
