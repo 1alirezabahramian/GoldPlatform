@@ -12,7 +12,7 @@ final class CustomerApiErrorContractTest extends TestCase
     {
         $bootstrap = (string) file_get_contents(base_path('bootstrap/app.php'));
 
-        self::assertStringContainsString("$request->is('api/v1/customer/*')", $bootstrap);
+        self::assertStringContainsString("\$request->is('api/v1/customer/*')", $bootstrap);
         self::assertStringContainsString('return null;', $bootstrap);
     }
 
