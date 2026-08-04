@@ -6,6 +6,7 @@ use App\Models\FinancialTransaction;
 use App\Models\LedgerEntry;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use LogicException;
 
 class LedgerService
 {
@@ -22,15 +23,15 @@ class LedgerService
         $this->assertPersistedTransaction($transaction);
         $this->assertWalletAccountId($walletAccountId);
         $this->assertEntryType($entryType);
-        $this->assertPositiveAmount($amount);
-        $this->assertCurrency($currency);
+        $amount = $this->normalizePositiveDecimal($amount);
+        $currency = $this->normalizeCurrency($currency);
 
         return LedgerEntry::create([
             'financial_transaction_id' => $transaction->id,
             'wallet_account_id' => $walletAccountId,
             'entry_type' => $entryType,
             'amount' => $amount,
-            'currency' => strtoupper($currency),
+            'currency' => $currency,
             'description' => $description,
         ]);
     }
@@ -46,34 +47,59 @@ class LedgerService
         $this->assertWalletAccountId($fromAccountId);
         $this->assertWalletAccountId($toAccountId);
         $this->assertDistinctAccounts($fromAccountId, $toAccountId);
-        $this->assertPositiveAmount($amount);
-        $this->assertCurrency($currency);
+        $amount = $this->normalizePositiveDecimal($amount);
+        $currency = $this->normalizeCurrency($currency);
 
-        DB::transaction(function () use (
-            $transaction,
-            $fromAccountId,
-            $toAccountId,
-            $amount,
-            $currency
-        ) {
-            $this->createEntry(
-                transaction: $transaction,
-                walletAccountId: $fromAccountId,
-                entryType: 'debit',
-                amount: $amount,
-                currency: $currency,
-                description: 'Transfer debit'
-            );
-
-            $this->createEntry(
-                transaction: $transaction,
-                walletAccountId: $toAccountId,
-                entryType: 'credit',
-                amount: $amount,
-                currency: $currency,
-                description: 'Transfer credit'
-            );
+        DB::transaction(function () use ($transaction, $fromAccountId, $toAccountId, $amount, $currency): void {
+            $this->createEntry($transaction, $fromAccountId, 'debit', $amount, $currency, 'Transfer debit');
+            $this->createEntry($transaction, $toAccountId, 'credit', $amount, $currency, 'Transfer credit');
         });
+    }
+
+    /** @return array<string, array{debit: string, credit: string}> */
+    public function totalsByCurrency(FinancialTransaction $transaction): array
+    {
+        $this->assertPersistedTransaction($transaction);
+        $totals = [];
+
+        $transaction->ledgerEntries()
+            ->get(['entry_type', 'amount', 'currency'])
+            ->each(function (LedgerEntry $entry) use (&$totals): void {
+                $currency = $this->normalizeCurrency((string) $entry->currency);
+                $totals[$currency] ??= ['debit' => '0', 'credit' => '0'];
+                $totals[$currency][$entry->entry_type] = $this->addDecimals(
+                    $totals[$currency][$entry->entry_type],
+                    (string) $entry->amount
+                );
+            });
+
+        return $totals;
+    }
+
+    public function isBalanced(FinancialTransaction $transaction): bool
+    {
+        $totals = $this->totalsByCurrency($transaction);
+
+        if ($totals === []) {
+            return false;
+        }
+
+        foreach ($totals as $currencyTotals) {
+            if ($this->canonicalDecimal($currencyTotals['debit']) !== $this->canonicalDecimal($currencyTotals['credit'])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function assertBalanced(FinancialTransaction $transaction): void
+    {
+        if (! $this->isBalanced($transaction)) {
+            throw new LogicException(
+                "Financial transaction {$transaction->uuid} must contain balanced debit and credit entries for every asset unit."
+            );
+        }
     }
 
     private function assertPersistedTransaction(FinancialTransaction $transaction): void
@@ -97,20 +123,26 @@ class LedgerService
         }
     }
 
-    private function assertPositiveAmount(string $amount): void
+    private function normalizePositiveDecimal(string $amount): string
     {
-        if (! is_numeric($amount) || bccomp($amount, '0', 6) !== 1) {
-            throw new InvalidArgumentException('Ledger amount must be greater than zero.');
+        $amount = trim($amount);
+
+        if (! preg_match('/^\d+(?:\.\d+)?$/', $amount) || ! preg_match('/[1-9]/', $amount)) {
+            throw new InvalidArgumentException('Ledger amount must be a positive decimal string.');
         }
+
+        return $this->canonicalDecimal($amount);
     }
 
-    private function assertCurrency(string $currency): void
+    private function normalizeCurrency(string $currency): string
     {
         $normalized = strtoupper(trim($currency));
 
         if ($normalized === '' || strlen($normalized) > 20) {
-            throw new InvalidArgumentException('Ledger currency is required and must not exceed 20 characters.');
+            throw new InvalidArgumentException('Ledger asset unit is required and must not exceed 20 characters.');
         }
+
+        return $normalized;
     }
 
     private function assertDistinctAccounts(int $fromAccountId, int $toAccountId): void
@@ -118,5 +150,60 @@ class LedgerService
         if ($fromAccountId === $toAccountId) {
             throw new InvalidArgumentException('Ledger transfer accounts must be different.');
         }
+    }
+
+    private function addDecimals(string $left, string $right): string
+    {
+        [$leftWhole, $leftFraction] = $this->splitDecimal($left);
+        [$rightWhole, $rightFraction] = $this->splitDecimal($right);
+        $scale = max(strlen($leftFraction), strlen($rightFraction));
+
+        $leftDigits = ltrim($leftWhole.str_pad($leftFraction, $scale, '0'), '0') ?: '0';
+        $rightDigits = ltrim($rightWhole.str_pad($rightFraction, $scale, '0'), '0') ?: '0';
+        $sum = '';
+        $carry = 0;
+        $maxLength = max(strlen($leftDigits), strlen($rightDigits));
+        $leftDigits = str_pad($leftDigits, $maxLength, '0', STR_PAD_LEFT);
+        $rightDigits = str_pad($rightDigits, $maxLength, '0', STR_PAD_LEFT);
+
+        for ($index = $maxLength - 1; $index >= 0; $index--) {
+            $digit = (int) $leftDigits[$index] + (int) $rightDigits[$index] + $carry;
+            $sum = (string) ($digit % 10).$sum;
+            $carry = intdiv($digit, 10);
+        }
+
+        if ($carry > 0) {
+            $sum = (string) $carry.$sum;
+        }
+
+        if ($scale === 0) {
+            return $this->canonicalDecimal($sum);
+        }
+
+        $sum = str_pad($sum, $scale + 1, '0', STR_PAD_LEFT);
+
+        return $this->canonicalDecimal(
+            substr($sum, 0, -$scale).'.'.substr($sum, -$scale)
+        );
+    }
+
+    /** @return array{0:string,1:string} */
+    private function splitDecimal(string $value): array
+    {
+        $value = $this->canonicalDecimal($value);
+        $parts = explode('.', $value, 2);
+
+        return [$parts[0], $parts[1] ?? ''];
+    }
+
+    private function canonicalDecimal(string $value): string
+    {
+        $value = trim($value);
+        $parts = explode('.', $value, 2);
+        $whole = ltrim($parts[0], '0');
+        $whole = $whole === '' ? '0' : $whole;
+        $fraction = isset($parts[1]) ? rtrim($parts[1], '0') : '';
+
+        return $fraction === '' ? $whole : $whole.'.'.$fraction;
     }
 }
