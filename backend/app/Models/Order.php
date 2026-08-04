@@ -29,4 +29,9 @@ class Order extends Model
     {
         return $this->hasMany(Trade::class);
     }
+
+    public function settlements(): HasMany
+    {
+        return $this->hasMany(Settlement::class);
+    }
 }
