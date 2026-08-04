@@ -18,14 +18,14 @@ class SyncKimiaCurrencies extends Command
         $this->info('Connecting to Kimia...');
 
         try {
-            $currencies = $kimia->get('/api/product/currencies');
+            $currencies = $kimia->get('/api/product/currencies')->json();
         } catch (Throwable $exception) {
             report($exception);
             $this->error('Kimia connection failed: '.$exception->getMessage());
             return self::FAILURE;
         }
 
-        if (empty($currencies)) {
+        if (! is_array($currencies) || $currencies === []) {
             $this->error('No currencies received from Kimia.');
             return self::FAILURE;
         }
