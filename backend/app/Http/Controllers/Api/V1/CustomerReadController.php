@@ -21,12 +21,12 @@ final class CustomerReadController extends Controller
         $page = Order::query()
             ->where('user_id', $request->user()->id)
             ->when($request->status(), fn (Builder $query, string $status) => $query->where('status', $status))
-            ->latest('id')
+            ->orderBy('id', $request->sortDirection())
             ->paginate($request->perPage());
 
         return CustomerApiResponse::success($request, [
             'items' => collect($page->items())->map(fn (Order $order) => $presenter->order($order))->all(),
-        ], $this->pagination($page, $request->status()));
+        ], $this->pagination($page, $request->status(), $request->sort()));
     }
 
     public function custodies(CustomerCustodyListRequest $request, CustomerReadPresenter $presenter): JsonResponse
@@ -34,12 +34,12 @@ final class CustomerReadController extends Controller
         $page = CustodyAsset::query()
             ->where('user_id', $request->user()->id)
             ->when($request->status(), fn (Builder $query, string $status) => $query->where('status', $status))
-            ->latest('id')
+            ->orderBy('id', $request->sortDirection())
             ->paginate($request->perPage());
 
         return CustomerApiResponse::success($request, [
             'items' => collect($page->items())->map(fn (CustodyAsset $asset) => $presenter->custody($asset))->all(),
-        ], $this->pagination($page, $request->status()));
+        ], $this->pagination($page, $request->status(), $request->sort()));
     }
 
     public function deliveries(CustomerDeliveryListRequest $request, CustomerReadPresenter $presenter): JsonResponse
@@ -48,19 +48,20 @@ final class CustomerReadController extends Controller
             ->with('custodyAsset:id,uuid')
             ->where('user_id', $request->user()->id)
             ->when($request->status(), fn (Builder $query, string $status) => $query->where('status', $status))
-            ->latest('id')
+            ->orderBy('id', $request->sortDirection())
             ->paginate($request->perPage());
 
         return CustomerApiResponse::success($request, [
             'items' => collect($page->items())->map(fn (DeliveryRequest $delivery) => $presenter->delivery($delivery))->all(),
-        ], $this->pagination($page, $request->status()));
+        ], $this->pagination($page, $request->status(), $request->sort()));
     }
 
-    private function pagination($page, ?string $status): array
+    private function pagination($page, ?string $status, string $sort): array
     {
         return [
             'filters' => [
                 'status' => $status,
+                'sort' => $sort,
             ],
             'pagination' => [
                 'current_page' => $page->currentPage(),
