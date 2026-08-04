@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: GoldPlatform Customer API
-  version: 1.4.0-customer-contract
+  version: 1.8.0-customer-contract
   description: |
     قرارداد نسخه‌دار پنل مشتری. پیچیدگی مالی، Ledger و Kimia در Backend باقی می‌ماند.
     این سند هیچ قانون مالی، فرمول قیمت، کارمزد یا عملیات Kimia جدیدی تعریف نمی‌کند.
@@ -92,8 +92,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PerPage'
+        - $ref: '#/components/parameters/Status'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
       responses:
         '200': { $ref: '#/components/responses/PaginatedSuccess' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
   /order-statuses:
     get:
       operationId: getCustomerOrderStatuses
@@ -107,8 +112,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PerPage'
+        - $ref: '#/components/parameters/Status'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
       responses:
         '200': { $ref: '#/components/responses/PaginatedSuccess' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
   /custodies/{reference}:
     get:
       operationId: getCustomerCustody
@@ -144,8 +154,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PerPage'
+        - $ref: '#/components/parameters/Status'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
       responses:
         '200': { $ref: '#/components/responses/PaginatedSuccess' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
   /deliveries/{reference}:
     get:
       operationId: getCustomerDelivery
@@ -193,55 +208,126 @@ components:
         type: integer
         minimum: 1
         maximum: 50
-        default: 20
+        default: 25
+    Status:
+      name: status
+      in: query
+      required: false
+      description: وضعیت معتبر همان دامنه؛ Backend آن را با Enum واقعی اعتبارسنجی می‌کند
+      schema:
+        type: string
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [newest, oldest]
+        default: newest
+    FromDate:
+      name: from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    ToDate:
+      name: to
+      in: query
+      required: false
+      description: باید مساوی یا پس از from باشد
+      schema:
+        type: string
+        format: date
+  headers:
+    RequestId:
+      description: شناسه قابل‌پیگیری همان درخواست
+      schema:
+        type: string
+        format: uuid
+    CacheControl:
+      description: جلوگیری از ذخیره پاسخ حساس مشتری
+      schema:
+        type: string
+        example: private, no-store, no-cache, must-revalidate
   responses:
     GenericSuccess:
       description: پاسخ موفق استاندارد مشتری
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/SuccessEnvelope' }
     PaginatedSuccess:
       description: پاسخ موفق صفحه‌بندی‌شده
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/PaginatedEnvelope' }
     AssetListSuccess:
       description: فهرست مانده‌های مالی مشتری
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/AssetListEnvelope' }
     BootstrapSuccess:
       description: قراردادهای Bootstrap
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/SuccessEnvelope' }
     Unauthenticated:
       description: کاربر احراز هویت نشده است
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
     Forbidden:
       description: دسترسی به منبع مجاز نیست
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
     ResourceNotFound:
       description: منبع متعلق به مشتری پیدا نشد
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
     ValidationFailed:
       description: داده ورودی معتبر نیست
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
     RateLimited:
       description: تعداد درخواست بیش از حد مجاز است
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
     Conflict:
       description: درخواست با وضعیت فعلی منبع قابل انجام نیست
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Cache-Control: { $ref: '#/components/headers/CacheControl' }
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
@@ -324,6 +410,14 @@ components:
         per_page: { type: integer, minimum: 1, maximum: 50 }
         total: { type: integer, minimum: 0 }
         last_page: { type: integer, minimum: 1 }
+        has_more: { type: boolean }
+        filters:
+          type: object
+          properties:
+            status: { type: [string, 'null'] }
+            sort: { type: string, enum: [newest, oldest] }
+            from: { type: [string, 'null'], format: date }
+            to: { type: [string, 'null'], format: date }
     AssetBalance:
       type: object
       required: [reference, type, title, unit, balance]
