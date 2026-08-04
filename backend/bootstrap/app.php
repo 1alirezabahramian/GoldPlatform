@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\IdempotencyMiddleware;
 use App\Http\Middleware\RequestContext;
+use App\Http\Middleware\RequestObservability;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(RequestContext::class);
+        $middleware->append(RequestObservability::class);
         $middleware->append(SecurityHeaders::class);
         $middleware->alias([
             'idempotency' => IdempotencyMiddleware::class,
