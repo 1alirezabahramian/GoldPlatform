@@ -8,7 +8,6 @@ use App\Models\Order;
 use App\Models\User;
 use App\Support\CustomerBalancePresenter;
 use App\Support\CustomerReadPresenter;
-use Illuminate\Support\Collection;
 
 final class CustomerDashboardReadModel
 {
@@ -22,6 +21,10 @@ final class CustomerDashboardReadModel
     {
         $accounts = $user->wallet?->accounts()
             ->where('is_active', true)
+            ->with([
+                'ledgerEntries',
+                'balanceReservations' => fn ($query) => $query->where('status', 'active'),
+            ])
             ->orderBy('id')
             ->get() ?? collect();
 
@@ -69,7 +72,10 @@ final class CustomerDashboardReadModel
             ->values();
 
         return [
-            'assets' => $accounts->map(fn ($account) => $this->balances->present($account))->values()->all(),
+            'assets' => $accounts
+                ->map(fn ($account) => $this->balances->presentFromLoadedRelations($account))
+                ->values()
+                ->all(),
             'summary' => [
                 'active_orders' => Order::query()
                     ->where('user_id', $user->id)
@@ -90,7 +96,7 @@ final class CustomerDashboardReadModel
                     ->values()
                     ->all(),
                 'ready_deliveries' => $recentDeliveries
-                    ->where('status.value', 'ready')
+                    ->filter(fn (DeliveryRequest $delivery) => $delivery->status?->value === 'ready')
                     ->take(3)
                     ->map(fn (DeliveryRequest $delivery) => $this->resources->delivery($delivery))
                     ->values()
