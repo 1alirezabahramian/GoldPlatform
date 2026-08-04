@@ -26,6 +26,7 @@ final class AdminOperatorPermissionCatalog
     public const PRODUCTS_VIEW = 'products.view';
     public const PRODUCT_CATEGORIES_VIEW = 'product-categories.view';
     public const PRICING_VIEW = 'pricing.view';
+    public const BRANCHES_VIEW = 'branches.view';
     public const POLICY_CHANGES_VIEW = 'customer-policy-changes.view';
     public const POLICY_CHANGES_CREATE = 'customer-policy-changes.create';
     public const POLICY_CHANGES_SUBMIT = 'customer-policy-changes.submit';
@@ -65,6 +66,7 @@ final class AdminOperatorPermissionCatalog
             self::PRODUCTS_VIEW,
             self::PRODUCT_CATEGORIES_VIEW,
             self::PRICING_VIEW,
+            self::BRANCHES_VIEW,
             self::POLICY_CHANGES_VIEW,
             self::POLICY_CHANGES_CREATE,
             self::POLICY_CHANGES_SUBMIT,
