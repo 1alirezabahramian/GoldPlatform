@@ -13,12 +13,13 @@
 1. Full Regression روی MySQL 8.4 و Redis واقعی
 2. Dependency Audit و Secret Scan
 3. Deployment پاک با `docker-compose.production.yml`
-4. Production Configuration Guard
-5. Operational Health برای DB، Redis، Queue، Outbox و Storage
-6. Application `/up` Health
-7. Restart Test برای PHP و Nginx
-8. Production Checklist
-9. Backup/Restore، Security و Performance workflowهای موجود
+4. اجرای Migration روی دیتابیس خالی و بررسی وضعیت آن
+5. Production Configuration Guard
+6. Operational Health برای DB، Redis، Queue، Outbox و Storage
+7. Application `/up` Health
+8. Restart Test برای PHP و Nginx
+9. Production Checklist
+10. Backup/Restore، Security و Performance workflowهای موجود
 
 ## Added evidence
 
@@ -47,8 +48,11 @@ Stage 22 فقط وقتی Complete اعلام می‌شود که:
 
 - Agent Host و GitHub Issue Queue با اجرای موفق `git-status` تأیید شدند.
 - Health Check روی شاخه مبنا اجرا شد و نشان داد شاخه محلی Candidate را در اختیار ندارد؛ بنابراین خروجی آن معیار پذیرش RC2 نیست.
-- این Commit برای ایجاد SHA تازه Candidate و اجرای مجدد تمام GitHub Actions مرتبط با PR #78 ثبت شده است.
-- نتیجه نهایی فقط از Workflowهای همان SHA و بدون تکیه بر وضعیت قدیمی Agent اعلام می‌شود.
+- اجرای RC2 روی SHA قبلی نشان داد Production Compose، ساخت Imageها، بالا آمدن MySQL/Redis/PHP/Nginx، Production Config Guard و Operational Health همگی موفق بوده‌اند.
+- شکست Deployment Test فقط در `php artisan migrate:status` رخ داد، چون دیتابیس عمداً خالی بود و مرحله اجرای Migration در سناریوی Deployment وجود نداشت.
+- اصلاح حداقلی انجام شد: قبل از Health و `migrate:status`، دستور `php artisan migrate --force --no-interaction` روی دیتابیس خالی اجرا می‌شود.
+- این اصلاح هیچ منطق مالی، Kimia، API یا مدل داده‌ای را تغییر نمی‌دهد و فقط ترتیب صحیح استقرار پاک را کامل می‌کند.
+- نتیجه نهایی فقط از Workflowهای SHA جدید و بدون تکیه بر وضعیت قدیمی Agent اعلام می‌شود.
 
 ## Environment-specific release blockers
 
