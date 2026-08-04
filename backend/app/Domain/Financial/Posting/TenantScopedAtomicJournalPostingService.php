@@ -36,7 +36,7 @@ final readonly class TenantScopedAtomicJournalPostingService
     ): JournalDocument {
         $journal = $draft->journal();
         $key = $journal->idempotencyKey();
-        $lockKey = 'financial:'.$scope->key().':idempotency:'.$key->value();
+        $lockKey = $scope->key().':idempotency:'.$key->value();
 
         return $this->concurrency->synchronized(
             $lockKey,
