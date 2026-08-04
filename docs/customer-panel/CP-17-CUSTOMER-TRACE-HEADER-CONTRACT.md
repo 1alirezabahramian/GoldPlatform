@@ -23,3 +23,7 @@
 - بدون Wallet، Ledger یا Settlement
 - بدون Kimia Read/Write
 - بدون افشای Stack Trace یا شناسه داخلی مالی
+
+## اعتبارسنجی مستقل
+
+این Stage پس از Merge شدن CP-16 روی Branch مبنای اصلی قرار گرفته و باید شش Gate استاندارد CI را روی SHA مستقل خود با موفقیت طی کند.
