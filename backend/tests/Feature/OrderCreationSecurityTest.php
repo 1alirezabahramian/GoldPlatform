@@ -15,7 +15,7 @@ class OrderCreationSecurityTest extends TestCase
     #[Test]
     public function unauthenticated_users_cannot_create_orders(): void
     {
-        $this->postJson('/api/orders', $this->validPayload())
+        $this->postJson('/api/orders', $this->validPayload(), $this->headers('unauthenticated'))
             ->assertUnauthorized();
     }
 
@@ -25,7 +25,7 @@ class OrderCreationSecurityTest extends TestCase
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $this->postJson('/api/orders', $this->validPayload())
+        $this->postJson('/api/orders', $this->validPayload(), $this->headers('create-order'))
             ->assertCreated()
             ->assertJsonPath('data.user_id', $user->id)
             ->assertJsonPath('data.status', 'pending');
@@ -47,7 +47,7 @@ class OrderCreationSecurityTest extends TestCase
             'user_id' => $user->id + 1000,
             'status' => 'completed',
             'total_price' => 1,
-        ]))
+        ]), $this->headers('override-attempt'))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['user_id', 'status', 'total_price']);
     }
@@ -61,5 +61,10 @@ class OrderCreationSecurityTest extends TestCase
             'commission' => 0,
             'description' => 'Test order',
         ];
+    }
+
+    private function headers(string $key): array
+    {
+        return ['Idempotency-Key' => $key];
     }
 }
