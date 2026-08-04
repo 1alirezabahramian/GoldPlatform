@@ -23,6 +23,9 @@ final class AdminOperatorPermissionCatalog
     public const SETTLEMENTS_DETAIL_VIEW = 'settlements.detail.view';
     public const KIMIA_READ = 'kimia.read';
     public const SYSTEM_HEALTH_VIEW = 'system-health.view';
+    public const PRODUCTS_VIEW = 'products.view';
+    public const PRODUCT_CATEGORIES_VIEW = 'product-categories.view';
+    public const PRICING_VIEW = 'pricing.view';
     public const POLICY_CHANGES_VIEW = 'customer-policy-changes.view';
     public const POLICY_CHANGES_CREATE = 'customer-policy-changes.create';
     public const POLICY_CHANGES_SUBMIT = 'customer-policy-changes.submit';
@@ -59,6 +62,9 @@ final class AdminOperatorPermissionCatalog
             self::SETTLEMENTS_DETAIL_VIEW,
             self::KIMIA_READ,
             self::SYSTEM_HEALTH_VIEW,
+            self::PRODUCTS_VIEW,
+            self::PRODUCT_CATEGORIES_VIEW,
+            self::PRICING_VIEW,
             self::POLICY_CHANGES_VIEW,
             self::POLICY_CHANGES_CREATE,
             self::POLICY_CHANGES_SUBMIT,
