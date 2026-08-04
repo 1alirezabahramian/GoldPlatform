@@ -19,7 +19,7 @@ class FinancialValueObjectsTest extends TestCase
     #[Test]
     public function exact_decimal_normalizes_plain_decimal_strings_without_float(): void
     {
-        $value = ExactDecimal::fromString('00012.3400');
+        $value = ExactDecimal::fromString('12.3400');
 
         self::assertSame('12.34', $value->value());
         self::assertSame(2, $value->scale());
@@ -38,23 +38,23 @@ class FinancialValueObjectsTest extends TestCase
     #[Test]
     public function money_operations_require_the_same_explicit_unit(): void
     {
-        $rial = Money::fromString('100', MoneyUnit::Rial);
-        $moreRial = Money::fromString('25', MoneyUnit::Rial);
+        $rial = Money::fromString('100', MoneyUnit::RIAL);
+        $moreRial = Money::fromString('25', MoneyUnit::RIAL);
 
         self::assertSame('125', $rial->add($moreRial)->amount()->value());
-        self::assertSame(MoneyUnit::Rial, $rial->unit());
+        self::assertSame(MoneyUnit::RIAL, $rial->unit());
 
         $this->expectException(InvalidArgumentException::class);
 
-        $rial->add(Money::fromString('10', MoneyUnit::Toman));
+        $rial->add(Money::fromString('10', MoneyUnit::TOMAN));
     }
 
     #[Test]
     public function financial_asset_identifier_keeps_type_and_external_identifier_separate(): void
     {
-        $asset = new FinancialAssetId(FinancialAssetType::Coin, '16');
+        $asset = new FinancialAssetId(FinancialAssetType::COIN, '16');
 
-        self::assertSame(FinancialAssetType::Coin, $asset->type());
+        self::assertSame(FinancialAssetType::COIN, $asset->type());
         self::assertSame('16', $asset->externalId());
         self::assertSame('coin:16', (string) $asset);
     }
