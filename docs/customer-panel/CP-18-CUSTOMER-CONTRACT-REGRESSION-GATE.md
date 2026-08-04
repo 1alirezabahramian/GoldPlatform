@@ -30,3 +30,7 @@ OpenAPI پیش از این مقدار پیش‌فرض `per_page` را 20 اعل�
 ## تست
 
 `CustomerContractRegressionGateTest` هماهنگی OpenAPI با Request، Response و Middlewareهای واقعی را کنترل می‌کند.
+
+## اعتبارسنجی مستقل
+
+این PR پس از Merge شدن CP-17 روی شاخه اصلی Customer Panel منتقل شد تا تمام Gateهای CI به‌صورت مستقل روی قرارداد نهایی CP-18 اجرا شوند.
