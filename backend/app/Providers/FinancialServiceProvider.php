@@ -8,9 +8,9 @@ use App\Domain\Financial\Contracts\TenantScopedIdempotencyRegistry;
 use App\Domain\Financial\Contracts\TenantScopedJournalRepository;
 use App\Domain\Financial\Persistence\AtomicFinancialOperation;
 use App\Domain\Financial\Persistence\ConcurrencyGuard;
+use App\Infrastructure\Financial\Database\DatabaseTenantScopedFinancialEventStore;
+use App\Infrastructure\Financial\Database\DatabaseTenantScopedIdempotencyRegistry;
 use App\Infrastructure\Financial\InMemory\InMemoryTenantScopedBalanceProjectionRepository;
-use App\Infrastructure\Financial\InMemory\InMemoryTenantScopedFinancialEventStore;
-use App\Infrastructure\Financial\InMemory\InMemoryTenantScopedIdempotencyRegistry;
 use App\Infrastructure\Financial\InMemory\InMemoryTenantScopedJournalRepository;
 use App\Infrastructure\Financial\Laravel\LaravelCacheConcurrencyGuard;
 use App\Infrastructure\Financial\Laravel\LaravelDatabaseAtomicFinancialOperation;
@@ -35,14 +35,14 @@ final class FinancialServiceProvider extends ServiceProvider
             InMemoryTenantScopedJournalRepository::class,
         );
 
-        $this->app->singleton(
+        $this->app->bind(
             TenantScopedFinancialEventStore::class,
-            InMemoryTenantScopedFinancialEventStore::class,
+            DatabaseTenantScopedFinancialEventStore::class,
         );
 
-        $this->app->singleton(
+        $this->app->bind(
             TenantScopedIdempotencyRegistry::class,
-            InMemoryTenantScopedIdempotencyRegistry::class,
+            DatabaseTenantScopedIdempotencyRegistry::class,
         );
 
         $this->app->singleton(
