@@ -6,6 +6,7 @@ use App\Models\FinancialTransaction;
 use App\Models\LedgerEntry;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use LogicException;
 
 class LedgerService
 {
@@ -55,7 +56,7 @@ class LedgerService
             $toAccountId,
             $amount,
             $currency
-        ) {
+        ): void {
             $this->createEntry(
                 transaction: $transaction,
                 walletAccountId: $fromAccountId,
@@ -74,6 +75,56 @@ class LedgerService
                 description: 'Transfer credit'
             );
         });
+    }
+
+    /**
+     * @return array<string, array{debit: string, credit: string}>
+     */
+    public function totalsByCurrency(FinancialTransaction $transaction): array
+    {
+        $this->assertPersistedTransaction($transaction);
+
+        $totals = [];
+
+        $transaction->ledgerEntries()
+            ->get(['entry_type', 'amount', 'currency'])
+            ->each(function (LedgerEntry $entry) use (&$totals): void {
+                $currency = strtoupper($entry->currency);
+                $totals[$currency] ??= ['debit' => '0.000000', 'credit' => '0.000000'];
+                $totals[$currency][$entry->entry_type] = bcadd(
+                    $totals[$currency][$entry->entry_type],
+                    (string) $entry->amount,
+                    6
+                );
+            });
+
+        return $totals;
+    }
+
+    public function isBalanced(FinancialTransaction $transaction): bool
+    {
+        $totals = $this->totalsByCurrency($transaction);
+
+        if ($totals === []) {
+            return false;
+        }
+
+        foreach ($totals as $currencyTotals) {
+            if (bccomp($currencyTotals['debit'], $currencyTotals['credit'], 6) !== 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function assertBalanced(FinancialTransaction $transaction): void
+    {
+        if (! $this->isBalanced($transaction)) {
+            throw new LogicException(
+                "Financial transaction {$transaction->uuid} must contain balanced debit and credit entries."
+            );
+        }
     }
 
     private function assertPersistedTransaction(FinancialTransaction $transaction): void
