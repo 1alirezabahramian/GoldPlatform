@@ -86,6 +86,14 @@ jobs:
           docker compose -f docker-compose.production.yml logs --no-color
           exit 1
 
+      - name: Run bounded HTTP load gate
+        shell: bash
+        run: |
+          chmod +x tools/ops/http-load-gate.sh
+          TARGET_URL=http://127.0.0.1:18080/up \
+          REQUESTS=100 CONCURRENCY=10 MAX_P95_SECONDS=1.000 \
+          tools/ops/http-load-gate.sh
+
       - name: Stop stack
         if: always()
         run: docker compose -f docker-compose.production.yml down -v --remove-orphans
