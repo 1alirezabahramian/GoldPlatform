@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\AdminProductPricingReadController;
 use App\Http\Controllers\Api\V1\AdminSettlementReadController;
 use App\Http\Controllers\Api\V1\AdminSystemHealthReadController;
 use App\Http\Controllers\Api\V1\AdminUserReadController;
+use App\Http\Controllers\Api\V1\AdminWhiteLabelReadController;
 use App\Http\Controllers\Api\V1\CustomerPolicyChangeRequestController;
 use App\Http\Controllers\Api\V1\OperatorDashboardController;
 use App\Support\AdminOperatorPermissionCatalog;
@@ -73,6 +74,8 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::PRICING_VIEW);
         Route::get('/branches', AdminBranchReadController::class)
             ->middleware('permission:'.AdminOperatorPermissionCatalog::BRANCHES_VIEW);
+        Route::get('/white-label/overview', AdminWhiteLabelReadController::class)
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::WHITE_LABEL_VIEW);
 
         Route::get('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'index'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_VIEW);
