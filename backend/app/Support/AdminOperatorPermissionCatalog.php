@@ -10,6 +10,7 @@ final class AdminOperatorPermissionCatalog
     public const ADMIN_DASHBOARD_VIEW = 'admin.dashboard.view';
     public const OPERATOR_DASHBOARD_VIEW = 'operator.dashboard.view';
 
+    public const USERS_VIEW = 'users.view';
     public const AUDIT_VIEW = 'audit.view';
     public const OUTBOX_VIEW = 'outbox.view';
     public const CUSTOMER_POLICIES_VIEW = 'customer-policies.view';
@@ -29,6 +30,7 @@ final class AdminOperatorPermissionCatalog
             self::OPERATOR_ACCESS,
             self::ADMIN_DASHBOARD_VIEW,
             self::OPERATOR_DASHBOARD_VIEW,
+            self::USERS_VIEW,
             self::AUDIT_VIEW,
             self::OUTBOX_VIEW,
             self::CUSTOMER_POLICIES_VIEW,
