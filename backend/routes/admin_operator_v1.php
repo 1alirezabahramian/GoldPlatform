@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AdminCustomerGroupReadController;
 use App\Http\Controllers\Api\V1\AdminDashboardController;
 use App\Http\Controllers\Api\V1\AdminOperatorOperationalQueueController;
 use App\Http\Controllers\Api\V1\AdminOrderReadController;
+use App\Http\Controllers\Api\V1\AdminSettlementReadController;
 use App\Http\Controllers\Api\V1\AdminUserReadController;
 use App\Http\Controllers\Api\V1\CustomerPolicyChangeRequestController;
 use App\Http\Controllers\Api\V1\OperatorDashboardController;
@@ -52,6 +53,10 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::DELIVERIES_VIEW);
         Route::get('/deliveries/{deliveryRequest}', [AdminCustodyDeliveryReadController::class, 'delivery'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::DELIVERIES_DETAIL_VIEW);
+        Route::get('/settlements', [AdminSettlementReadController::class, 'index'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::SETTLEMENTS_VIEW);
+        Route::get('/settlements/{settlement}', [AdminSettlementReadController::class, 'show'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::SETTLEMENTS_DETAIL_VIEW);
 
         Route::get('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'index'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_VIEW);
