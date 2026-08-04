@@ -6,10 +6,8 @@ final class AdminOperatorPermissionCatalog
 {
     public const ADMIN_ACCESS = 'admin.access';
     public const OPERATOR_ACCESS = 'operator.access';
-
     public const ADMIN_DASHBOARD_VIEW = 'admin.dashboard.view';
     public const OPERATOR_DASHBOARD_VIEW = 'operator.dashboard.view';
-
     public const USERS_VIEW = 'users.view';
     public const CUSTOMER_GROUPS_VIEW = 'customer-groups.view';
     public const ROLES_PERMISSIONS_VIEW = 'roles-permissions.view';
@@ -21,6 +19,7 @@ final class AdminOperatorPermissionCatalog
     public const DELIVERIES_DETAIL_VIEW = 'deliveries.detail.view';
     public const SETTLEMENTS_VIEW = 'settlements.view';
     public const SETTLEMENTS_DETAIL_VIEW = 'settlements.detail.view';
+    public const SETTLEMENT_ACTIONS_VIEW = 'settlement-actions.view';
     public const KIMIA_READ = 'kimia.read';
     public const SYSTEM_HEALTH_VIEW = 'system-health.view';
     public const PRODUCTS_VIEW = 'products.view';
@@ -39,7 +38,6 @@ final class AdminOperatorPermissionCatalog
     public const OUTBOX_VIEW = 'outbox.view';
     public const CUSTOMER_POLICIES_VIEW = 'customer-policies.view';
     public const CUSTOMER_POLICIES_UPDATE = 'customer-policies.update';
-
     public const ORDERS_QUEUE_VIEW = 'orders.queue.view';
     public const DELIVERIES_QUEUE_VIEW = 'deliveries.queue.view';
     public const DELIVERIES_APPROVE = 'deliveries.approve';
@@ -49,44 +47,22 @@ final class AdminOperatorPermissionCatalog
     public static function all(): array
     {
         return [
-            self::ADMIN_ACCESS,
-            self::OPERATOR_ACCESS,
-            self::ADMIN_DASHBOARD_VIEW,
-            self::OPERATOR_DASHBOARD_VIEW,
-            self::USERS_VIEW,
-            self::CUSTOMER_GROUPS_VIEW,
-            self::ROLES_PERMISSIONS_VIEW,
-            self::ORDERS_VIEW,
-            self::ORDERS_DETAIL_VIEW,
-            self::CUSTODIES_VIEW,
-            self::CUSTODIES_DETAIL_VIEW,
-            self::DELIVERIES_VIEW,
-            self::DELIVERIES_DETAIL_VIEW,
-            self::SETTLEMENTS_VIEW,
-            self::SETTLEMENTS_DETAIL_VIEW,
-            self::KIMIA_READ,
-            self::SYSTEM_HEALTH_VIEW,
-            self::PRODUCTS_VIEW,
-            self::PRODUCT_CATEGORIES_VIEW,
-            self::PRICING_VIEW,
-            self::BRANCHES_VIEW,
-            self::WHITE_LABEL_VIEW,
-            self::NOTIFICATIONS_VIEW,
-            self::REPORTS_VIEW,
-            self::POLICY_CHANGES_VIEW,
-            self::POLICY_CHANGES_CREATE,
-            self::POLICY_CHANGES_SUBMIT,
-            self::POLICY_CHANGES_APPROVE,
-            self::POLICY_CHANGES_REJECT,
-            self::AUDIT_VIEW,
-            self::OUTBOX_VIEW,
-            self::CUSTOMER_POLICIES_VIEW,
-            self::CUSTOMER_POLICIES_UPDATE,
-            self::ORDERS_QUEUE_VIEW,
-            self::DELIVERIES_QUEUE_VIEW,
-            self::DELIVERIES_APPROVE,
-            self::DELIVERIES_READY,
-            self::DELIVERIES_COMPLETE,
+            self::ADMIN_ACCESS, self::OPERATOR_ACCESS,
+            self::ADMIN_DASHBOARD_VIEW, self::OPERATOR_DASHBOARD_VIEW,
+            self::USERS_VIEW, self::CUSTOMER_GROUPS_VIEW, self::ROLES_PERMISSIONS_VIEW,
+            self::ORDERS_VIEW, self::ORDERS_DETAIL_VIEW,
+            self::CUSTODIES_VIEW, self::CUSTODIES_DETAIL_VIEW,
+            self::DELIVERIES_VIEW, self::DELIVERIES_DETAIL_VIEW,
+            self::SETTLEMENTS_VIEW, self::SETTLEMENTS_DETAIL_VIEW, self::SETTLEMENT_ACTIONS_VIEW,
+            self::KIMIA_READ, self::SYSTEM_HEALTH_VIEW,
+            self::PRODUCTS_VIEW, self::PRODUCT_CATEGORIES_VIEW, self::PRICING_VIEW,
+            self::BRANCHES_VIEW, self::WHITE_LABEL_VIEW, self::NOTIFICATIONS_VIEW, self::REPORTS_VIEW,
+            self::POLICY_CHANGES_VIEW, self::POLICY_CHANGES_CREATE, self::POLICY_CHANGES_SUBMIT,
+            self::POLICY_CHANGES_APPROVE, self::POLICY_CHANGES_REJECT,
+            self::AUDIT_VIEW, self::OUTBOX_VIEW,
+            self::CUSTOMER_POLICIES_VIEW, self::CUSTOMER_POLICIES_UPDATE,
+            self::ORDERS_QUEUE_VIEW, self::DELIVERIES_QUEUE_VIEW,
+            self::DELIVERIES_APPROVE, self::DELIVERIES_READY, self::DELIVERIES_COMPLETE,
         ];
     }
 
