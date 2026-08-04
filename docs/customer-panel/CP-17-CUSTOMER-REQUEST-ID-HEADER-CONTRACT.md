@@ -18,3 +18,7 @@
 - بدون تغییر Wallet، Ledger یا Settlement
 - بدون Kimia Read/Write
 - بدون افشای Stack Trace یا شناسه داخلی
+
+## وضعیت اعتبارسنجی
+
+این Stage پس از Merge موفق CP-16 روی Branch اصلی Customer API مستقل شد و باید CI کامل را روی Head مستقل خود طی کند.
