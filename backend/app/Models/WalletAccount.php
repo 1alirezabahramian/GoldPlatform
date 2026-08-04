@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\AssetType;
+use App\Services\Wallet\BalanceProjectionService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,42 +14,39 @@ class WalletAccount extends Model
         'wallet_id',
         'code',
         'title',
+        'asset_type',
+        'external_asset_id',
+        'unit',
         'balance',
         'blocked_balance',
         'is_active',
     ];
 
     protected $casts = [
-        'balance' => 'decimal:6',
-        'blocked_balance' => 'decimal:6',
+        'asset_type' => AssetType::class,
+        'external_asset_id' => 'integer',
+        'balance' => 'decimal:8',
+        'blocked_balance' => 'decimal:8',
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Parent Wallet
-     */
     public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
     }
 
-    /**
-     * Ledger Entries
-     */
     public function ledgerEntries(): HasMany
     {
         return $this->hasMany(LedgerEntry::class);
     }
 
-    /**
-     * Available Balance
-     */
+    public function balanceReservations(): HasMany
+    {
+        return $this->hasMany(BalanceReservation::class);
+    }
+
     public function getAvailableBalanceAttribute(): string
     {
-        return bcsub(
-            $this->balance,
-            $this->blocked_balance,
-            6
-        );
+        return app(BalanceProjectionService::class)->snapshot($this)['available'];
     }
 }
