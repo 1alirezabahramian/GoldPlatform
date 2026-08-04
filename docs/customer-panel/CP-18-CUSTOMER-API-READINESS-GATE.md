@@ -26,3 +26,6 @@
 
 ## نتیجه مورد انتظار
 هر حذف یا تغییر ناخواسته در اجزای پایه Customer API باید تست `CustomerApiReadinessGateTest` را قرمز کند و مانع Merge شود.
+
+## اعتبارسنجی نهایی
+این Stage پس از Merge شدن CP-17 روی Base اصلی مستقل شده و باید تمام Gateهای CI و Regression را روی Head نهایی خودش با موفقیت عبور دهد.
