@@ -25,13 +25,18 @@ final class AdminOperatorFoundationTest extends TestCase
     {
         $admin = (string) file_get_contents(app_path('Http/Controllers/Api/V1/AdminBootstrapController.php'));
         $operator = (string) file_get_contents(app_path('Http/Controllers/Api/V1/OperatorBootstrapController.php'));
-        $content = $admin.$operator;
+        $session = (string) file_get_contents(app_path('Support/BackofficeSessionBootstrap.php'));
+        $content = $admin.$operator.$session;
 
         foreach (['AccountId', 'ProductId', 'TransactionCode', 'VoucherId', 'Debit', 'Credit'] as $internalName) {
             self::assertStringNotContainsString($internalName, $content);
         }
 
-        self::assertStringContainsString("'panel' => 'admin'", $admin);
-        self::assertStringContainsString("'panel' => 'operator'", $operator);
+        self::assertStringContainsString("$bootstrap->for($user, 'admin')", $admin);
+        self::assertStringContainsString("$bootstrap->for($user, 'operator')", $operator);
+        self::assertStringContainsString("'permissions' => $permissions", $session);
+        self::assertStringContainsString("'mobile_masked'", $session);
+        self::assertStringNotContainsString("'mobile' =>", $session);
+        self::assertStringNotContainsString('national_code', $session);
     }
 }
