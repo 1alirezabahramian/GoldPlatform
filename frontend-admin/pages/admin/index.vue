@@ -1,17 +1,49 @@
 <script setup lang="ts">
-const { session } = useBackofficeSession()
+import type { AdminOperationalDashboard } from '~/types/dashboard'
+
+const dashboard = useOperationalDashboard()
+const data = ref<AdminOperationalDashboard | null>(null)
+const loading = ref(true)
+const error = ref<string | null>(null)
+
+const load = async () => {
+  loading.value = true
+  error.value = null
+  try {
+    data.value = await dashboard.admin()
+  } catch {
+    error.value = 'دریافت داشبورد مدیریتی ممکن نشد.'
+  } finally {
+    loading.value = false
+  }
+}
+
+await load()
+
+const summary = computed(() => data.value ? [
+  { label: 'سفارش‌های باز', value: data.value.summary.open_orders },
+  { label: 'تحویل‌های فعال', value: data.value.summary.active_deliveries },
+  { label: 'تسویه‌های ناموفق', value: data.value.summary.failed_settlements },
+  { label: 'امانات فعال', value: data.value.summary.custody_items },
+  { label: 'پیام‌های معطل', value: data.value.summary.pending_outbox },
+] : [])
 </script>
 
 <template>
-  <section class="page">
-    <div class="page-heading">
-      <div><p class="eyebrow">مدیریت</p><h1>داشبورد مدیر</h1></div>
-      <span class="status">نشست فعال</span>
-    </div>
-    <div class="card-grid">
-      <article class="card"><h2>دسترسی‌های فعال</h2><strong>{{ session?.permissions.length ?? 0 }}</strong></article>
-      <article class="card"><h2>بخش‌های قابل مشاهده</h2><strong>{{ session?.navigation.length ?? 0 }}</strong></article>
-    </div>
-    <article class="card"><h2>شروع کار</h2><p>بخش‌های مجاز از منوی کنار صفحه در دسترس هستند. تمام مجوزها از Backend دریافت می‌شوند.</p></article>
-  </section>
+  <main class="dashboard-page">
+    <header class="page-heading">
+      <div><p class="eyebrow">مدیریت</p><h1>داشبورد عملیاتی</h1></div>
+      <button type="button" @click="load">به‌روزرسانی</button>
+    </header>
+    <DashboardState :loading="loading" :error="error" @refresh="load">
+      <template v-if="data">
+        <OperationalSummaryGrid :items="summary" />
+        <p v-if="!data.financial_metrics_supported" class="notice">شاخص‌های مالی تا زمان تأیید منبع حقیقت نمایش داده نمی‌شوند.</p>
+        <div class="queue-grid">
+          <OperationalQueueList title="صف سفارش‌ها" :items="data.queues.orders" />
+          <OperationalQueueList title="صف تحویل‌ها" :items="data.queues.deliveries" />
+        </div>
+      </template>
+    </DashboardState>
+  </main>
 </template>
