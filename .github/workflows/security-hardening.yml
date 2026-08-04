@@ -1,0 +1,47 @@
+name: Security Hardening
+
+on:
+  pull_request:
+    branches:
+      - feature/goldplatform-developer-mcp
+  workflow_dispatch:
+
+jobs:
+  security-hardening:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql
+          coverage: none
+
+      - name: Validate Composer metadata
+        working-directory: backend
+        run: composer validate --strict
+
+      - name: Install dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Audit PHP dependencies
+        working-directory: backend
+        run: composer audit --locked --no-interaction
+
+      - name: Run security-focused tests
+        working-directory: backend
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:REREREREREREREREREREREREREREREREREREREREREQ=
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          KIMIA_BASE_URL: https://kimia.invalid
+          KIMIA_USERNAME: test
+          KIMIA_PASSWORD: test
+          KIMIA_READ_ONLY: 'true'
+          KIMIA_WRITE_ENABLED: 'false'
+        run: php artisan test --filter='SecurityHeadersTest|Permission|OrderCreationSecurity|KimiaClientTest|ProductionConfigurationGuardTest'
