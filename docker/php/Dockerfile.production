@@ -1,0 +1,33 @@
+FROM composer:2 AS vendor
+
+WORKDIR /app
+COPY backend/composer.json backend/composer.lock ./
+RUN composer install --no-dev --no-interaction --prefer-dist --no-progress --no-scripts
+COPY backend ./
+RUN KIMIA_BASE_URL=https://kimia.invalid \
+    KIMIA_USERNAME=build-only \
+    KIMIA_PASSWORD=build-only \
+    KIMIA_READ_ONLY=true \
+    KIMIA_WRITE_ENABLED=false \
+    composer dump-autoload --no-dev --classmap-authoritative --no-interaction
+
+FROM php:8.4-fpm
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libzip-dev \
+        libonig-dev \
+        libicu-dev \
+        curl \
+    && docker-php-ext-install pdo_mysql zip mbstring intl opcache \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY docker/php/production.ini /usr/local/etc/php/conf.d/99-goldplatform-production.ini
+COPY --from=vendor --chown=www-data:www-data /app /var/www/html
+
+WORKDIR /var/www/html
+USER www-data
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD php-fpm -t || exit 1
+
+CMD ["php-fpm"]

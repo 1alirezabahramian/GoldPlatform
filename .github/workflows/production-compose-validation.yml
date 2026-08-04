@@ -1,0 +1,88 @@
+name: Production Compose Validation
+
+on:
+  pull_request:
+    branches:
+      - feature/goldplatform-developer-mcp
+  workflow_dispatch:
+
+jobs:
+  production-compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HTTP_PORT: 18080
+      DB_DATABASE: goldplatform_prod_check
+      DB_USERNAME: goldplatform
+      DB_PASSWORD: validation-password
+      DB_ROOT_PASSWORD: validation-root-password
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare ephemeral production environment
+        shell: bash
+        run: |
+          cat > backend/.env.production <<'ENV'
+          APP_NAME=GoldPlatform
+          APP_ENV=production
+          APP_KEY=base64:REREREREREREREREREREREREREREREREREREREREREQ=
+          APP_DEBUG=false
+          APP_URL=https://goldplatform.test
+          LOG_CHANNEL=stderr
+          LOG_LEVEL=info
+          DB_CONNECTION=mysql
+          DB_HOST=mysql
+          DB_PORT=3306
+          DB_DATABASE=goldplatform_prod_check
+          DB_USERNAME=goldplatform
+          DB_PASSWORD=validation-password
+          REDIS_CLIENT=phpredis
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          CACHE_STORE=redis
+          SESSION_DRIVER=database
+          SESSION_SECURE_COOKIE=true
+          QUEUE_CONNECTION=database
+          KIMIA_BASE_URL=https://kimia.invalid
+          KIMIA_USERNAME=test
+          KIMIA_PASSWORD=test
+          KIMIA_READ_ONLY=true
+          KIMIA_WRITE_ENABLED=false
+          ENV
+
+      - name: Validate production compose
+        run: docker compose -f docker-compose.production.yml config --quiet
+
+      - name: Verify database and redis are private in compose model
+        shell: bash
+        run: |
+          docker compose -f docker-compose.production.yml config --format json > /tmp/compose.json
+          test "$(jq '.services.mysql.ports // [] | length' /tmp/compose.json)" -eq 0
+          test "$(jq '.services.redis.ports // [] | length' /tmp/compose.json)" -eq 0
+
+      - name: Build production images
+        run: docker compose -f docker-compose.production.yml build --pull
+
+      - name: Start production-like stack
+        run: docker compose -f docker-compose.production.yml up -d
+
+      - name: Validate production configuration
+        run: docker compose -f docker-compose.production.yml exec -T php php artisan ops:validate-production-config
+
+      - name: Wait for application health
+        shell: bash
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/up >/dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose -f docker-compose.production.yml ps
+          docker compose -f docker-compose.production.yml logs --no-color
+          exit 1
+
+      - name: Stop stack
+        if: always()
+        run: docker compose -f docker-compose.production.yml down -v --remove-orphans
