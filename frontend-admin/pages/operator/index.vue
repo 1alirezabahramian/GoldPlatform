@@ -1,17 +1,47 @@
 <script setup lang="ts">
-const { session } = useBackofficeSession()
+import type { OperatorOperationalDashboard } from '~/types/dashboard'
+
+const dashboard = useOperationalDashboard()
+const data = ref<OperatorOperationalDashboard | null>(null)
+const loading = ref(true)
+const error = ref<string | null>(null)
+
+const load = async () => {
+  loading.value = true
+  error.value = null
+  try {
+    data.value = await dashboard.operator()
+  } catch {
+    error.value = 'دریافت داشبورد اپراتور ممکن نشد.'
+  } finally {
+    loading.value = false
+  }
+}
+
+await load()
+
+const summary = computed(() => data.value ? [
+  { label: 'سفارش‌های جدید', value: data.value.summary.pending_orders },
+  { label: 'سفارش‌های تأییدشده', value: data.value.summary.approved_orders },
+  { label: 'درخواست‌های تحویل', value: data.value.summary.requested_deliveries },
+  { label: 'آماده تحویل', value: data.value.summary.ready_deliveries },
+] : [])
 </script>
 
 <template>
-  <section class="page">
-    <div class="page-heading">
-      <div><p class="eyebrow">عملیات</p><h1>داشبورد اپراتور</h1></div>
-      <span class="status">نشست فعال</span>
-    </div>
-    <div class="card-grid">
-      <article class="card"><h2>دسترسی‌های فعال</h2><strong>{{ session?.permissions.length ?? 0 }}</strong></article>
-      <article class="card"><h2>صف‌های قابل مشاهده</h2><strong>{{ session?.navigation.length ?? 0 }}</strong></article>
-    </div>
-    <article class="card"><h2>وظایف روزانه</h2><p>صف‌های مجاز از Backend دریافت می‌شوند و در منوی کنار صفحه نمایش داده می‌شوند.</p></article>
-  </section>
+  <main class="dashboard-page">
+    <header class="page-heading">
+      <div><p class="eyebrow">عملیات</p><h1>صف کارهای امروز</h1></div>
+      <button type="button" @click="load">به‌روزرسانی</button>
+    </header>
+    <DashboardState :loading="loading" :error="error" @refresh="load">
+      <template v-if="data">
+        <OperationalSummaryGrid :items="summary" />
+        <div class="queue-grid">
+          <OperationalQueueList title="صف سفارش‌ها" :items="data.queues.orders" />
+          <OperationalQueueList title="صف تحویل‌ها" :items="data.queues.deliveries" />
+        </div>
+      </template>
+    </DashboardState>
+  </main>
 </template>
