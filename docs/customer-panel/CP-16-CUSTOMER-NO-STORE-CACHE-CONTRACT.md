@@ -27,3 +27,7 @@
 - بدون تغییر Wallet، Ledger یا Settlement
 - بدون Kimia Read/Write
 - بدون تغییر Response Body
+
+## اعتبارسنجی مستقل
+
+پس از Merge شدن CP-15، این مرحله روی Base اصلی پروژه مستقل شد و باید همه Gateهای GitHub CI را روی Head فعلی خودش با موفقیت عبور دهد.
