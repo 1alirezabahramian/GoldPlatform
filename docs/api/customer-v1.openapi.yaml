@@ -1,0 +1,119 @@
+openapi: 3.1.0
+info:
+  title: GoldPlatform Customer API
+  version: 1.0.0-foundation
+  description: |
+    قرارداد افزایشی و Read-only پنل مشتری. مسیرهای Legacy حذف یا تغییر نکرده‌اند.
+    هیچ Kimia write، فرمول قیمت یا قانون مالی جدیدی در این قرارداد تعریف نمی‌شود.
+servers:
+  - url: /api/v1/customer
+paths:
+  /dashboard:
+    get:
+      operationId: getCustomerDashboard
+      summary: دریافت خلاصه امن پنل مشتری
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: خلاصه دارایی‌ها و شمارنده‌های متعلق به مشتری احراز هویت‌شده
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+  responses:
+    Unauthenticated:
+      description: کاربر احراز هویت نشده است
+    Forbidden:
+      description: نقش کاربر اجازه دسترسی به پنل مشتری را ندارد
+    RateLimited:
+      description: تعداد درخواست‌ها بیش از حد مجاز است
+  schemas:
+    DashboardResponse:
+      type: object
+      required: [data, meta, message]
+      properties:
+        data:
+          $ref: '#/components/schemas/DashboardData'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+        message:
+          type: [string, 'null']
+    DashboardData:
+      type: object
+      required: [assets, summary]
+      properties:
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetBalance'
+        summary:
+          $ref: '#/components/schemas/DashboardSummary'
+    AssetBalance:
+      type: object
+      required: [reference, type, title, unit, balance]
+      properties:
+        reference:
+          type: string
+          description: شناسه پلتفرمی حساب دارایی؛ شناسه Kimia نیست
+        type:
+          type: string
+          enum: [money, gold, coin, currency]
+        title:
+          type: string
+        unit:
+          type: string
+          description: واحد ذخیره‌شده فعلی Backend؛ قرارداد نمایش تومان در Stage مستقل تثبیت می‌شود
+        balance:
+          type: object
+          required: [total, blocked, available]
+          properties:
+            total:
+              type: string
+              pattern: '^-?[0-9]+(?:\.[0-9]+)?$'
+            blocked:
+              type: string
+              pattern: '^-?[0-9]+(?:\.[0-9]+)?$'
+            available:
+              type: string
+              pattern: '^-?[0-9]+(?:\.[0-9]+)?$'
+    DashboardSummary:
+      type: object
+      required: [active_orders, custodies, delivery_requests, ready_deliveries]
+      properties:
+        active_orders:
+          type: integer
+          minimum: 0
+        custodies:
+          type: integer
+          minimum: 0
+        delivery_requests:
+          type: integer
+          minimum: 0
+        ready_deliveries:
+          type: integer
+          minimum: 0
+    ResponseMeta:
+      type: object
+      required: [request_id, generated_at, api_version]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        generated_at:
+          type: string
+          format: date-time
+        api_version:
+          type: string
+          const: v1
