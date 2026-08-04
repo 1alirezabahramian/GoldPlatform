@@ -1,0 +1,17 @@
+<script setup lang="ts">
+const { session } = useBackofficeSession()
+</script>
+
+<template>
+  <section class="page">
+    <div class="page-heading">
+      <div><p class="eyebrow">عملیات</p><h1>داشبورد اپراتور</h1></div>
+      <span class="status">نشست فعال</span>
+    </div>
+    <div class="card-grid">
+      <article class="card"><h2>دسترسی‌های فعال</h2><strong>{{ session?.permissions.length ?? 0 }}</strong></article>
+      <article class="card"><h2>صف‌های قابل مشاهده</h2><strong>{{ session?.navigation.length ?? 0 }}</strong></article>
+    </div>
+    <article class="card"><h2>وظایف روزانه</h2><p>صف‌های مجاز از Backend دریافت می‌شوند و در منوی کنار صفحه نمایش داده می‌شوند.</p></article>
+  </section>
+</template>
