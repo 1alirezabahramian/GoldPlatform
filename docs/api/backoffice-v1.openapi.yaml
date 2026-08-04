@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: GoldPlatform Backoffice API
-  version: 0.1.0-op-01
+  version: 0.2.0-op-02
   description: |
-    قرارداد اولیه Admin و Operator. این سند هیچ قانون مالی، عملیات Ledger یا رفتار Kimia جدیدی تعریف نمی‌کند.
+    قرارداد نسخه‌دار Admin و Operator. Bootstrap از نشست احراز‌شده، Roleها و Permissionهای واقعی Spatie استفاده می‌کند. این سند هیچ قانون مالی، عملیات Ledger یا رفتار Kimia جدیدی تعریف نمی‌کند.
 servers:
   - url: /api/v1
 security:
@@ -12,7 +12,7 @@ paths:
   /admin/bootstrap:
     get:
       operationId: getAdminBootstrap
-      summary: دریافت Navigation و Capabilityهای تأییدشده پنل مدیریت
+      summary: دریافت نشست، Roleها، Permissionها و Navigation مجاز پنل مدیریت
       responses:
         '200':
           $ref: '#/components/responses/BootstrapSuccess'
@@ -23,7 +23,7 @@ paths:
   /operator/bootstrap:
     get:
       operationId: getOperatorBootstrap
-      summary: دریافت Navigation و Capabilityهای تأییدشده پنل اپراتور
+      summary: دریافت نشست، Roleها، Permissionها و Navigation مجاز پنل اپراتور
       responses:
         '200':
           $ref: '#/components/responses/BootstrapSuccess'
@@ -38,7 +38,7 @@ components:
       scheme: bearer
   responses:
     BootstrapSuccess:
-      description: پاسخ Bootstrap نسخه‌دار
+      description: پاسخ Bootstrap نسخه‌دار و Permission-aware
       headers:
         X-Request-ID:
           schema:
@@ -53,23 +53,7 @@ components:
       required: [data, meta, message]
       properties:
         data:
-          type: object
-          required: [panel, navigation, capabilities]
-          properties:
-            panel:
-              type: string
-              enum: [admin, operator]
-            navigation:
-              type: array
-              items:
-                type: object
-                required: [code, path]
-                properties:
-                  code: { type: string }
-                  path: { type: string }
-            capabilities:
-              type: array
-              items: { type: string }
+          $ref: '#/components/schemas/BootstrapData'
         meta:
           type: object
           required: [request_id, generated_at, api_version]
@@ -79,3 +63,43 @@ components:
             api_version: { type: string, const: v1 }
         message:
           type: ['string', 'null']
+    BootstrapData:
+      type: object
+      required: [panel, session, navigation, capabilities]
+      properties:
+        panel:
+          type: string
+          enum: [admin, operator]
+        session:
+          type: object
+          required: [authenticated, user, roles, permissions]
+          properties:
+            authenticated: { type: boolean, const: true }
+            user:
+              type: object
+              required: [display_name, mobile_masked, is_active, last_login_at]
+              properties:
+                display_name: { type: string }
+                mobile_masked: { type: ['string', 'null'] }
+                is_active: { type: boolean }
+                last_login_at: { type: ['string', 'null'], format: date-time }
+            roles:
+              type: array
+              items: { type: string }
+            permissions:
+              type: array
+              items: { type: string }
+        navigation:
+          type: array
+          description: فقط آیتم‌هایی که Permission مؤثر کاربر را دارند.
+          items:
+            type: object
+            required: [code, path, permission]
+            properties:
+              code: { type: string }
+              path: { type: string }
+              permission: { type: string }
+        capabilities:
+          type: array
+          description: فهرست Permissionهای مؤثر نشست؛ جایگزین Authorization سمت Backend نیست.
+          items: { type: string }
