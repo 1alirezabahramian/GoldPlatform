@@ -14,6 +14,7 @@ use App\Domain\Trading\Enums\QuoteStatus;
 use App\Domain\Trading\Order\CreateOrderFromQuoteCommand;
 use App\Domain\Trading\Order\IdempotentCreateOrderFromQuoteService;
 use App\Domain\Trading\Quote\Quote;
+use App\Domain\Trading\ValueObjects\QuoteId;
 use DateTimeImmutable;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -85,7 +86,7 @@ final class AtomicCreateOrderFromQuoteTest extends TestCase
 
     private function command(
         FinancialScope $scope,
-        $quoteId,
+        QuoteId $quoteId,
         string $key,
         string $hash,
         DateTimeImmutable $requestedAt,
