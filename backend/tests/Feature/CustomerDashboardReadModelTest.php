@@ -54,12 +54,13 @@ final class CustomerDashboardReadModelTest extends TestCase
     {
         $customer = User::factory()->create();
         $customer->load('wallet');
+        $this->assertNotNull($customer->wallet);
 
         foreach ([
-            ['code' => 'money:main', 'title' => 'Money', 'asset_type' => 'money', 'unit' => 'IRR'],
-            ['code' => 'gold:18k', 'title' => 'Gold', 'asset_type' => 'gold', 'unit' => 'gram'],
-            ['code' => 'coin:sample', 'title' => 'Coin', 'asset_type' => 'coin', 'unit' => 'piece'],
-            ['code' => 'currency:sample', 'title' => 'Currency', 'asset_type' => 'currency', 'unit' => 'unit'],
+            ['code' => 'cp03:money', 'title' => 'Money', 'asset_type' => 'money', 'unit' => 'IRR'],
+            ['code' => 'cp03:gold', 'title' => 'Gold', 'asset_type' => 'gold', 'unit' => 'gram'],
+            ['code' => 'cp03:coin', 'title' => 'Coin', 'asset_type' => 'coin', 'unit' => 'piece'],
+            ['code' => 'cp03:currency', 'title' => 'Currency', 'asset_type' => 'currency', 'unit' => 'unit'],
         ] as $account) {
             WalletAccount::query()->create($account + [
                 'wallet_id' => $customer->wallet->id,
