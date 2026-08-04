@@ -15,6 +15,10 @@ use App\Domain\Financial\ValueObjects\TraceId;
 use DateTimeImmutable;
 use DomainException;
 
+/**
+ * @deprecated Use TenantScopedAtomicJournalPostingService.
+ * New financial posting flows must require FinancialScope.
+ */
 final readonly class AtomicJournalPostingService
 {
     private const OPERATION = 'financial.journal.post';
