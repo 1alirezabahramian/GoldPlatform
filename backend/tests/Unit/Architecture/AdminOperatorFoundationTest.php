@@ -32,9 +32,9 @@ final class AdminOperatorFoundationTest extends TestCase
             self::assertStringNotContainsString($internalName, $content);
         }
 
-        self::assertStringContainsString("$bootstrap->for($user, 'admin')", $admin);
-        self::assertStringContainsString("$bootstrap->for($user, 'operator')", $operator);
-        self::assertStringContainsString("'permissions' => $permissions", $session);
+        self::assertStringContainsString("\$bootstrap->for(\$user, 'admin')", $admin);
+        self::assertStringContainsString("\$bootstrap->for(\$user, 'operator')", $operator);
+        self::assertStringContainsString("'permissions' => \$permissions", $session);
         self::assertStringContainsString("'mobile_masked'", $session);
         self::assertStringNotContainsString("'mobile' =>", $session);
         self::assertStringNotContainsString('national_code', $session);
