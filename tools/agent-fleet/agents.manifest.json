@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "fleet_name": "GoldPlatform Agent Fleet",
+  "owner": "Alireza Bahramian",
+  "default_policy": "deny",
+  "global_kill_switch": true,
+  "protected_branches": ["main", "feature/goldplatform-developer-mcp"],
+  "agents": [
+    {"name":"GoldCommander","tier":1,"mode":"orchestrator","enabled":true,"can_write_code":false,"can_access_browser":false,"can_access_kimia":false},
+    {"name":"GoldObserver","tier":0,"mode":"read_only","enabled":true,"can_write_code":false,"commands":["git-status","docker-status","recent-logs","health-check"]},
+    {"name":"GoldBuilder","tier":3,"mode":"work_branch_writer","enabled":true,"branch_pattern":"work/*","can_write_code":true,"can_merge":false,"can_read_secrets":false},
+    {"name":"GoldQA","tier":1,"mode":"test_runner","enabled":true,"commands":["tests","health-check"],"disposable_database_only":true},
+    {"name":"GoldPerformance","tier":1,"mode":"performance_runner","enabled":true,"production_stress_allowed":false},
+    {"name":"GoldMigrationGuard","tier":1,"mode":"migration_guard","enabled":true,"production_migration_allowed":false},
+    {"name":"GoldDocs","tier":2,"mode":"documentation_writer","enabled":true,"branch_pattern":"work/*","verified_facts_only":true},
+    {"name":"GoldDrift","tier":1,"mode":"drift_detector","enabled":true,"auto_fix_financial_rules":false},
+    {"name":"GoldSecurity","tier":2,"mode":"defensive_security","enabled":true,"external_offensive_testing":false},
+    {"name":"GoldRelease","tier":4,"mode":"release_gate","enabled":true,"production_deploy_allowed":false},
+    {"name":"KimiaSentinel","tier":0,"mode":"kimia_read_only","enabled":true,"http_methods":["GET"],"write_controls_blocked":true,"unknown_ui_action":"stop"},
+    {"name":"KimiaDraftOperator","tier":1,"mode":"draft_only","enabled":false,"execute_write":false,"requires_owner_approval":true},
+    {"name":"KhalifehUXResearcher","tier":0,"mode":"authorized_browser_research","enabled":false,"allowed_domains":["app.khalifehcoin.com","admin.khalifehcoin.com"],"financial_submission_allowed":false,"hidden_endpoint_probing":false}
+  ]
+}
