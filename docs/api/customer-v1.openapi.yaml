@@ -1,292 +1,315 @@
 openapi: 3.1.0
 info:
   title: GoldPlatform Customer API
-  version: 1.3.0-order-status
+  version: 1.4.0-customer-contract
   description: |
-    قرارداد افزایشی و Read-only پنل مشتری. مسیرهای Legacy حذف یا تغییر نکرده‌اند.
-    هیچ Kimia write، فرمول قیمت یا قانون مالی جدیدی در این قرارداد تعریف نمی‌شود.
+    قرارداد نسخه‌دار پنل مشتری. پیچیدگی مالی، Ledger و Kimia در Backend باقی می‌ماند.
+    این سند هیچ قانون مالی، فرمول قیمت، کارمزد یا عملیات Kimia جدیدی تعریف نمی‌کند.
 servers:
   - url: /api/v1/customer
+security:
+  - sanctum: []
 paths:
+  /bootstrap:
+    get:
+      operationId: getCustomerBootstrap
+      summary: دریافت قراردادهای پایه Frontend
+      responses:
+        '200': { $ref: '#/components/responses/BootstrapSuccess' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
   /dashboard:
     get:
       operationId: getCustomerDashboard
-      summary: دریافت خلاصه عملیاتی و امن پنل مشتری
-      security:
-        - sanctum: []
+      summary: دریافت خلاصه امن پنل مشتری
       responses:
-        '200':
-          description: دارایی‌ها، شمارنده‌ها، موارد مهم و آخرین فعالیت‌های مشتری احراز هویت‌شده
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DashboardResponse'
-        '401':
-          $ref: '#/components/responses/Unauthenticated'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        '200': { $ref: '#/components/responses/GenericSuccess' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /profile:
+    get:
+      operationId: getCustomerProfile
+      summary: دریافت پروفایل فقط‌خواندنی مشتری
+      responses:
+        '200': { $ref: '#/components/responses/GenericSuccess' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /activities:
+    get:
+      operationId: getCustomerActivities
+      summary: دریافت Timeline فعالیت‌های مشتری
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+        - name: event_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [order_status, custody_status, delivery_status]
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedSuccess' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
   /assets:
     get:
       operationId: getCustomerAssets
       summary: دریافت همه مانده‌های مالی مشتری
-      security:
-        - sanctum: []
       responses:
-        '200':
-          description: فهرست Money، Gold، Coin و Currency متعلق به مشتری
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AssetListResponse'
+        '200': { $ref: '#/components/responses/AssetListSuccess' }
   /assets/money:
     get:
       operationId: getCustomerMoneyAssets
-      summary: دریافت حساب‌های پولی مشتری
-      security:
-        - sanctum: []
+      summary: دریافت مانده‌های Money
       responses:
-        '200':
-          description: حساب‌های Money مشتری
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AssetListResponse'
+        '200': { $ref: '#/components/responses/AssetListSuccess' }
   /assets/gold:
     get:
       operationId: getCustomerGoldAssets
-      summary: دریافت حساب‌های طلایی مشتری
-      security:
-        - sanctum: []
+      summary: دریافت مانده‌های Gold
       responses:
-        '200':
-          description: حساب‌های Gold مشتری
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AssetListResponse'
+        '200': { $ref: '#/components/responses/AssetListSuccess' }
   /assets/coins:
     get:
       operationId: getCustomerCoinAssets
-      summary: دریافت سکه‌های پویا متعلق به مشتری
-      security:
-        - sanctum: []
+      summary: دریافت سکه‌های Dynamic مشتری
       responses:
-        '200':
-          description: فهرست Dynamic Coin بدون شناسه داخلی Kimia
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AssetListResponse'
+        '200': { $ref: '#/components/responses/AssetListSuccess' }
   /assets/currencies:
     get:
       operationId: getCustomerCurrencyAssets
-      summary: دریافت ارزهای پویا متعلق به مشتری
-      security:
-        - sanctum: []
+      summary: دریافت ارزهای Dynamic مشتری
       responses:
-        '200':
-          description: فهرست Dynamic Currency بدون شناسه داخلی Kimia
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AssetListResponse'
+        '200': { $ref: '#/components/responses/AssetListSuccess' }
+  /orders:
+    get:
+      operationId: getCustomerOrders
+      summary: دریافت سفارش‌های مشتری
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedSuccess' }
   /order-statuses:
     get:
       operationId: getCustomerOrderStatuses
-      summary: دریافت کاتالوگ وضعیت‌های واقعی سفارش
-      description: |
-        این پاسخ مستقیماً از OrderStatus فعلی Backend تولید می‌شود و وضعیت جدیدی ایجاد نمی‌کند.
-        متن‌های فارسی نمایشی و عملیات مجاز در Stageهای بعد فقط با قرارداد تأییدشده افزوده می‌شوند.
-      security:
-        - sanctum: []
+      summary: دریافت وضعیت‌های واقعی سفارش
       responses:
-        '200':
-          description: کد وضعیت و terminal بودن آن براساس State Machine موجود
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderStatusListResponse'
-        '401':
-          $ref: '#/components/responses/Unauthenticated'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+        '200': { $ref: '#/components/responses/GenericSuccess' }
+  /custodies:
+    get:
+      operationId: getCustomerCustodies
+      summary: دریافت امانات فیزیکی مشتری
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedSuccess' }
+  /custodies/{reference}:
+    get:
+      operationId: getCustomerCustody
+      summary: دریافت جزئیات امانت با شناسه عمومی
+      parameters:
+        - $ref: '#/components/parameters/PublicReference'
+      responses:
+        '200': { $ref: '#/components/responses/GenericSuccess' }
+        '404': { $ref: '#/components/responses/ResourceNotFound' }
+  /custodies/{reference}/delivery-request:
+    post:
+      operationId: requestCustomerCustodyDelivery
+      summary: ثبت درخواست تحویل برای امانت متعلق به مشتری
+      parameters:
+        - $ref: '#/components/parameters/PublicReference'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+      responses:
+        '200': { $ref: '#/components/responses/GenericSuccess' }
+        '404': { $ref: '#/components/responses/ResourceNotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+  /deliveries:
+    get:
+      operationId: getCustomerDeliveries
+      summary: دریافت درخواست‌های تحویل مشتری
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedSuccess' }
+  /deliveries/{reference}:
+    get:
+      operationId: getCustomerDelivery
+      summary: دریافت جزئیات تحویل با شناسه عمومی
+      parameters:
+        - $ref: '#/components/parameters/PublicReference'
+      responses:
+        '200': { $ref: '#/components/responses/GenericSuccess' }
+        '404': { $ref: '#/components/responses/ResourceNotFound' }
 components:
   securitySchemes:
     sanctum:
       type: http
       scheme: bearer
+  parameters:
+    PublicReference:
+      name: reference
+      in: path
+      required: true
+      description: شناسه عمومی پلتفرم؛ شناسه داخلی یا Kimia نیست
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 200
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: per_page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 20
   responses:
+    GenericSuccess:
+      description: پاسخ موفق استاندارد مشتری
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SuccessEnvelope' }
+    PaginatedSuccess:
+      description: پاسخ موفق صفحه‌بندی‌شده
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/PaginatedEnvelope' }
+    AssetListSuccess:
+      description: فهرست مانده‌های مالی مشتری
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AssetListEnvelope' }
+    BootstrapSuccess:
+      description: قراردادهای Bootstrap
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SuccessEnvelope' }
     Unauthenticated:
       description: کاربر احراز هویت نشده است
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
     Forbidden:
-      description: نقش کاربر اجازه دسترسی به پنل مشتری را ندارد
+      description: دسترسی به منبع مجاز نیست
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    ResourceNotFound:
+      description: منبع متعلق به مشتری پیدا نشد
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    ValidationFailed:
+      description: داده ورودی معتبر نیست
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
     RateLimited:
-      description: تعداد درخواست‌ها بیش از حد مجاز است
+      description: تعداد درخواست بیش از حد مجاز است
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    Conflict:
+      description: درخواست با وضعیت فعلی منبع قابل انجام نیست
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
   schemas:
-    DashboardResponse:
+    SuccessEnvelope:
       type: object
       required: [data, meta, message]
       properties:
         data:
-          $ref: '#/components/schemas/DashboardData'
-        meta:
-          $ref: '#/components/schemas/ResponseMeta'
-        message:
-          type: [string, 'null']
-    DashboardData:
-      type: object
-      required: [assets, summary, highlights, recent_activity]
-      properties:
-        assets:
-          type: array
-          items:
-            $ref: '#/components/schemas/AssetBalance'
-        summary:
-          $ref: '#/components/schemas/DashboardSummary'
-        highlights:
-          $ref: '#/components/schemas/DashboardHighlights'
-        recent_activity:
-          type: array
-          maxItems: 8
-          items:
-            $ref: '#/components/schemas/CustomerActivity'
-    AssetListResponse:
-      type: object
-      required: [data, meta, message]
-      properties:
-        data:
-          type: object
-          required: [items]
-          properties:
-            items:
-              type: array
-              items:
-                $ref: '#/components/schemas/AssetBalance'
-        meta:
-          allOf:
-            - $ref: '#/components/schemas/ResponseMeta'
-            - type: object
-              required: [asset_type, count]
-              properties:
-                asset_type:
-                  type: [string, 'null']
-                  enum: [money, gold, coin, currency, null]
-                count:
-                  type: integer
-                  minimum: 0
-        message:
-          type: [string, 'null']
-    OrderStatusListResponse:
-      type: object
-      required: [data, meta, message]
-      properties:
-        data:
-          type: object
-          required: [items]
-          properties:
-            items:
-              type: array
-              minItems: 9
-              maxItems: 9
-              items:
-                $ref: '#/components/schemas/OrderStatusItem'
-        meta:
-          $ref: '#/components/schemas/ResponseMeta'
-        message:
-          type: [string, 'null']
-    OrderStatusItem:
-      type: object
-      required: [code, is_terminal]
-      properties:
-        code:
-          type: string
-          enum: [pending, approved, executing, settling, completed, rejected, expired, cancelled, failed]
-        is_terminal:
-          type: boolean
-    AssetBalance:
-      type: object
-      required: [reference, type, title, unit, balance]
-      properties:
-        reference:
-          type: string
-          description: شناسه پلتفرمی حساب دارایی؛ شناسه Kimia نیست
-        type:
-          type: string
-          enum: [money, gold, coin, currency]
-        title:
-          type: string
-        unit:
-          type: string
-          description: واحد ذخیره‌شده فعلی Backend؛ IRR/IRT در این Stage تبدیل نمی‌شود
-        balance:
-          type: object
-          required: [total, blocked, available]
-          properties:
-            total:
-              type: string
-              pattern: '^-?[0-9]+(?:\.[0-9]+)?$'
-            blocked:
-              type: string
-              pattern: '^-?[0-9]+(?:\.[0-9]+)?$'
-            available:
-              type: string
-              pattern: '^-?[0-9]+(?:\.[0-9]+)?$'
-    DashboardSummary:
-      type: object
-      required: [active_orders, custodies, delivery_requests, ready_deliveries]
-      properties:
-        active_orders:
-          type: integer
-          minimum: 0
-        custodies:
-          type: integer
-          minimum: 0
-        delivery_requests:
-          type: integer
-          minimum: 0
-        ready_deliveries:
-          type: integer
-          minimum: 0
-    DashboardHighlights:
-      type: object
-      required: [active_orders, ready_deliveries]
-      properties:
-        active_orders:
-          type: array
-          maxItems: 3
-          items:
-            type: object
-            additionalProperties: true
-        ready_deliveries:
-          type: array
-          maxItems: 3
-          items:
-            type: object
-            additionalProperties: true
-    CustomerActivity:
-      type: object
-      required: [event_type, status, occurred_at, resource]
-      properties:
-        event_type:
-          type: string
-          enum: [order_status, custody_status, delivery_status]
-        status:
-          type: [string, 'null']
-        occurred_at:
-          type: [string, 'null']
-          format: date-time
-        resource:
           type: object
           additionalProperties: true
-          description: فقط فیلدهای امن CustomerReadPresenter؛ بدون شناسه داخلی یا metadata
+        meta: { $ref: '#/components/schemas/ResponseMeta' }
+        message:
+          type: [string, 'null']
+    PaginatedEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+            meta:
+              allOf:
+                - $ref: '#/components/schemas/ResponseMeta'
+                - $ref: '#/components/schemas/PaginationMeta'
+    AssetListEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items: { $ref: '#/components/schemas/AssetBalance' }
+    ErrorEnvelope:
+      type: object
+      required: [message, code, errors, request_id]
+      additionalProperties: false
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+          enum: [UNAUTHENTICATED, FORBIDDEN, RESOURCE_NOT_FOUND, VALIDATION_FAILED, RATE_LIMITED, METHOD_NOT_ALLOWED, INTERNAL_ERROR, CONFLICT]
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+        request_id:
+          type: [string, 'null']
+          format: uuid
     ResponseMeta:
       type: object
       required: [request_id, generated_at, api_version]
       properties:
         request_id:
-          type: string
+          type: [string, 'null']
           format: uuid
         generated_at:
           type: string
@@ -294,3 +317,29 @@ components:
         api_version:
           type: string
           const: v1
+    PaginationMeta:
+      type: object
+      properties:
+        current_page: { type: integer, minimum: 1 }
+        per_page: { type: integer, minimum: 1, maximum: 50 }
+        total: { type: integer, minimum: 0 }
+        last_page: { type: integer, minimum: 1 }
+    AssetBalance:
+      type: object
+      required: [reference, type, title, unit, balance]
+      properties:
+        reference:
+          type: string
+          description: شناسه پلتفرمی؛ شناسه Kimia نیست
+        type:
+          type: string
+          enum: [money, gold, coin, currency]
+        title: { type: string }
+        unit: { type: string }
+        balance:
+          type: object
+          required: [total, blocked, available]
+          properties:
+            total: { type: string, pattern: '^-?[0-9]+(?:\.[0-9]+)?$' }
+            blocked: { type: string, pattern: '^-?[0-9]+(?:\.[0-9]+)?$' }
+            available: { type: string, pattern: '^-?[0-9]+(?:\.[0-9]+)?$' }
