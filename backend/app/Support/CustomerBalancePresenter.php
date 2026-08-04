@@ -14,8 +14,21 @@ final class CustomerBalancePresenter
     /** @return array<string, mixed> */
     public function present(WalletAccount $account): array
     {
-        $snapshot = $this->projection->snapshot($account);
+        return $this->format($account, $this->projection->snapshot($account));
+    }
 
+    /** @return array<string, mixed> */
+    public function presentFromLoadedRelations(WalletAccount $account): array
+    {
+        return $this->format($account, $this->projection->snapshotFromLoadedRelations($account));
+    }
+
+    /**
+     * @param array{total:string,blocked:string,available:string} $snapshot
+     * @return array<string, mixed>
+     */
+    private function format(WalletAccount $account, array $snapshot): array
+    {
         return [
             'reference' => (string) $account->code,
             'type' => $account->asset_type->value,
