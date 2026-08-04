@@ -2,21 +2,21 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Services\Auth\RegistrationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class UserObserverTest extends TestCase
 {
     use RefreshDatabase;
 
-    
-    #[\PHPUnit\Framework\Attributes\Test]
-public function it_creates_wallet_and_default_accounts_for_new_user(): void
+    #[Test]
+    public function registration_creates_wallet_and_current_default_accounts(): void
     {
-        $user = User::create([
+        $user = app(RegistrationService::class)->register([
             'mobile' => '09120000001',
+            'password' => 'test-password',
         ]);
 
         $this->assertDatabaseHas('wallets', [
@@ -26,20 +26,16 @@ public function it_creates_wallet_and_default_accounts_for_new_user(): void
         $wallet = $user->fresh()->wallet;
 
         $this->assertNotNull($wallet);
-
-        $this->assertEquals(
-            9,
-            $wallet->accounts()->count()
-        );
+        $this->assertSame(2, $wallet->accounts()->count());
 
         $this->assertDatabaseHas('wallet_accounts', [
             'wallet_id' => $wallet->id,
-            'code'      => 'RIAL',
+            'code' => 'RIAL',
         ]);
 
         $this->assertDatabaseHas('wallet_accounts', [
             'wallet_id' => $wallet->id,
-            'code'      => 'GOLD18',
+            'code' => 'GOLD18',
         ]);
     }
 }
