@@ -38,7 +38,7 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
             ->middleware('idempotency:delivery.request');
     });
 
-    Route::prefix('v1/customer')->middleware('role:customer')->group(function () {
+    Route::prefix('v1/customer')->middleware(['role:customer', 'customer.no-store'])->group(function () {
         Route::get('/bootstrap', CustomerBootstrapController::class);
         Route::get('/dashboard', CustomerDashboardController::class);
         Route::get('/activities', CustomerActivityController::class);
