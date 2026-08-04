@@ -2,30 +2,37 @@
 
 namespace Tests\Feature;
 
-use App\Integrations\Kimia\Client\KimiaClient;
 use App\Models\KimiaCurrency;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class SyncKimiaCurrenciesCommandTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config()->set('services.kimia', [
+            'base_url' => 'https://kimia.test',
+            'username' => 'test-user',
+            'password' => 'test-password',
+            'timeout' => 5,
+        ]);
+    }
+
     public function test_it_creates_and_updates_kimia_currencies_without_duplicates(): void
     {
-        $kimia = Mockery::mock(KimiaClient::class);
-        $kimia->shouldReceive('get')->twice()->with('/api/product/currencies')->andReturn(
-            [
+        Http::fakeSequence()
+            ->push([
                 ['CurrencyId' => 11, 'Name' => 'Rial', 'IsVisible' => true],
                 ['CurrencyId' => 12, 'Name' => 'US Dollar', 'IsVisible' => true],
-            ],
-            [
+            ])
+            ->push([
                 ['CurrencyId' => 11, 'Name' => 'Iranian Rial', 'IsVisible' => false],
                 ['CurrencyId' => 12, 'Name' => 'US Dollar', 'IsVisible' => true],
-            ]
-        );
-        $this->app->instance(KimiaClient::class, $kimia);
+            ]);
 
         $this->artisan('kimia:sync-currencies')->assertSuccessful();
         $this->assertDatabaseCount('kimia_currencies', 2);
@@ -49,13 +56,11 @@ class SyncKimiaCurrenciesCommandTest extends TestCase
         $originalUpdatedAt = $currency->updated_at;
         $originalSyncedAt = $currency->synced_at;
 
-        $kimia = Mockery::mock(KimiaClient::class);
-        $kimia->shouldReceive('get')->once()->with('/api/product/currencies')->andReturn([[
+        Http::fake([ 'https://kimia.test/*' => Http::response([[
             'CurrencyId' => 12,
             'Name' => 'US Dollar',
             'IsVisible' => true,
-        ]]);
-        $this->app->instance(KimiaClient::class, $kimia);
+        ]]) ]);
 
         $this->artisan('kimia:sync-currencies')->assertSuccessful();
         $currency->refresh();
