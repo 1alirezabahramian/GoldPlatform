@@ -1,0 +1,100 @@
+name: Stage 21 Performance
+
+on:
+  pull_request:
+    branches:
+      - feature/goldplatform-developer-mcp
+  workflow_dispatch:
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: goldplatform_test
+          MYSQL_USER: goldplatform
+          MYSQL_PASSWORD: goldplatform
+          MYSQL_ROOT_PASSWORD: root
+        ports: [3306:3306]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports: [6379:6379]
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      APP_KEY: base64:UEVSRk9STUFOQ0VQRVJGT1JNQU5DRVBFUkZPUk1BTkNFUEVS
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: goldplatform_test
+      DB_USERNAME: goldplatform
+      DB_PASSWORD: goldplatform
+      CACHE_STORE: redis
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      REDIS_HOST: 127.0.0.1
+      KIMIA_BASE_URL: https://kimia.invalid
+      KIMIA_USERNAME: test
+      KIMIA_PASSWORD: test
+      KIMIA_READ_ONLY: 'true'
+      KIMIA_WRITE_ENABLED: 'false'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, redis, zip
+          coverage: none
+
+      - name: Install locked dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare database
+        working-directory: backend
+        run: php artisan migrate:fresh --force --no-interaction
+
+      - name: Query budget and index review
+        working-directory: backend
+        run: php artisan test --no-ansi tests/Feature/Performance/Stage21PerformanceTest.php
+
+      - name: Start application
+        working-directory: backend
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8080 > /tmp/goldplatform-performance-server.log 2>&1 &
+          echo $! > /tmp/goldplatform-performance-server.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/up > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/goldplatform-performance-server.log
+          exit 1
+
+      - name: Load stress and concurrency gate
+        run: |
+          docker run --rm --network host \
+            -e BASE_URL=http://127.0.0.1:8080 \
+            -v "$PWD/backend/tests/performance:/scripts:ro" \
+            grafana/k6:latest run /scripts/stage21.js
+
+      - name: Stop application
+        if: always()
+        run: |
+          if test -f /tmp/goldplatform-performance-server.pid; then
+            kill "$(cat /tmp/goldplatform-performance-server.pid)" || true
+          fi
