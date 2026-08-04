@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminAccessControlReadController;
+use App\Http\Controllers\Api\V1\AdminCustodyDeliveryReadController;
 use App\Http\Controllers\Api\V1\AdminCustomerGroupReadController;
 use App\Http\Controllers\Api\V1\AdminDashboardController;
 use App\Http\Controllers\Api\V1\AdminOperatorOperationalQueueController;
@@ -43,6 +44,14 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::ORDERS_VIEW);
         Route::get('/orders/{order}', [AdminOrderReadController::class, 'show'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::ORDERS_DETAIL_VIEW);
+        Route::get('/custodies', [AdminCustodyDeliveryReadController::class, 'custodies'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::CUSTODIES_VIEW);
+        Route::get('/custodies/{custodyAsset}', [AdminCustodyDeliveryReadController::class, 'custody'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::CUSTODIES_DETAIL_VIEW);
+        Route::get('/deliveries', [AdminCustodyDeliveryReadController::class, 'deliveries'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::DELIVERIES_VIEW);
+        Route::get('/deliveries/{deliveryRequest}', [AdminCustodyDeliveryReadController::class, 'delivery'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::DELIVERIES_DETAIL_VIEW);
 
         Route::get('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'index'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_VIEW);
