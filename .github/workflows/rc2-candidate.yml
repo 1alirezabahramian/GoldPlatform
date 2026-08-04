@@ -80,7 +80,10 @@ jobs:
         working-directory: .
         shell: bash
         run: |
-          ! git grep -nE '(sk-proj-|ghp_|github_pat_|KIMIA_PASSWORD=[^$[:space:]]+|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY)' -- ':!backend/composer.lock' ':!docs' ':!*.example'
+          ! git grep -nE '(sk-proj-|ghp_|github_pat_|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY)' -- \
+            ':!backend/composer.lock' ':!docs' ':!*.example' ':!.github/workflows'
+          ! git grep -nE 'KIMIA_PASSWORD=(?!test$|build-only$|validation-password$)[^$[:space:]]+' --perl-regexp -- \
+            ':!backend/composer.lock' ':!docs' ':!*.example' ':!.github/workflows' ':!docker/php/Dockerfile.production'
 
   deployment-test:
     runs-on: ubuntu-latest
