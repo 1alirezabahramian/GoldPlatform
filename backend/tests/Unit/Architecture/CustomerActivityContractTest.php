@@ -42,10 +42,11 @@ final class CustomerActivityContractTest extends TestCase
     public function responses_continue_to_use_safe_presenter(): void
     {
         $model = (string) file_get_contents(app_path('Services/CustomerActivityReadModel.php'));
+        $presenter = (string) file_get_contents(app_path('Support/CustomerReadPresenter.php'));
 
         self::assertStringContainsString('CustomerReadPresenter', $model);
         self::assertStringNotContainsString('toArray()', $model);
-        self::assertStringNotContainsString("'user_id'", $model);
-        self::assertStringNotContainsString("'metadata'", $model);
+        self::assertStringNotContainsString("'user_id'", $presenter);
+        self::assertStringNotContainsString("'metadata'", $presenter);
     }
 }
