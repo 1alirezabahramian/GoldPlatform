@@ -79,8 +79,10 @@ jobs:
       - name: Verify no database or redis host ports are published
         shell: bash
         run: |
-          test -z "$(docker compose -f docker-compose.production.yml port mysql 3306)"
-          test -z "$(docker compose -f docker-compose.production.yml port redis 6379)"
+          mysql_port="$(docker compose -f docker-compose.production.yml port mysql 3306 2>/dev/null || true)"
+          redis_port="$(docker compose -f docker-compose.production.yml port redis 6379 2>/dev/null || true)"
+          test -z "$mysql_port"
+          test -z "$redis_port"
 
       - name: Stop stack
         if: always()
