@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: GoldPlatform Customer API
-  version: 1.0.0-foundation
+  version: 1.1.0-read-model
   description: |
     قرارداد افزایشی و Read-only پنل مشتری. مسیرهای Legacy حذف یا تغییر نکرده‌اند.
     هیچ Kimia write، فرمول قیمت یا قانون مالی جدیدی در این قرارداد تعریف نمی‌شود.
@@ -11,12 +11,12 @@ paths:
   /dashboard:
     get:
       operationId: getCustomerDashboard
-      summary: دریافت خلاصه امن پنل مشتری
+      summary: دریافت خلاصه عملیاتی و امن پنل مشتری
       security:
         - sanctum: []
       responses:
         '200':
-          description: خلاصه دارایی‌ها و شمارنده‌های متعلق به مشتری احراز هویت‌شده
+          description: دارایی‌ها، شمارنده‌ها، موارد مهم و آخرین فعالیت‌های مشتری احراز هویت‌شده
           content:
             application/json:
               schema:
@@ -52,7 +52,7 @@ components:
           type: [string, 'null']
     DashboardData:
       type: object
-      required: [assets, summary]
+      required: [assets, summary, highlights, recent_activity]
       properties:
         assets:
           type: array
@@ -60,6 +60,13 @@ components:
             $ref: '#/components/schemas/AssetBalance'
         summary:
           $ref: '#/components/schemas/DashboardSummary'
+        highlights:
+          $ref: '#/components/schemas/DashboardHighlights'
+        recent_activity:
+          type: array
+          maxItems: 8
+          items:
+            $ref: '#/components/schemas/CustomerActivity'
     AssetBalance:
       type: object
       required: [reference, type, title, unit, balance]
@@ -104,6 +111,38 @@ components:
         ready_deliveries:
           type: integer
           minimum: 0
+    DashboardHighlights:
+      type: object
+      required: [active_orders, ready_deliveries]
+      properties:
+        active_orders:
+          type: array
+          maxItems: 3
+          items:
+            type: object
+            additionalProperties: true
+        ready_deliveries:
+          type: array
+          maxItems: 3
+          items:
+            type: object
+            additionalProperties: true
+    CustomerActivity:
+      type: object
+      required: [event_type, status, occurred_at, resource]
+      properties:
+        event_type:
+          type: string
+          enum: [order_status, custody_status, delivery_status]
+        status:
+          type: [string, 'null']
+        occurred_at:
+          type: [string, 'null']
+          format: date-time
+        resource:
+          type: object
+          additionalProperties: true
+          description: فقط فیلدهای امن CustomerReadPresenter؛ بدون شناسه داخلی یا metadata
     ResponseMeta:
       type: object
       required: [request_id, generated_at, api_version]
