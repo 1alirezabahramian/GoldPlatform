@@ -22,11 +22,14 @@ class KimiaClientTest extends TestCase
             'password' => 'test-password',
             'timeout' => 5,
             'read_only' => false,
+            'read_retries' => 0,
+            'retry_delay_ms' => 0,
+            'timeout_profiles' => [],
         ]);
     }
 
     #[Test]
-    public function all_http_methods_use_the_canonical_client(): void
+    public function all_http_methods_use_the_canonical_client_when_write_is_explicitly_enabled(): void
     {
         Http::fake([
             'https://kimia.test/*' => Http::response(['ok' => true]),
@@ -42,9 +45,7 @@ class KimiaClientTest extends TestCase
         Http::assertSentCount(4);
 
         foreach (['GET', 'POST', 'PUT', 'DELETE'] as $method) {
-            Http::assertSent(
-                fn (Request $request): bool => $request->method() === $method
-            );
+            Http::assertSent(fn (Request $request): bool => $request->method() === $method);
         }
     }
 
@@ -87,10 +88,7 @@ class KimiaClientTest extends TestCase
                 'Kimia GET /api/account failed with HTTP 500.',
                 $exception->getMessage()
             );
-            $this->assertStringNotContainsString(
-                'must-not-leak',
-                $exception->getMessage()
-            );
+            $this->assertStringNotContainsString('must-not-leak', $exception->getMessage());
         }
     }
 
@@ -115,6 +113,7 @@ class KimiaClientTest extends TestCase
                         'method' => 'POST',
                         'uri' => '/api/account',
                         'status' => 200,
+                        'attempt' => 1,
                     ];
             });
     }
