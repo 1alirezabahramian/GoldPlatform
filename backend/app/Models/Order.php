@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AssetType;
 use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,10 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'type',
+        'asset_type',
+        'external_asset_id',
+        'asset_quantity',
+        'asset_unit',
         'status',
         'gold_weight',
         'gold_price',
@@ -31,6 +36,9 @@ class Order extends Model
     ];
 
     protected $casts = [
+        'asset_type' => AssetType::class,
+        'external_asset_id' => 'integer',
+        'asset_quantity' => 'decimal:8',
         'status' => OrderStatus::class,
         'gold_weight' => 'decimal:3',
         'gold_price' => 'decimal:0',
@@ -56,5 +64,10 @@ class Order extends Model
     public function settlements(): HasMany
     {
         return $this->hasMany(Settlement::class);
+    }
+
+    public function balanceReservations(): HasMany
+    {
+        return $this->hasMany(BalanceReservation::class);
     }
 }
