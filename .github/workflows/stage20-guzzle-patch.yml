@@ -1,0 +1,68 @@
+name: Stage 20 Guzzle Patch
+
+on:
+  push:
+    branches:
+      - work/stage-20-security-hardening
+    paths:
+      - .github/workflows/stage20-guzzle-patch.yml
+      - backend/composer.lock
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stage20-guzzle-patch
+  cancel-in-progress: false
+
+jobs:
+  patch-guzzle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:REREREREREREREREREREREREREREREREREREREREREQ=
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      KIMIA_BASE_URL: https://kimia.invalid
+      KIMIA_USERNAME: test
+      KIMIA_PASSWORD: test
+      KIMIA_READ_ONLY: 'true'
+      KIMIA_WRITE_ENABLED: 'false'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/stage-20-security-hardening
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql
+          coverage: none
+
+      - name: Update Guzzle to patched release
+        working-directory: backend
+        run: composer update guzzlehttp/guzzle --with-all-dependencies --no-interaction --no-progress
+
+      - name: Verify dependency audit
+        working-directory: backend
+        run: composer audit --locked --no-interaction
+
+      - name: Run full test suite
+        working-directory: backend
+        run: php artisan test --no-ansi
+
+      - name: Commit patched lockfile
+        shell: bash
+        run: |
+          if git diff --quiet -- backend/composer.lock; then
+            echo "composer.lock already patched"
+            exit 0
+          fi
+          git config user.name "goldplatform-ci"
+          git config user.email "actions@users.noreply.github.com"
+          git add backend/composer.lock
+          git commit -m "fix(security): update Guzzle to patched release"
+          git push origin HEAD:work/stage-20-security-hardening
