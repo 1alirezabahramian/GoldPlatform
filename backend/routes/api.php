@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\OperatorPanelController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\V1\CustomerAssetReadController;
 use App\Http\Controllers\Api\V1\CustomerDashboardController;
+use App\Http\Controllers\Api\V1\CustomerOrderStatusController;
 use App\Http\Controllers\Api\V1\CustomerReadController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,7 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
         Route::get('/assets/coins', [CustomerAssetReadController::class, 'coins']);
         Route::get('/assets/currencies', [CustomerAssetReadController::class, 'currencies']);
         Route::get('/orders', [CustomerReadController::class, 'orders']);
+        Route::get('/order-statuses', CustomerOrderStatusController::class);
         Route::get('/custodies', [CustomerReadController::class, 'custodies']);
         Route::get('/deliveries', [CustomerReadController::class, 'deliveries']);
     });

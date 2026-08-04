@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: GoldPlatform Customer API
-  version: 1.2.0-assets
+  version: 1.3.0-order-status
   description: |
     قرارداد افزایشی و Read-only پنل مشتری. مسیرهای Legacy حذف یا تغییر نکرده‌اند.
     هیچ Kimia write، فرمول قیمت یا قانون مالی جدیدی در این قرارداد تعریف نمی‌شود.
@@ -92,6 +92,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssetListResponse'
+  /order-statuses:
+    get:
+      operationId: getCustomerOrderStatuses
+      summary: دریافت کاتالوگ وضعیت‌های واقعی سفارش
+      description: |
+        این پاسخ مستقیماً از OrderStatus فعلی Backend تولید می‌شود و وضعیت جدیدی ایجاد نمی‌کند.
+        متن‌های فارسی نمایشی و عملیات مجاز در Stageهای بعد فقط با قرارداد تأییدشده افزوده می‌شوند.
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: کد وضعیت و terminal بودن آن براساس State Machine موجود
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderStatusListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 components:
   securitySchemes:
     sanctum:
@@ -158,6 +178,33 @@ components:
                   minimum: 0
         message:
           type: [string, 'null']
+    OrderStatusListResponse:
+      type: object
+      required: [data, meta, message]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              minItems: 9
+              maxItems: 9
+              items:
+                $ref: '#/components/schemas/OrderStatusItem'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+        message:
+          type: [string, 'null']
+    OrderStatusItem:
+      type: object
+      required: [code, is_terminal]
+      properties:
+        code:
+          type: string
+          enum: [pending, approved, executing, settling, completed, rejected, expired, cancelled, failed]
+        is_terminal:
+          type: boolean
     AssetBalance:
       type: object
       required: [reference, type, title, unit, balance]
