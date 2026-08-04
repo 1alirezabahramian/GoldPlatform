@@ -104,8 +104,8 @@ jobs:
         run: |
           set +e
           docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.2 \
-            git --source=/repo --redact --exit-code=1 \
-            --report-format=json --report-path=/repo/gitleaks-report.json
+            git --redact --exit-code=1 \
+            --report-format=json --report-path=/repo/gitleaks-report.json /repo
           scan_exit=$?
           if [ -f gitleaks-report.json ]; then
             jq '[.[] | {RuleID, Description, File, StartLine, EndLine, Commit}]' gitleaks-report.json
