@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CustomerPanelController;
 use App\Http\Controllers\Api\KimiaController;
 use App\Http\Controllers\Api\OperatorPanelController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\V1\CustomerActivityController;
 use App\Http\Controllers\Api\V1\CustomerAssetReadController;
 use App\Http\Controllers\Api\V1\CustomerCustodyDeliveryController;
 use App\Http\Controllers\Api\V1\CustomerDashboardController;
@@ -38,6 +39,7 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
 
     Route::prefix('v1/customer')->middleware('role:customer')->group(function () {
         Route::get('/dashboard', CustomerDashboardController::class);
+        Route::get('/activities', CustomerActivityController::class);
         Route::get('/assets', [CustomerAssetReadController::class, 'index']);
         Route::get('/assets/money', [CustomerAssetReadController::class, 'money']);
         Route::get('/assets/gold', [CustomerAssetReadController::class, 'gold']);
