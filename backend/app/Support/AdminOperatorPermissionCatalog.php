@@ -15,6 +15,10 @@ final class AdminOperatorPermissionCatalog
     public const ROLES_PERMISSIONS_VIEW = 'roles-permissions.view';
     public const ORDERS_VIEW = 'orders.view';
     public const ORDERS_DETAIL_VIEW = 'orders.detail.view';
+    public const CUSTODIES_VIEW = 'custodies.view';
+    public const CUSTODIES_DETAIL_VIEW = 'custodies.detail.view';
+    public const DELIVERIES_VIEW = 'deliveries.view';
+    public const DELIVERIES_DETAIL_VIEW = 'deliveries.detail.view';
     public const POLICY_CHANGES_VIEW = 'customer-policy-changes.view';
     public const POLICY_CHANGES_CREATE = 'customer-policy-changes.create';
     public const POLICY_CHANGES_SUBMIT = 'customer-policy-changes.submit';
@@ -43,6 +47,10 @@ final class AdminOperatorPermissionCatalog
             self::ROLES_PERMISSIONS_VIEW,
             self::ORDERS_VIEW,
             self::ORDERS_DETAIL_VIEW,
+            self::CUSTODIES_VIEW,
+            self::CUSTODIES_DETAIL_VIEW,
+            self::DELIVERIES_VIEW,
+            self::DELIVERIES_DETAIL_VIEW,
             self::POLICY_CHANGES_VIEW,
             self::POLICY_CHANGES_CREATE,
             self::POLICY_CHANGES_SUBMIT,
