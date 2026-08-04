@@ -29,10 +29,10 @@ final class CustomerStatusFilterContractTest extends TestCase
     {
         $controller = (string) file_get_contents(app_path('Http/Controllers/Api/V1/CustomerReadController.php'));
 
-        self::assertSame(3, substr_count($controller, "->where('user_id', $request->user()->id)"));
-        self::assertSame(3, substr_count($controller, "->when($request->status()"));
+        self::assertSame(3, substr_count($controller, '->where(\'user_id\', $request->user()->id)'));
+        self::assertSame(3, substr_count($controller, '->when($request->status()'));
         self::assertStringContainsString("'filters'", $controller);
-        self::assertStringContainsString("'status' => $status", $controller);
+        self::assertStringContainsString("'status' => \$status", $controller);
     }
 
     #[Test]
