@@ -22,7 +22,7 @@ use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
-        api: [__DIR__.'/../routes/api.php', __DIR__.'/../routes/kimia.php'],
+        api: [__DIR__.'/../routes/api.php', __DIR__.'/../routes/kimia.php', __DIR__.'/../routes/backoffice_v1.php'],
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
