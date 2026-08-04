@@ -21,3 +21,6 @@
 
 ## تست
 `CustomerDateFilterContractTest` اعتبارسنجی ISO، استفاده محدود از `created_at` و عدم استفاده از `whereRaw` را کنترل می‌کند.
+
+## اعتبارسنجی مستقل
+این Stage پس از Merge شدن CP-14 روی Branch مبنای اصلی قرار گرفته و باید شش Gate استاندارد CI را روی SHA مستقل خود با موفقیت طی کند.
