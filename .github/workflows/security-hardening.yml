@@ -6,10 +6,13 @@ on:
       - feature/goldplatform-developer-mcp
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   security-hardening:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       APP_ENV: testing
       APP_KEY: base64:REREREREREREREREREREREREREREREREREREREREREQ=
@@ -23,6 +26,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -34,14 +39,28 @@ jobs:
         working-directory: backend
         run: composer validate --strict
 
-      - name: Install dependencies
+      - name: Update vulnerable Guzzle release
         working-directory: backend
-        run: composer install --no-interaction --prefer-dist --no-progress
+        run: composer update guzzlehttp/guzzle --with-all-dependencies --no-interaction --no-progress
 
       - name: Audit PHP dependencies
         working-directory: backend
         run: composer audit --locked --no-interaction
 
-      - name: Run security-focused tests
+      - name: Run full test suite
         working-directory: backend
-        run: php artisan test --filter='SecurityHeadersTest|Permission|OrderCreationSecurity|KimiaClientTest|ProductionConfigurationGuardTest'
+        run: php artisan test --no-ansi
+
+      - name: Commit patched lockfile when changed
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          if git diff --quiet -- backend/composer.lock; then
+            echo "composer.lock already secure"
+            exit 0
+          fi
+          git config user.name "goldplatform-ci"
+          git config user.email "actions@users.noreply.github.com"
+          git add backend/composer.lock
+          git commit -m "fix(security): update Guzzle to patched release"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
