@@ -23,18 +23,27 @@ final class CustomerOpenApiFoundationTest extends TestCase
     }
 
     #[Test]
-    public function currently_implemented_read_contracts_are_documented(): void
+    public function currently_implemented_customer_contracts_are_documented(): void
     {
         $specification = $this->specification();
 
         foreach ([
+            '/bootstrap:',
             '/dashboard:',
+            '/profile:',
+            '/activities:',
             '/assets:',
             '/assets/money:',
             '/assets/gold:',
             '/assets/coins:',
             '/assets/currencies:',
+            '/orders:',
             '/order-statuses:',
+            '/custodies:',
+            '/custodies/{reference}:',
+            '/custodies/{reference}/delivery-request:',
+            '/deliveries:',
+            '/deliveries/{reference}:',
         ] as $path) {
             self::assertStringContainsString($path, $specification);
         }
@@ -53,12 +62,34 @@ final class CustomerOpenApiFoundationTest extends TestCase
     }
 
     #[Test]
-    public function public_references_and_request_trace_are_explicit(): void
+    public function public_references_trace_and_idempotency_are_explicit(): void
     {
         $specification = $this->specification();
 
-        self::assertStringContainsString('reference:', $specification);
+        self::assertStringContainsString('PublicReference:', $specification);
+        self::assertStringContainsString('format: uuid', $specification);
         self::assertStringContainsString('request_id:', $specification);
         self::assertStringContainsString('api_version:', $specification);
+        self::assertStringContainsString('Idempotency-Key', $specification);
+    }
+
+    #[Test]
+    public function standard_customer_error_contract_is_documented(): void
+    {
+        $specification = $this->specification();
+
+        self::assertStringContainsString('ErrorEnvelope:', $specification);
+
+        foreach ([
+            'UNAUTHENTICATED',
+            'FORBIDDEN',
+            'RESOURCE_NOT_FOUND',
+            'VALIDATION_FAILED',
+            'RATE_LIMITED',
+            'METHOD_NOT_ALLOWED',
+            'INTERNAL_ERROR',
+        ] as $code) {
+            self::assertStringContainsString($code, $specification);
+        }
     }
 }
