@@ -1,0 +1,1 @@
+<template><section class="state-card"><p class="eyebrow">خطای موقت</p><h1>سرویس در دسترس نیست</h1><p>ارتباط با Backend برقرار نشد. هیچ عملیات مالی انجام نشده است.</p><NuxtLink to="/">تلاش دوباره</NuxtLink></section></template>
