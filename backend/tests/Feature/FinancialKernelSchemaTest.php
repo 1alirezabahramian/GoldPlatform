@@ -34,6 +34,7 @@ final class FinancialKernelSchemaTest extends TestCase
         ] as $table) {
             self::assertTrue(Schema::hasColumns($table, [
                 'scope_key',
+                'scope_hash',
                 'tenant_id',
                 'company_id',
                 'branch_id',
@@ -50,6 +51,7 @@ final class FinancialKernelSchemaTest extends TestCase
         $journalId = DB::table('financial_journals')->insertGetId([
             'document_uuid' => (string) Str::uuid(),
             'scope_key' => $scopeKey,
+            'scope_hash' => hash('sha256', $scopeKey),
             'tenant_id' => 'tenant-a',
             'company_id' => 'company-a',
             'branch_id' => 'branch-a',
@@ -88,8 +90,11 @@ final class FinancialKernelSchemaTest extends TestCase
         $key = 'shared-request-key';
 
         foreach (['tenant-a', 'tenant-b'] as $tenantId) {
+            $scopeKey = "tenant:{$tenantId}:company:*:branch:*";
+
             DB::table('financial_idempotency_records')->insert([
-                'scope_key' => "tenant:{$tenantId}:company:*:branch:*",
+                'scope_key' => $scopeKey,
+                'scope_hash' => hash('sha256', $scopeKey),
                 'tenant_id' => $tenantId,
                 'company_id' => null,
                 'branch_id' => null,
