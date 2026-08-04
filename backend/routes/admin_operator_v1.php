@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\AdminNotificationReadController;
 use App\Http\Controllers\Api\V1\AdminOperatorOperationalQueueController;
 use App\Http\Controllers\Api\V1\AdminOrderReadController;
 use App\Http\Controllers\Api\V1\AdminProductPricingReadController;
+use App\Http\Controllers\Api\V1\AdminReportCatalogReadController;
 use App\Http\Controllers\Api\V1\AdminSettlementReadController;
 use App\Http\Controllers\Api\V1\AdminSystemHealthReadController;
 use App\Http\Controllers\Api\V1\AdminUserReadController;
@@ -57,6 +58,7 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
         Route::get('/branches', AdminBranchReadController::class)->middleware('permission:'.AdminOperatorPermissionCatalog::BRANCHES_VIEW);
         Route::get('/white-label/overview', AdminWhiteLabelReadController::class)->middleware('permission:'.AdminOperatorPermissionCatalog::WHITE_LABEL_VIEW);
         Route::get('/notifications/overview', AdminNotificationReadController::class)->middleware('permission:'.AdminOperatorPermissionCatalog::NOTIFICATIONS_VIEW);
+        Route::get('/reports/catalog', AdminReportCatalogReadController::class)->middleware('permission:'.AdminOperatorPermissionCatalog::REPORTS_VIEW);
 
         Route::get('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'index'])->middleware('permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_VIEW);
         Route::post('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'store'])->middleware(['permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_CREATE, 'idempotency:policy-change.create']);
