@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\CustodyAsset;
+use App\Models\DeliveryRequest;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -53,8 +56,7 @@ final class CustomerApiV1ContractTest extends TestCase
             ->assertJsonPath('meta.api_version', 'v1')
             ->assertJsonPath('message', null);
 
-        $payload = $response->json();
-        $encoded = json_encode($payload, JSON_THROW_ON_ERROR);
+        $encoded = json_encode($response->json(), JSON_THROW_ON_ERROR);
 
         $this->assertStringNotContainsString('external_asset_id', $encoded);
         $this->assertStringNotContainsString('asset_id', $encoded);
@@ -69,6 +71,34 @@ final class CustomerApiV1ContractTest extends TestCase
         Role::findOrCreate('customer', 'web');
         $customer->assignRole('customer');
         $other->assignRole('customer');
+
+        Order::query()->create([
+            'user_id' => $other->id,
+            'type' => 'buy',
+            'asset_type' => 'gold',
+            'asset_quantity' => '1.00000000',
+            'asset_unit' => 'GOLD18',
+            'status' => 'pending',
+            'gold_weight' => '1.000',
+            'gold_price' => '1000000',
+            'commission' => '0',
+            'total_price' => '1000000',
+        ]);
+
+        $custody = CustodyAsset::query()->create([
+            'user_id' => $other->id,
+            'asset_type' => 'bullion',
+            'title' => 'Other customer custody',
+            'quantity' => '1',
+            'status' => 'ready_for_pickup',
+        ]);
+
+        DeliveryRequest::query()->create([
+            'custody_asset_id' => $custody->id,
+            'user_id' => $other->id,
+            'status' => 'ready',
+        ]);
+
         Sanctum::actingAs($customer);
 
         $this->getJson('/api/v1/customer/dashboard')
