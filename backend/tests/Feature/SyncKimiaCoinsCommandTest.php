@@ -2,30 +2,37 @@
 
 namespace Tests\Feature;
 
-use App\Integrations\Kimia\Client\KimiaClient;
 use App\Models\KimiaCoin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class SyncKimiaCoinsCommandTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config()->set('services.kimia', [
+            'base_url' => 'https://kimia.test',
+            'username' => 'test-user',
+            'password' => 'test-password',
+            'timeout' => 5,
+        ]);
+    }
+
     public function test_it_creates_and_updates_kimia_coins_without_duplicates(): void
     {
-        $kimia = Mockery::mock(KimiaClient::class);
-        $kimia->shouldReceive('get')->twice()->with('/api/product/coins')->andReturn(
-            [
+        Http::fakeSequence()
+            ->push([
                 ['CoinId' => 101, 'Name' => 'Imami Coin', 'Fineness' => 900, 'Weight' => 8.133, 'Type' => 15, 'IsVisible' => true],
                 ['CoinId' => 102, 'Name' => 'Half Coin', 'Fineness' => 900, 'Weight' => 4.066, 'Type' => 15, 'IsVisible' => true],
-            ],
-            [
+            ])
+            ->push([
                 ['CoinId' => 101, 'Name' => 'Updated Imami Coin', 'Fineness' => 916, 'Weight' => 8.133, 'Type' => 15, 'IsVisible' => false],
                 ['CoinId' => 102, 'Name' => 'Half Coin', 'Fineness' => 900, 'Weight' => 4.066, 'Type' => 15, 'IsVisible' => true],
-            ]
-        );
-        $this->app->instance(KimiaClient::class, $kimia);
+            ]);
 
         $this->artisan('kimia:sync-coins')->assertSuccessful();
         $this->assertDatabaseCount('kimia_coins', 2);
@@ -48,12 +55,10 @@ class SyncKimiaCoinsCommandTest extends TestCase
         $originalUpdatedAt = $coin->updated_at;
         $originalSyncedAt = $coin->synced_at;
 
-        $kimia = Mockery::mock(KimiaClient::class);
-        $kimia->shouldReceive('get')->once()->with('/api/product/coins')->andReturn([[
+        Http::fake([ 'https://kimia.test/*' => Http::response([[
             'CoinId' => 202, 'Name' => 'Unchanged Coin', 'Fineness' => 900,
             'Weight' => 8.133, 'Type' => 15, 'IsVisible' => true,
-        ]]);
-        $this->app->instance(KimiaClient::class, $kimia);
+        ]]) ]);
 
         $this->artisan('kimia:sync-coins')->assertSuccessful();
         $coin->refresh();
