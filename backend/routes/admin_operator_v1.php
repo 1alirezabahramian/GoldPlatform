@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\AdminUserReadController;
 use App\Http\Controllers\Api\V1\AdminWhiteLabelReadController;
 use App\Http\Controllers\Api\V1\CustomerPolicyChangeRequestController;
 use App\Http\Controllers\Api\V1\OperatorDashboardController;
+use App\Http\Controllers\Api\V1\OperatorDeliveryActionController;
 use App\Support\AdminOperatorPermissionCatalog;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,12 @@ Route::middleware(['auth:sanctum', 'throttle:operator'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::ORDERS_QUEUE_VIEW);
         Route::get('/deliveries/queue', [AdminOperatorOperationalQueueController::class, 'deliveries'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::DELIVERIES_QUEUE_VIEW);
+        Route::post('/deliveries/{deliveryRequest}/approve', [OperatorDeliveryActionController::class, 'approve'])
+            ->middleware(['permission:'.AdminOperatorPermissionCatalog::DELIVERIES_APPROVE, 'idempotency:operator.delivery.approve']);
+        Route::post('/deliveries/{deliveryRequest}/ready', [OperatorDeliveryActionController::class, 'ready'])
+            ->middleware(['permission:'.AdminOperatorPermissionCatalog::DELIVERIES_READY, 'idempotency:operator.delivery.ready']);
+        Route::post('/deliveries/{deliveryRequest}/complete', [OperatorDeliveryActionController::class, 'complete'])
+            ->middleware(['permission:'.AdminOperatorPermissionCatalog::DELIVERIES_COMPLETE, 'idempotency:operator.delivery.complete']);
     });
 
 Route::middleware(['auth:sanctum', 'throttle:admin'])
