@@ -34,13 +34,25 @@ Successful-request logging is disabled by default to control log volume. Slow an
 - No financial rule, Ledger behavior, order lifecycle or Kimia contract changed.
 - No external monitoring vendor is selected in this stage.
 
+## CI incident and infrastructure correction
+
+The first Stage 24 production-operations run failed before application startup while Docker created the shared `app-storage` volume for PHP, queue worker and scheduler concurrently. The daemon reported that `storage/framework/cache/data` already existed during copy-up.
+
+This was an infrastructure race, not an Observability, financial or Kimia failure. The production Compose contract now:
+
+- disables automatic image copy-up for the shared storage volume with `nocopy`;
+- runs a one-shot `storage-init` service as root;
+- creates the required Laravel storage directories deterministically;
+- assigns the shared storage tree to `www-data`;
+- starts PHP, queue worker and scheduler only after initialization succeeds.
+
 ## Validation gate
 
-The branch must pass the existing Backend RC1, RC2, security, performance, compose, backup/restore and production-operations workflows before Stage 24 can be declared complete.
+The branch must pass the existing Backend RC1, RC2, security, performance, compose, backup/restore and production-operations workflows on the final SHA before Stage 24 can be declared complete.
 
 ## Remaining Stage 24 work
 
-- CI confirmation of the middleware tests and full regression suite.
+- CI confirmation of the middleware tests, storage initialization correction and full regression suite.
 - Define alert routing and ownership without storing secrets in Git.
 - Add queue failure and scheduler heartbeat observability using existing Laravel infrastructure.
 - Document production log ingestion and retention requirements.
