@@ -27,6 +27,42 @@ services:
         condition: service_healthy
     networks: [gold]
 
+  queue-worker:
+    profiles: [workers]
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.production
+    restart: unless-stopped
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=90", "--max-time=3600"]
+    env_file:
+      - backend/.env.production
+    volumes:
+      - app-storage:/var/www/html/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [gold]
+
+  scheduler:
+    profiles: [workers]
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.production
+    restart: unless-stopped
+    command: ["php", "artisan", "schedule:work"]
+    env_file:
+      - backend/.env.production
+    volumes:
+      - app-storage:/var/www/html/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [gold]
+
   mysql:
     image: mysql:8.4
     restart: unless-stopped
