@@ -21,12 +21,14 @@ final class CustomerReadController extends Controller
         $page = Order::query()
             ->where('user_id', $request->user()->id)
             ->when($request->status(), fn (Builder $query, string $status) => $query->where('status', $status))
+            ->when($request->fromDate(), fn (Builder $query, string $from) => $query->whereDate('created_at', '>=', $from))
+            ->when($request->toDate(), fn (Builder $query, string $to) => $query->whereDate('created_at', '<=', $to))
             ->orderBy('id', $request->sortDirection())
             ->paginate($request->perPage());
 
         return CustomerApiResponse::success($request, [
             'items' => collect($page->items())->map(fn (Order $order) => $presenter->order($order))->all(),
-        ], $this->pagination($page, $request->status(), $request->sort()));
+        ], $this->pagination($page, $request->status(), $request->sort(), $request->fromDate(), $request->toDate()));
     }
 
     public function custodies(CustomerCustodyListRequest $request, CustomerReadPresenter $presenter): JsonResponse
@@ -34,12 +36,14 @@ final class CustomerReadController extends Controller
         $page = CustodyAsset::query()
             ->where('user_id', $request->user()->id)
             ->when($request->status(), fn (Builder $query, string $status) => $query->where('status', $status))
+            ->when($request->fromDate(), fn (Builder $query, string $from) => $query->whereDate('created_at', '>=', $from))
+            ->when($request->toDate(), fn (Builder $query, string $to) => $query->whereDate('created_at', '<=', $to))
             ->orderBy('id', $request->sortDirection())
             ->paginate($request->perPage());
 
         return CustomerApiResponse::success($request, [
             'items' => collect($page->items())->map(fn (CustodyAsset $asset) => $presenter->custody($asset))->all(),
-        ], $this->pagination($page, $request->status(), $request->sort()));
+        ], $this->pagination($page, $request->status(), $request->sort(), $request->fromDate(), $request->toDate()));
     }
 
     public function deliveries(CustomerDeliveryListRequest $request, CustomerReadPresenter $presenter): JsonResponse
@@ -48,20 +52,24 @@ final class CustomerReadController extends Controller
             ->with('custodyAsset:id,uuid')
             ->where('user_id', $request->user()->id)
             ->when($request->status(), fn (Builder $query, string $status) => $query->where('status', $status))
+            ->when($request->fromDate(), fn (Builder $query, string $from) => $query->whereDate('created_at', '>=', $from))
+            ->when($request->toDate(), fn (Builder $query, string $to) => $query->whereDate('created_at', '<=', $to))
             ->orderBy('id', $request->sortDirection())
             ->paginate($request->perPage());
 
         return CustomerApiResponse::success($request, [
             'items' => collect($page->items())->map(fn (DeliveryRequest $delivery) => $presenter->delivery($delivery))->all(),
-        ], $this->pagination($page, $request->status(), $request->sort()));
+        ], $this->pagination($page, $request->status(), $request->sort(), $request->fromDate(), $request->toDate()));
     }
 
-    private function pagination($page, ?string $status, string $sort): array
+    private function pagination($page, ?string $status, string $sort, ?string $from, ?string $to): array
     {
         return [
             'filters' => [
                 'status' => $status,
                 'sort' => $sort,
+                'from' => $from,
+                'to' => $to,
             ],
             'pagination' => [
                 'current_page' => $page->currentPage(),

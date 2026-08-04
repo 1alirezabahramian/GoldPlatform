@@ -18,6 +18,8 @@ class CustomerPaginationRequest extends FormRequest
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
             'sort' => ['sometimes', 'string', 'in:newest,oldest'],
+            'from' => ['sometimes', 'date_format:Y-m-d'],
+            'to' => ['sometimes', 'date_format:Y-m-d', 'after_or_equal:from'],
         ];
     }
 
@@ -43,5 +45,19 @@ class CustomerPaginationRequest extends FormRequest
     public function sortDirection(): string
     {
         return $this->sort() === 'oldest' ? 'asc' : 'desc';
+    }
+
+    public function fromDate(): ?string
+    {
+        $from = $this->validated('from');
+
+        return is_string($from) ? $from : null;
+    }
+
+    public function toDate(): ?string
+    {
+        $to = $this->validated('to');
+
+        return is_string($to) ? $to : null;
     }
 }
