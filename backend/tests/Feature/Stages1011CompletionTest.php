@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\CustomerTradingPolicy;
 use App\Models\OutboxMessage;
 use App\Models\User;
+use App\Models\UserGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
@@ -32,15 +33,8 @@ class Stages1011CompletionTest extends TestCase
 
     public function test_mutating_routes_require_idempotency_key(): void
     {
-        $admin = User::factory()->create();
-        Role::findOrCreate('admin', 'web');
-        $admin->assignRole('admin');
-        Sanctum::actingAs($admin);
-
-        $policy = CustomerTradingPolicy::query()->create([
-            'user_group_id' => 1,
-            'is_active' => true,
-        ]);
+        $admin = $this->actingAdmin();
+        $policy = $this->policy();
 
         $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false])
             ->assertStatus(422)
@@ -49,15 +43,8 @@ class Stages1011CompletionTest extends TestCase
 
     public function test_policy_change_is_audited_outboxed_and_replayed_once(): void
     {
-        $admin = User::factory()->create();
-        Role::findOrCreate('admin', 'web');
-        $admin->assignRole('admin');
-        Sanctum::actingAs($admin);
-
-        $policy = CustomerTradingPolicy::query()->create([
-            'user_group_id' => 1,
-            'is_active' => true,
-        ]);
+        $admin = $this->actingAdmin();
+        $policy = $this->policy();
         $headers = ['Idempotency-Key' => 'policy-change-1'];
 
         $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false], $headers)->assertOk();
@@ -71,5 +58,23 @@ class Stages1011CompletionTest extends TestCase
     public function test_every_api_response_has_correlation_id(): void
     {
         $this->getJson('/api/user')->assertHeader('X-Request-Id');
+    }
+
+    private function actingAdmin(): User
+    {
+        $admin = User::factory()->create();
+        Role::findOrCreate('admin', 'web');
+        $admin->assignRole('admin');
+        Sanctum::actingAs($admin);
+        return $admin;
+    }
+
+    private function policy(): CustomerTradingPolicy
+    {
+        $group = UserGroup::query()->create(['title' => 'test group']);
+        return CustomerTradingPolicy::query()->create([
+            'user_group_id' => $group->id,
+            'is_active' => true,
+        ]);
     }
 }
