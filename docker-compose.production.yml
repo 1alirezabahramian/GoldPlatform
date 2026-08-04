@@ -11,6 +11,31 @@ services:
         condition: service_healthy
     networks: [gold]
 
+  storage-init:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.production
+    user: "0:0"
+    command:
+      - sh
+      - -c
+      - >-
+        mkdir -p
+        /var/www/html/storage/app/public
+        /var/www/html/storage/framework/cache/data
+        /var/www/html/storage/framework/sessions
+        /var/www/html/storage/framework/views
+        /var/www/html/storage/logs
+        && chown -R www-data:www-data /var/www/html/storage
+    volumes:
+      - type: volume
+        source: app-storage
+        target: /var/www/html/storage
+        volume:
+          nocopy: true
+    networks: [gold]
+    restart: "no"
+
   php:
     build:
       context: .
@@ -19,8 +44,14 @@ services:
     env_file:
       - backend/.env.production
     volumes:
-      - app-storage:/var/www/html/storage
+      - type: volume
+        source: app-storage
+        target: /var/www/html/storage
+        volume:
+          nocopy: true
     depends_on:
+      storage-init:
+        condition: service_completed_successfully
       mysql:
         condition: service_healthy
       redis:
@@ -37,8 +68,14 @@ services:
     env_file:
       - backend/.env.production
     volumes:
-      - app-storage:/var/www/html/storage
+      - type: volume
+        source: app-storage
+        target: /var/www/html/storage
+        volume:
+          nocopy: true
     depends_on:
+      storage-init:
+        condition: service_completed_successfully
       mysql:
         condition: service_healthy
       redis:
@@ -55,8 +92,14 @@ services:
     env_file:
       - backend/.env.production
     volumes:
-      - app-storage:/var/www/html/storage
+      - type: volume
+        source: app-storage
+        target: /var/www/html/storage
+        volume:
+          nocopy: true
     depends_on:
+      storage-init:
+        condition: service_completed_successfully
       mysql:
         condition: service_healthy
       redis:
