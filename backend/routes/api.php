@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CustomerPanelController;
 use App\Http\Controllers\Api\KimiaController;
 use App\Http\Controllers\Api\OperatorPanelController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\V1\AdminDashboardController;
 use App\Http\Controllers\Api\V1\CustomerActivityController;
 use App\Http\Controllers\Api\V1\CustomerAssetReadController;
 use App\Http\Controllers\Api\V1\CustomerCustodyDeliveryController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Api\V1\CustomerDashboardController;
 use App\Http\Controllers\Api\V1\CustomerOrderStatusController;
 use App\Http\Controllers\Api\V1\CustomerProfileController;
 use App\Http\Controllers\Api\V1\CustomerReadController;
+use App\Http\Controllers\Api\V1\OperatorDashboardController;
 use App\Support\AdminOperatorPermissionCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -82,6 +84,22 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::CUSTOMER_POLICIES_VIEW);
         Route::put('/customer-policies/{policy}', [AdminPanelController::class, 'updatePolicy'])
             ->middleware(['permission:'.AdminOperatorPermissionCatalog::CUSTOMER_POLICIES_UPDATE, 'idempotency:policy.update']);
+    });
+
+Route::middleware(['auth:sanctum', 'throttle:operator'])
+    ->prefix('v1/operator')
+    ->middleware(['role:operator|admin', 'permission:'.AdminOperatorPermissionCatalog::OPERATOR_ACCESS])
+    ->group(function () {
+        Route::get('/dashboard', OperatorDashboardController::class)
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::OPERATOR_DASHBOARD_VIEW);
+    });
+
+Route::middleware(['auth:sanctum', 'throttle:admin'])
+    ->prefix('v1/admin')
+    ->middleware(['role:admin', 'permission:'.AdminOperatorPermissionCatalog::ADMIN_ACCESS])
+    ->group(function () {
+        Route::get('/dashboard', AdminDashboardController::class)
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::ADMIN_DASHBOARD_VIEW);
     });
 
 Route::prefix('kimia')->middleware('throttle:public-read')->group(function () {
