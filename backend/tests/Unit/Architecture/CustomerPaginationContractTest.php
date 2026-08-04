@@ -18,11 +18,21 @@ final class CustomerPaginationContractTest extends TestCase
     }
 
     #[Test]
-    public function customer_lists_share_the_same_pagination_request(): void
+    public function customer_lists_share_the_same_pagination_contract(): void
     {
         $controller = (string) file_get_contents(app_path('Http/Controllers/Api/V1/CustomerReadController.php'));
 
-        self::assertSame(3, substr_count($controller, 'CustomerPaginationRequest $request'));
+        foreach ([
+            'CustomerOrderListRequest',
+            'CustomerCustodyListRequest',
+            'CustomerDeliveryListRequest',
+        ] as $requestClass) {
+            $request = (string) file_get_contents(app_path('Http/Requests/Api/V1/'.$requestClass.'.php'));
+
+            self::assertStringContainsString('extends CustomerPaginationRequest', $request);
+            self::assertStringContainsString($requestClass.' $request', $controller);
+        }
+
         self::assertSame(3, substr_count($controller, 'paginate($request->perPage())'));
         self::assertStringNotContainsString('paginate(25)', $controller);
     }
