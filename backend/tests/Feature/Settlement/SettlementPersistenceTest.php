@@ -5,6 +5,7 @@ namespace Tests\Feature\Settlement;
 use App\Enums\SettlementStatus;
 use App\Models\Order;
 use App\Models\Settlement;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -16,8 +17,10 @@ class SettlementPersistenceTest extends TestCase
     #[Test]
     public function it_persists_a_pending_settlement_with_precise_amount_and_idempotency_key(): void
     {
+        $user = User::factory()->create();
+
         $order = Order::query()->create([
-            'user_id' => 1,
+            'user_id' => $user->id,
             'type' => 'buy',
             'status' => 'approved',
             'gold_weight' => '1.250',
