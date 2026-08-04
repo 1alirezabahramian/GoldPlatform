@@ -19,8 +19,17 @@ class DynamicAssetOrderTest extends TestCase
     public function it_creates_coin_and_currency_orders_from_visible_kimia_catalog_rows(): void
     {
         $user = User::factory()->create();
-        KimiaCoin::query()->create(['kimia_id' => 16, 'name' => 'Imami', 'is_visible' => true]);
-        KimiaCurrency::query()->create(['kimia_id' => 12, 'name' => 'USD', 'is_visible' => true]);
+        KimiaCoin::query()->create([
+            'kimia_id' => 16,
+            'name' => 'Imami',
+            'type' => 1,
+            'is_visible' => true,
+        ]);
+        KimiaCurrency::query()->create([
+            'kimia_id' => 12,
+            'name' => 'USD',
+            'is_visible' => true,
+        ]);
 
         $coin = app(OrderService::class)->create([
             'user_id' => $user->id, 'type' => 'buy', 'asset_type' => 'coin',
@@ -41,7 +50,12 @@ class DynamicAssetOrderTest extends TestCase
     public function it_rejects_unknown_or_hidden_dynamic_assets(): void
     {
         $user = User::factory()->create();
-        KimiaCoin::query()->create(['kimia_id' => 99, 'name' => 'Hidden', 'is_visible' => false]);
+        KimiaCoin::query()->create([
+            'kimia_id' => 99,
+            'name' => 'Hidden',
+            'type' => 1,
+            'is_visible' => false,
+        ]);
 
         $this->expectException(LogicException::class);
         app(OrderService::class)->create([
