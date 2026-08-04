@@ -1,0 +1,70 @@
+name: Business Engine Baseline
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/business-engine-baseline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: business-engine-baseline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    name: PHP lint, migrations and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      APP_ENV: testing
+      APP_DEBUG: 'false'
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      KIMIA_BASE_URL: http://127.0.0.1
+      KIMIA_USERNAME: test
+      KIMIA_PASSWORD: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_sqlite, bcmath
+          coverage: none
+
+      - name: Validate Composer files
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Laravel environment
+        run: |
+          cp .env.example .env
+          touch database/database.sqlite
+          php artisan key:generate --force
+
+      - name: PHP syntax check
+        run: find app config database routes tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Migration safety check
+        run: php artisan migrate:fresh --force
+
+      - name: Run test suite
+        run: php artisan test
