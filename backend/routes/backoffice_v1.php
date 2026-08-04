@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminBootstrapController;
+use App\Http\Controllers\Api\V1\AdminOperationalDashboardController;
 use App\Http\Controllers\Api\V1\OperatorBootstrapController;
+use App\Http\Controllers\Api\V1\OperatorOperationalDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'throttle:operator'])
@@ -9,6 +11,7 @@ Route::middleware(['auth:sanctum', 'throttle:operator'])
     ->middleware('role:operator|admin')
     ->group(function () {
         Route::get('/bootstrap', OperatorBootstrapController::class);
+        Route::get('/dashboard', OperatorOperationalDashboardController::class);
     });
 
 Route::middleware(['auth:sanctum', 'throttle:admin'])
@@ -16,4 +19,5 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
     ->middleware('role:admin')
     ->group(function () {
         Route::get('/bootstrap', AdminBootstrapController::class);
+        Route::get('/dashboard', AdminOperationalDashboardController::class);
     });
