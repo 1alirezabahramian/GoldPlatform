@@ -64,8 +64,8 @@ final class CustomerApiReadinessGateTest extends TestCase
         $openApi = (string) file_get_contents(base_path('../docs/api/customer-v1.openapi.yaml'));
 
         self::assertStringContainsString('openapi: 3.1.0', $openApi);
-        self::assertStringContainsString('/api/v1/customer/bootstrap:', $openApi);
-        self::assertStringContainsString('/api/v1/customer/profile:', $openApi);
-        self::assertStringContainsString('/api/v1/customer/activities:', $openApi);
+        self::assertStringContainsString('/v1/customer/bootstrap:', $openApi);
+        self::assertStringContainsString('/v1/customer/profile:', $openApi);
+        self::assertStringContainsString('/v1/customer/activities:', $openApi);
     }
 }
