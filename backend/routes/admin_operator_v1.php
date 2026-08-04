@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AdminDashboardController;
 use App\Http\Controllers\Api\V1\AdminKimiaReadController;
 use App\Http\Controllers\Api\V1\AdminOperatorOperationalQueueController;
 use App\Http\Controllers\Api\V1\AdminOrderReadController;
+use App\Http\Controllers\Api\V1\AdminProductPricingReadController;
 use App\Http\Controllers\Api\V1\AdminSettlementReadController;
 use App\Http\Controllers\Api\V1\AdminSystemHealthReadController;
 use App\Http\Controllers\Api\V1\AdminUserReadController;
@@ -63,6 +64,12 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::KIMIA_READ);
         Route::get('/system/health', AdminSystemHealthReadController::class)
             ->middleware('permission:'.AdminOperatorPermissionCatalog::SYSTEM_HEALTH_VIEW);
+        Route::get('/product-categories', [AdminProductPricingReadController::class, 'categories'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::PRODUCT_CATEGORIES_VIEW);
+        Route::get('/products', [AdminProductPricingReadController::class, 'products'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::PRODUCTS_VIEW);
+        Route::get('/pricing/overview', [AdminProductPricingReadController::class, 'pricing'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::PRICING_VIEW);
 
         Route::get('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'index'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_VIEW);
