@@ -6,6 +6,9 @@ use App\Domain\Financial\Balance\BalanceSnapshot;
 use App\Domain\Financial\ValueObjects\FinancialAssetId;
 use App\Domain\Financial\ValueObjects\LedgerAccountId;
 
+/**
+ * @deprecated Use TenantScopedBalanceProjectionRepository. New financial flows must provide FinancialScope.
+ */
 interface BalanceProjectionRepository
 {
     public function get(LedgerAccountId $accountId, FinancialAssetId $assetId): ?BalanceSnapshot;
