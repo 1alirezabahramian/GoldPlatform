@@ -7,6 +7,9 @@ final class AdminOperatorPermissionCatalog
     public const ADMIN_ACCESS = 'admin.access';
     public const OPERATOR_ACCESS = 'operator.access';
 
+    public const ADMIN_DASHBOARD_VIEW = 'admin.dashboard.view';
+    public const OPERATOR_DASHBOARD_VIEW = 'operator.dashboard.view';
+
     public const AUDIT_VIEW = 'audit.view';
     public const OUTBOX_VIEW = 'outbox.view';
     public const CUSTOMER_POLICIES_VIEW = 'customer-policies.view';
@@ -24,6 +27,8 @@ final class AdminOperatorPermissionCatalog
         return [
             self::ADMIN_ACCESS,
             self::OPERATOR_ACCESS,
+            self::ADMIN_DASHBOARD_VIEW,
+            self::OPERATOR_DASHBOARD_VIEW,
             self::AUDIT_VIEW,
             self::OUTBOX_VIEW,
             self::CUSTOMER_POLICIES_VIEW,
@@ -47,6 +52,7 @@ final class AdminOperatorPermissionCatalog
     {
         return [
             self::OPERATOR_ACCESS,
+            self::OPERATOR_DASHBOARD_VIEW,
             self::ORDERS_QUEUE_VIEW,
             self::DELIVERIES_QUEUE_VIEW,
             self::DELIVERIES_APPROVE,
