@@ -12,14 +12,8 @@ class LedgerService
 {
     private const ENTRY_TYPES = ['debit', 'credit'];
 
-    public function createEntry(
-        FinancialTransaction $transaction,
-        int $walletAccountId,
-        string $entryType,
-        string $amount,
-        string $currency = 'IRR',
-        ?string $description = null
-    ): LedgerEntry {
+    public function createEntry(FinancialTransaction $transaction, int $walletAccountId, string $entryType, string $amount, string $currency = 'IRR', ?string $description = null): LedgerEntry
+    {
         $this->assertPersistedTransaction($transaction);
         $this->assertWalletAccountId($walletAccountId);
         $this->assertEntryType($entryType);
@@ -36,13 +30,8 @@ class LedgerService
         ]);
     }
 
-    public function transfer(
-        FinancialTransaction $transaction,
-        int $fromAccountId,
-        int $toAccountId,
-        string $amount,
-        string $currency = 'IRR'
-    ): void {
+    public function transfer(FinancialTransaction $transaction, int $fromAccountId, int $toAccountId, string $amount, string $currency = 'IRR'): void
+    {
         $this->assertPersistedTransaction($transaction);
         $this->assertWalletAccountId($fromAccountId);
         $this->assertWalletAccountId($toAccountId);
@@ -50,51 +39,25 @@ class LedgerService
         $this->assertPositiveAmount($amount);
         $this->assertCurrency($currency);
 
-        DB::transaction(function () use (
-            $transaction,
-            $fromAccountId,
-            $toAccountId,
-            $amount,
-            $currency
-        ): void {
-            $this->createEntry(
-                transaction: $transaction,
-                walletAccountId: $fromAccountId,
-                entryType: 'debit',
-                amount: $amount,
-                currency: $currency,
-                description: 'Transfer debit'
-            );
-
-            $this->createEntry(
-                transaction: $transaction,
-                walletAccountId: $toAccountId,
-                entryType: 'credit',
-                amount: $amount,
-                currency: $currency,
-                description: 'Transfer credit'
-            );
+        DB::transaction(function () use ($transaction, $fromAccountId, $toAccountId, $amount, $currency): void {
+            $this->createEntry($transaction, $fromAccountId, 'debit', $amount, $currency, 'Transfer debit');
+            $this->createEntry($transaction, $toAccountId, 'credit', $amount, $currency, 'Transfer credit');
         });
     }
 
-    /**
-     * @return array<string, array{debit: string, credit: string}>
-     */
+    /** @return array<string, array{debit: string, credit: string}> */
     public function totalsByCurrency(FinancialTransaction $transaction): array
     {
         $this->assertPersistedTransaction($transaction);
-
         $totals = [];
 
-        $transaction->ledgerEntries()
-            ->get(['entry_type', 'amount', 'currency'])
+        $transaction->ledgerEntries()->get(['entry_type', 'amount', 'currency'])
             ->each(function (LedgerEntry $entry) use (&$totals): void {
                 $currency = strtoupper($entry->currency);
                 $totals[$currency] ??= ['debit' => '0.000000', 'credit' => '0.000000'];
-                $totals[$currency][$entry->entry_type] = bcadd(
+                $totals[$currency][$entry->entry_type] = $this->decimalAdd(
                     $totals[$currency][$entry->entry_type],
-                    (string) $entry->amount,
-                    6
+                    (string) $entry->amount
                 );
             });
 
@@ -104,13 +67,12 @@ class LedgerService
     public function isBalanced(FinancialTransaction $transaction): bool
     {
         $totals = $this->totalsByCurrency($transaction);
-
         if ($totals === []) {
             return false;
         }
 
         foreach ($totals as $currencyTotals) {
-            if (bccomp($currencyTotals['debit'], $currencyTotals['credit'], 6) !== 0) {
+            if ($this->normalizeDecimal($currencyTotals['debit']) !== $this->normalizeDecimal($currencyTotals['credit'])) {
                 return false;
             }
         }
@@ -121,9 +83,7 @@ class LedgerService
     public function assertBalanced(FinancialTransaction $transaction): void
     {
         if (! $this->isBalanced($transaction)) {
-            throw new LogicException(
-                "Financial transaction {$transaction->uuid} must contain balanced debit and credit entries."
-            );
+            throw new LogicException("Financial transaction {$transaction->uuid} must contain balanced debit and credit entries.");
         }
     }
 
@@ -150,7 +110,8 @@ class LedgerService
 
     private function assertPositiveAmount(string $amount): void
     {
-        if (! is_numeric($amount) || bccomp($amount, '0', 6) !== 1) {
+        $value = trim($amount);
+        if (! preg_match('/^\d+(?:\.\d+)?$/', $value) || ! preg_match('/[1-9]/', $value)) {
             throw new InvalidArgumentException('Ledger amount must be greater than zero.');
         }
     }
@@ -158,7 +119,6 @@ class LedgerService
     private function assertCurrency(string $currency): void
     {
         $normalized = strtoupper(trim($currency));
-
         if ($normalized === '' || strlen($normalized) > 20) {
             throw new InvalidArgumentException('Ledger currency is required and must not exceed 20 characters.');
         }
@@ -169,5 +129,20 @@ class LedgerService
         if ($fromAccountId === $toAccountId) {
             throw new InvalidArgumentException('Ledger transfer accounts must be different.');
         }
+    }
+
+    private function decimalAdd(string $left, string $right): string
+    {
+        if (function_exists('bcadd')) {
+            return bcadd($left, $right, 6);
+        }
+
+        return number_format((float) $left + (float) $right, 6, '.', '');
+    }
+
+    private function normalizeDecimal(string $value): string
+    {
+        $normalized = rtrim(rtrim($value, '0'), '.');
+        return $normalized === '' ? '0' : $normalized;
     }
 }
