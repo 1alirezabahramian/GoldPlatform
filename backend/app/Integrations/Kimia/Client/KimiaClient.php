@@ -15,6 +15,7 @@ class KimiaClient
     protected string $username;
     protected string $password;
     protected int $timeout;
+    protected bool $readOnly;
 
     public function __construct()
     {
@@ -22,6 +23,7 @@ class KimiaClient
         $this->username = (string) config('services.kimia.username');
         $this->password = (string) config('services.kimia.password');
         $this->timeout = (int) config('services.kimia.timeout', 30);
+        $this->readOnly = (bool) config('services.kimia.read_only', true);
 
         if (
             $this->baseUrl === ''
@@ -63,6 +65,15 @@ class KimiaClient
 
     private function send(string $method, string $uri, array $payload = []): Response
     {
+        if ($this->readOnly && $method !== 'GET') {
+            Log::warning('Blocked Kimia write request while read-only mode is enabled.', [
+                'method' => $method,
+                'uri' => $uri,
+            ]);
+
+            throw new KimiaException('Kimia write operations are disabled in read-only mode.');
+        }
+
         try {
             $response = match ($method) {
                 'GET' => $this->request()->get($uri, $payload),
