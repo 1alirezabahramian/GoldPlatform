@@ -80,6 +80,12 @@ log_stage "start production stack"
 docker compose -f "$COMPOSE_FILE" up -d
 end_stage
 
+# A clean deployment must initialize the database before migration status is read.
+log_stage "apply database migrations"
+docker compose -f "$COMPOSE_FILE" exec -T php \
+  php artisan migrate --force --no-interaction
+end_stage
+
 log_stage "initial application health"
 wait_for_health
 end_stage
