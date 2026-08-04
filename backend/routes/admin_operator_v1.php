@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\AdminKimiaReadController;
 use App\Http\Controllers\Api\V1\AdminOperatorOperationalQueueController;
 use App\Http\Controllers\Api\V1\AdminOrderReadController;
 use App\Http\Controllers\Api\V1\AdminSettlementReadController;
+use App\Http\Controllers\Api\V1\AdminSystemHealthReadController;
 use App\Http\Controllers\Api\V1\AdminUserReadController;
 use App\Http\Controllers\Api\V1\CustomerPolicyChangeRequestController;
 use App\Http\Controllers\Api\V1\OperatorDashboardController;
@@ -60,6 +61,8 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::SETTLEMENTS_DETAIL_VIEW);
         Route::get('/kimia/overview', AdminKimiaReadController::class)
             ->middleware('permission:'.AdminOperatorPermissionCatalog::KIMIA_READ);
+        Route::get('/system/health', AdminSystemHealthReadController::class)
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::SYSTEM_HEALTH_VIEW);
 
         Route::get('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'index'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_VIEW);
