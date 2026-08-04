@@ -13,7 +13,9 @@ final class CustomerProfileReadContractTest extends TestCase
         $routes = (string) file_get_contents(base_path('routes/api.php'));
 
         self::assertStringContainsString("Route::get('/profile', CustomerProfileController::class)", $routes);
-        self::assertStringContainsString("Route::prefix('v1/customer')->middleware('role:customer')", $routes);
+        self::assertStringContainsString("Route::prefix('v1/customer')", $routes);
+        self::assertStringContainsString("'role:customer'", $routes);
+        self::assertStringContainsString("'customer.no-store'", $routes);
     }
 
     #[Test]
