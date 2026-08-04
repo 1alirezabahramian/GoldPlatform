@@ -1,0 +1,113 @@
+name: Backup and Restore Drill
+
+on:
+  pull_request:
+    branches:
+      - feature/goldplatform-developer-mcp
+  workflow_dispatch:
+
+jobs:
+  backup-restore-drill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root-validation
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot-validation"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install MySQL client
+        run: sudo apt-get update && sudo apt-get install -y default-mysql-client
+
+      - name: Prepare isolated source and restore databases
+        env:
+          MYSQL_PWD: root-validation
+        run: |
+          mysql -h127.0.0.1 -P3306 -uroot <<'SQL'
+          CREATE DATABASE goldplatform_backup_source;
+          CREATE DATABASE goldplatform_restore_drill;
+          USE goldplatform_backup_source;
+          CREATE TABLE backup_marker (
+            id BIGINT PRIMARY KEY,
+            marker VARCHAR(100) NOT NULL
+          );
+          INSERT INTO backup_marker (id, marker) VALUES (1, 'goldplatform-stage-17');
+          SQL
+
+      - name: Verify destructive restore guard
+        shell: bash
+        run: |
+          chmod +x tools/ops/*.sh
+          set +e
+          ALLOW_RESTORE=true \
+          DB_HOST=127.0.0.1 DB_PORT=3306 \
+          DB_DATABASE=goldplatform_backup_source \
+          DB_USERNAME=root DB_PASSWORD=root-validation \
+          BACKUP_PATH=/tmp/not-created.sql.gz \
+          tools/ops/restore-database.sh
+          result=$?
+          set -e
+          test "$result" -ne 0
+
+      - name: Create database backup and checksum
+        run: |
+          DB_HOST=127.0.0.1 DB_PORT=3306 \
+          DB_DATABASE=goldplatform_backup_source \
+          DB_USERNAME=root DB_PASSWORD=root-validation \
+          BACKUP_PATH=/tmp/goldplatform.sql.gz \
+          tools/ops/backup-database.sh
+          sha256sum --check /tmp/goldplatform.sql.gz.sha256
+
+      - name: Restore into isolated database
+        run: |
+          ALLOW_RESTORE=true \
+          DB_HOST=127.0.0.1 DB_PORT=3306 \
+          DB_DATABASE=goldplatform_restore_drill \
+          DB_USERNAME=root DB_PASSWORD=root-validation \
+          BACKUP_PATH=/tmp/goldplatform.sql.gz \
+          tools/ops/restore-database.sh
+
+      - name: Verify restored data integrity
+        env:
+          MYSQL_PWD: root-validation
+        run: |
+          restored=$(mysql -N -s -h127.0.0.1 -P3306 -uroot goldplatform_restore_drill \
+            -e "SELECT marker FROM backup_marker WHERE id = 1")
+          test "$restored" = "goldplatform-stage-17"
+
+      - name: Create and validate storage backup
+        shell: bash
+        run: |
+          mkdir -p /tmp/goldplatform-storage/app/public
+          printf 'custody-test-file\n' > /tmp/goldplatform-storage/app/public/marker.txt
+          STORAGE_SOURCE=/tmp/goldplatform-storage \
+          BACKUP_PATH=/tmp/goldplatform-storage.tar.gz \
+          tools/ops/backup-storage.sh
+          sha256sum --check /tmp/goldplatform-storage.tar.gz.sha256
+          tar -tzf /tmp/goldplatform-storage.tar.gz | grep 'app/public/marker.txt'
+
+      - name: Write drill evidence
+        run: |
+          {
+            echo 'database_backup_checksum=PASS'
+            echo 'isolated_restore_guard=PASS'
+            echo 'restored_marker_integrity=PASS'
+            echo 'storage_backup_checksum=PASS'
+          } > /tmp/stage-17-drill.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stage-17-backup-restore-evidence
+          path: /tmp/stage-17-drill.txt
+          retention-days: 30
