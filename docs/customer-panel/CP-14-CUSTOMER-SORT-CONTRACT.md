@@ -29,3 +29,7 @@
 - بدون تغییر Wallet، Ledger یا Settlement
 - بدون Kimia Read/Write
 - بدون Rule مالی جدید
+
+## Validation
+
+پس از Merge شدن CP-13، این PR روی شاخه مبنای اصلی Retarget شد و باید همه Gateهای مستقل CI را روی همین قرارداد اجرا کند.
