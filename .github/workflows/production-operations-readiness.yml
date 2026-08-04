@@ -1,0 +1,62 @@
+name: Production Operations Readiness
+
+on:
+  pull_request:
+    branches:
+      - feature/goldplatform-developer-mcp
+  workflow_dispatch:
+
+jobs:
+  operations-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      HTTP_PORT: 18080
+      DB_DATABASE: goldplatform_ops_validation
+      DB_USERNAME: goldplatform
+      DB_PASSWORD: validation-password
+      DB_ROOT_PASSWORD: validation-root-password
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare ephemeral production environment
+        shell: bash
+        run: |
+          cat > backend/.env.production <<'ENV'
+          APP_NAME=GoldPlatform
+          APP_ENV=production
+          APP_KEY=base64:REREREREREREREREREREREREREREREREREREREREREQ=
+          APP_DEBUG=false
+          APP_URL=http://127.0.0.1:18080
+          LOG_CHANNEL=stderr
+          LOG_LEVEL=info
+          DB_CONNECTION=mysql
+          DB_HOST=mysql
+          DB_PORT=3306
+          DB_DATABASE=goldplatform_ops_validation
+          DB_USERNAME=goldplatform
+          DB_PASSWORD=validation-password
+          REDIS_CLIENT=phpredis
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          CACHE_STORE=redis
+          SESSION_DRIVER=database
+          SESSION_SECURE_COOKIE=false
+          QUEUE_CONNECTION=database
+          KIMIA_BASE_URL=https://kimia.invalid
+          KIMIA_USERNAME=test
+          KIMIA_PASSWORD=test
+          KIMIA_READ_ONLY=true
+          KIMIA_WRITE_ENABLED=false
+          ENV
+
+      - name: Validate workers, scheduler, restart and health
+        shell: bash
+        run: |
+          chmod +x tools/ops/production-operations-validation.sh
+          tools/ops/production-operations-validation.sh
+
+      - name: Stop stack
+        if: always()
+        run: docker compose -f docker-compose.production.yml --profile workers down -v --remove-orphans
