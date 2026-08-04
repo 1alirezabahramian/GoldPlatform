@@ -7,9 +7,11 @@ use InvalidArgumentException;
 
 final readonly class FinancialAssetId
 {
+    private string $externalId;
+
     public function __construct(
         private FinancialAssetType $type,
-        private string $externalId,
+        string $externalId,
     ) {
         $externalId = trim($externalId);
 
