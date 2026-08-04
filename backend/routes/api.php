@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\CustomerDashboardController;
 use App\Http\Controllers\Api\V1\CustomerOrderStatusController;
 use App\Http\Controllers\Api\V1\CustomerProfileController;
 use App\Http\Controllers\Api\V1\CustomerReadController;
+use App\Support\AdminOperatorPermissionCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -58,24 +59,29 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'throttle:operator'])
-    ->prefix('operator')->middleware('role:operator|admin')->group(function () {
-        Route::get('/orders/queue', [OperatorPanelController::class, 'orderQueue']);
-        Route::get('/deliveries/queue', [OperatorPanelController::class, 'deliveryQueue']);
+    ->prefix('operator')->middleware(['role:operator|admin', 'permission:'.AdminOperatorPermissionCatalog::OPERATOR_ACCESS])->group(function () {
+        Route::get('/orders/queue', [OperatorPanelController::class, 'orderQueue'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::ORDERS_QUEUE_VIEW);
+        Route::get('/deliveries/queue', [OperatorPanelController::class, 'deliveryQueue'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::DELIVERIES_QUEUE_VIEW);
         Route::post('/deliveries/{deliveryRequest}/approve', [OperatorPanelController::class, 'approveDelivery'])
-            ->middleware('idempotency:delivery.approve');
+            ->middleware(['permission:'.AdminOperatorPermissionCatalog::DELIVERIES_APPROVE, 'idempotency:delivery.approve']);
         Route::post('/deliveries/{deliveryRequest}/ready', [OperatorPanelController::class, 'markDeliveryReady'])
-            ->middleware('idempotency:delivery.ready');
+            ->middleware(['permission:'.AdminOperatorPermissionCatalog::DELIVERIES_READY, 'idempotency:delivery.ready']);
         Route::post('/deliveries/{deliveryRequest}/deliver', [OperatorPanelController::class, 'deliver'])
-            ->middleware('idempotency:delivery.deliver');
+            ->middleware(['permission:'.AdminOperatorPermissionCatalog::DELIVERIES_COMPLETE, 'idempotency:delivery.deliver']);
     });
 
 Route::middleware(['auth:sanctum', 'throttle:admin'])
-    ->prefix('admin')->middleware('role:admin')->group(function () {
-        Route::get('/audit-logs', [AdminPanelController::class, 'auditLogs']);
-        Route::get('/outbox', [AdminPanelController::class, 'outbox']);
-        Route::get('/customer-policies', [AdminPanelController::class, 'policies']);
+    ->prefix('admin')->middleware(['role:admin', 'permission:'.AdminOperatorPermissionCatalog::ADMIN_ACCESS])->group(function () {
+        Route::get('/audit-logs', [AdminPanelController::class, 'auditLogs'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::AUDIT_VIEW);
+        Route::get('/outbox', [AdminPanelController::class, 'outbox'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::OUTBOX_VIEW);
+        Route::get('/customer-policies', [AdminPanelController::class, 'policies'])
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::CUSTOMER_POLICIES_VIEW);
         Route::put('/customer-policies/{policy}', [AdminPanelController::class, 'updatePolicy'])
-            ->middleware('idempotency:policy.update');
+            ->middleware(['permission:'.AdminOperatorPermissionCatalog::CUSTOMER_POLICIES_UPDATE, 'idempotency:policy.update']);
     });
 
 Route::prefix('kimia')->middleware('throttle:public-read')->group(function () {
