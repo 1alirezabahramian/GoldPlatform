@@ -13,7 +13,9 @@ trap cleanup EXIT
 wait_for_health() {
   local attempt
   for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
-    if curl --fail --silent "$HEALTH_URL" >/dev/null; then
+    if curl --fail --silent "$HEALTH_URL" >/dev/null 2>&1 \
+      && docker compose -f "$COMPOSE_FILE" exec -T php \
+        php artisan ops:health --json --fail-on-degraded >/dev/null 2>&1; then
       return 0
     fi
     sleep 5
