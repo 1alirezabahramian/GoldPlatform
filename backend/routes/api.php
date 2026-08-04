@@ -10,13 +10,13 @@ use App\Http\Controllers\Api\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     Route::post('/send-otp', [AuthController::class, 'sendOtp']);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
     Route::post('/register', [RegistrationController::class, 'register']);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/user', fn (Request $request) => $request->user());
     Route::post('/orders', [OrderController::class, 'store'])->middleware('idempotency:order.create');
@@ -29,8 +29,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/custody/{custodyAsset}/delivery', [CustomerPanelController::class, 'requestDelivery'])
             ->middleware('idempotency:delivery.request');
     });
+});
 
-    Route::prefix('operator')->middleware('role:operator|admin')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:operator'])
+    ->prefix('operator')->middleware('role:operator|admin')->group(function () {
         Route::get('/orders/queue', [OperatorPanelController::class, 'orderQueue']);
         Route::get('/deliveries/queue', [OperatorPanelController::class, 'deliveryQueue']);
         Route::post('/deliveries/{deliveryRequest}/approve', [OperatorPanelController::class, 'approveDelivery'])
@@ -41,16 +43,16 @@ Route::middleware('auth:sanctum')->group(function () {
             ->middleware('idempotency:delivery.deliver');
     });
 
-    Route::prefix('admin')->middleware('role:admin')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:admin'])
+    ->prefix('admin')->middleware('role:admin')->group(function () {
         Route::get('/audit-logs', [AdminPanelController::class, 'auditLogs']);
         Route::get('/outbox', [AdminPanelController::class, 'outbox']);
         Route::get('/customer-policies', [AdminPanelController::class, 'policies']);
         Route::put('/customer-policies/{policy}', [AdminPanelController::class, 'updatePolicy'])
             ->middleware('idempotency:policy.update');
     });
-});
 
-Route::prefix('kimia')->group(function () {
+Route::prefix('kimia')->middleware('throttle:public-read')->group(function () {
     Route::get('/account-groups', [KimiaController::class, 'accountGroups']);
 });
 
