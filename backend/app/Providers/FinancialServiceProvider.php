@@ -8,10 +8,10 @@ use App\Domain\Financial\Contracts\TenantScopedIdempotencyRegistry;
 use App\Domain\Financial\Contracts\TenantScopedJournalRepository;
 use App\Domain\Financial\Persistence\AtomicFinancialOperation;
 use App\Domain\Financial\Persistence\ConcurrencyGuard;
+use App\Infrastructure\Financial\Database\DatabaseTenantScopedBalanceProjectionRepository;
 use App\Infrastructure\Financial\Database\DatabaseTenantScopedFinancialEventStore;
 use App\Infrastructure\Financial\Database\DatabaseTenantScopedIdempotencyRegistry;
-use App\Infrastructure\Financial\InMemory\InMemoryTenantScopedBalanceProjectionRepository;
-use App\Infrastructure\Financial\InMemory\InMemoryTenantScopedJournalRepository;
+use App\Infrastructure\Financial\Database\DatabaseTenantScopedJournalRepository;
 use App\Infrastructure\Financial\Laravel\LaravelCacheConcurrencyGuard;
 use App\Infrastructure\Financial\Laravel\LaravelDatabaseAtomicFinancialOperation;
 use Illuminate\Support\ServiceProvider;
@@ -30,9 +30,9 @@ final class FinancialServiceProvider extends ServiceProvider
             LaravelCacheConcurrencyGuard::class,
         );
 
-        $this->app->singleton(
+        $this->app->bind(
             TenantScopedJournalRepository::class,
-            InMemoryTenantScopedJournalRepository::class,
+            DatabaseTenantScopedJournalRepository::class,
         );
 
         $this->app->bind(
@@ -45,9 +45,9 @@ final class FinancialServiceProvider extends ServiceProvider
             DatabaseTenantScopedIdempotencyRegistry::class,
         );
 
-        $this->app->singleton(
+        $this->app->bind(
             TenantScopedBalanceProjectionRepository::class,
-            InMemoryTenantScopedBalanceProjectionRepository::class,
+            DatabaseTenantScopedBalanceProjectionRepository::class,
         );
     }
 }
