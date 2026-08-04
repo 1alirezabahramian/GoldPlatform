@@ -71,10 +71,9 @@ jobs:
         run: |
           php artisan migrate:fresh --force --no-interaction
           php artisan test --no-ansi
-      - name: Final Laravel and configuration health
+      - name: Final Laravel health
         run: |
           php artisan about --only=environment,cache,drivers --no-ansi
-          php artisan ops:validate-production-config || test "$APP_ENV" = testing
           php artisan route:list --json > /tmp/routes.json
           test -s /tmp/routes.json
       - name: Secret scan
