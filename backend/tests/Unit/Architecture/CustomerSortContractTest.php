@@ -14,7 +14,7 @@ final class CustomerSortContractTest extends TestCase
 
         self::assertStringContainsString("'sort' => ['sometimes', 'string', 'in:newest,oldest']", $request);
         self::assertStringContainsString("validated('sort', 'newest')", $request);
-        self::assertStringContainsString("return $this->sort() === 'oldest' ? 'asc' : 'desc';", $request);
+        self::assertStringContainsString('return $this->sort() === \'oldest\' ? \'asc\' : \'desc\';', $request);
     }
 
     #[Test]
@@ -22,9 +22,9 @@ final class CustomerSortContractTest extends TestCase
     {
         $controller = (string) file_get_contents(app_path('Http/Controllers/Api/V1/CustomerReadController.php'));
 
-        self::assertSame(3, substr_count($controller, "->orderBy('id', $request->sortDirection())"));
+        self::assertSame(3, substr_count($controller, "->orderBy('id', \$request->sortDirection())"));
         self::assertStringNotContainsString('orderByRaw', $controller);
-        self::assertStringNotContainsString("$request->input('sort')", $controller);
+        self::assertStringNotContainsString("\$request->input('sort')", $controller);
     }
 
     #[Test]
@@ -32,7 +32,7 @@ final class CustomerSortContractTest extends TestCase
     {
         $controller = (string) file_get_contents(app_path('Http/Controllers/Api/V1/CustomerReadController.php'));
 
-        self::assertStringContainsString("'sort' => $sort", $controller);
+        self::assertStringContainsString("'sort' => \$sort", $controller);
         self::assertSame(3, substr_count($controller, '$request->sort()'));
     }
 }
