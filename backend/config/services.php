@@ -29,35 +29,29 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Kimia API
-    |--------------------------------------------------------------------------
-    */
-
     'kimia' => [
-
         'base_url' => env('KIMIA_BASE_URL'),
-
         'username' => env('KIMIA_USERNAME'),
-
         'password' => env('KIMIA_PASSWORD'),
-
         'timeout' => env('KIMIA_TIMEOUT', 30),
-
+        'read_only' => env('KIMIA_READ_ONLY', true),
+        'read_retries' => env('KIMIA_READ_RETRIES', 2),
+        'retry_delay_ms' => env('KIMIA_RETRY_DELAY_MS', 250),
+        'timeout_profiles' => [
+            '/api/account' => env('KIMIA_TIMEOUT_ACCOUNT', 15),
+            '/api/product' => env('KIMIA_TIMEOUT_PRODUCT', 20),
+            '/api/barcode' => env('KIMIA_TIMEOUT_BARCODE', 20),
+            '/api/voucher/balance' => env('KIMIA_TIMEOUT_BALANCE', 20),
+            '/api/voucher/transactions' => env('KIMIA_TIMEOUT_VOUCHER', 30),
+        ],
     ],
+
     'smsir' => [
-
-    'base_url' => env('SMSIR_BASE_URL'),
-
-    'api_key' => env('SMSIR_API_KEY'),
-
-    'templates' => [
-
-        'login' => env('SMSIR_TEMPLATE_LOGIN'),
-
+        'base_url' => env('SMSIR_BASE_URL'),
+        'api_key' => env('SMSIR_API_KEY'),
+        'templates' => [
+            'login' => env('SMSIR_TEMPLATE_LOGIN'),
+        ],
     ],
-
-],
 
 ];

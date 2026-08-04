@@ -15,6 +15,9 @@ class KimiaClient
     protected string $username;
     protected string $password;
     protected int $timeout;
+    protected bool $readOnly;
+    protected int $readRetries;
+    protected int $retryDelayMs;
 
     public function __construct()
     {
@@ -22,6 +25,9 @@ class KimiaClient
         $this->username = (string) config('services.kimia.username');
         $this->password = (string) config('services.kimia.password');
         $this->timeout = (int) config('services.kimia.timeout', 30);
+        $this->readOnly = (bool) config('services.kimia.read_only', true);
+        $this->readRetries = max(0, (int) config('services.kimia.read_retries', 2));
+        $this->retryDelayMs = max(0, (int) config('services.kimia.retry_delay_ms', 250));
 
         if (
             $this->baseUrl === ''
@@ -33,10 +39,10 @@ class KimiaClient
         }
     }
 
-    protected function request(): PendingRequest
+    protected function request(int $timeout): PendingRequest
     {
         return Http::baseUrl($this->baseUrl)
-            ->timeout($this->timeout)
+            ->timeout($timeout)
             ->acceptJson()
             ->withBasicAuth($this->username, $this->password);
     }
@@ -63,39 +69,76 @@ class KimiaClient
 
     private function send(string $method, string $uri, array $payload = []): Response
     {
-        try {
-            $response = match ($method) {
-                'GET' => $this->request()->get($uri, $payload),
-                'POST' => $this->request()->post($uri, $payload),
-                'PUT' => $this->request()->put($uri, $payload),
-                'DELETE' => $this->request()->delete($uri, $payload),
-                default => throw new KimiaException('Unsupported Kimia HTTP method.'),
-            };
-        } catch (ConnectionException $exception) {
-            Log::warning('Kimia API connection failed.', [
+        if ($this->readOnly && $method !== 'GET') {
+            Log::warning('Blocked Kimia write request while read-only mode is enabled.', [
                 'method' => $method,
                 'uri' => $uri,
-                'exception' => $exception::class,
             ]);
 
-            throw new KimiaException(
-                "Kimia {$method} {$uri} connection failed.",
-                previous: $exception
-            );
+            throw new KimiaException('Kimia write operations are disabled in read-only mode.');
         }
 
-        Log::info('Kimia API request completed.', [
-            'method' => $method,
-            'uri' => $uri,
-            'status' => $response->status(),
-        ]);
+        $attempts = $method === 'GET' ? $this->readRetries + 1 : 1;
+        $timeout = $this->timeoutFor($uri);
+        $lastConnectionException = null;
 
-        if ($response->failed()) {
-            throw new KimiaException(
-                "Kimia {$method} {$uri} failed with HTTP {$response->status()}."
-            );
+        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+            try {
+                $response = match ($method) {
+                    'GET' => $this->request($timeout)->get($uri, $payload),
+                    'POST' => $this->request($timeout)->post($uri, $payload),
+                    'PUT' => $this->request($timeout)->put($uri, $payload),
+                    'DELETE' => $this->request($timeout)->delete($uri, $payload),
+                    default => throw new KimiaException('Unsupported Kimia HTTP method.'),
+                };
+
+                Log::info('Kimia API request completed.', [
+                    'method' => $method,
+                    'uri' => $uri,
+                    'status' => $response->status(),
+                    'attempt' => $attempt,
+                ]);
+
+                if ($response->failed()) {
+                    throw new KimiaException(
+                        "Kimia {$method} {$uri} failed with HTTP {$response->status()}."
+                    );
+                }
+
+                return $response;
+            } catch (ConnectionException $exception) {
+                $lastConnectionException = $exception;
+
+                Log::warning('Kimia API connection failed.', [
+                    'method' => $method,
+                    'uri' => $uri,
+                    'attempt' => $attempt,
+                    'max_attempts' => $attempts,
+                    'exception' => $exception::class,
+                ]);
+
+                if ($attempt < $attempts && $this->retryDelayMs > 0) {
+                    usleep($this->retryDelayMs * 1000);
+                }
+            }
         }
 
-        return $response;
+        throw new KimiaException(
+            "Kimia {$method} {$uri} connection failed after {$attempts} attempt(s).",
+            previous: $lastConnectionException
+        );
+    }
+
+    private function timeoutFor(string $uri): int
+    {
+        $profiles = (array) config('services.kimia.timeout_profiles', []);
+
+        foreach ($profiles as $prefix => $timeout) {
+            if (str_starts_with($uri, (string) $prefix) && (int) $timeout > 0) {
+                return (int) $timeout;
+            }
+        }
+
+        return $this->timeout;
     }
 }

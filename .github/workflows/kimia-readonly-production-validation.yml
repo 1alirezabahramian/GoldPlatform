@@ -1,0 +1,81 @@
+name: Kimia Read-Only Production Validation
+
+on:
+  pull_request:
+    branches:
+      - feature/goldplatform-developer-mcp
+    paths:
+      - 'backend/app/Integrations/Kimia/**'
+      - 'backend/config/services.php'
+      - 'backend/.env.example'
+      - '.github/workflows/kimia-readonly-production-validation.yml'
+  workflow_dispatch:
+    inputs:
+      account_id:
+        description: 'Optional real Kimia account ID for balance and transaction probes'
+        required: false
+        type: string
+
+jobs:
+  validate-read-only:
+    runs-on: ubuntu-latest
+    environment: kimia-readonly
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_KEY: base64:Q0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0M=
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /tmp/goldplatform-kimia-read.sqlite
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      KIMIA_BASE_URL: ${{ secrets.KIMIA_BASE_URL }}
+      KIMIA_USERNAME: ${{ secrets.KIMIA_USERNAME }}
+      KIMIA_PASSWORD: ${{ secrets.KIMIA_PASSWORD }}
+      KIMIA_READ_ONLY: true
+      KIMIA_READ_RETRIES: 2
+      KIMIA_RETRY_DELAY_MS: 500
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_sqlite, zip
+          coverage: none
+      - name: Require protected Kimia secrets
+        shell: bash
+        run: |
+          test -n "$KIMIA_BASE_URL" || (echo 'KIMIA_BASE_URL secret is missing' && exit 1)
+          test -n "$KIMIA_USERNAME" || (echo 'KIMIA_USERNAME secret is missing' && exit 1)
+          test -n "$KIMIA_PASSWORD" || (echo 'KIMIA_PASSWORD secret is missing' && exit 1)
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare isolated environment
+        run: |
+          touch /tmp/goldplatform-kimia-read.sqlite
+          php artisan config:clear
+      - name: Execute safe real Kimia read validation
+        shell: bash
+        run: |
+          args=(--json)
+          if [ -n "${{ inputs.account_id }}" ]; then
+            args+=("--account-id=${{ inputs.account_id }}")
+          elif [ -n "${KIMIA_PROBE_ACCOUNT_ID:-}" ]; then
+            args+=("--account-id=${KIMIA_PROBE_ACCOUNT_ID}")
+          fi
+          php artisan kimia:validate-read "${args[@]}" | tee /tmp/kimia-compatibility.json
+        env:
+          KIMIA_PROBE_ACCOUNT_ID: ${{ secrets.KIMIA_PROBE_ACCOUNT_ID }}
+      - name: Verify no write method was enabled
+        run: php artisan test --no-ansi --filter='read_only_mode_blocks_write_methods_before_http_dispatch|validator_checks_all_confirmed_read_endpoints'
+      - name: Upload redacted compatibility evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimia-readonly-compatibility
+          path: /tmp/kimia-compatibility.json
+          retention-days: 14

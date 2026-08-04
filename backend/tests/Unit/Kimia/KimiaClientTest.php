@@ -21,11 +21,15 @@ class KimiaClientTest extends TestCase
             'username' => 'test-user',
             'password' => 'test-password',
             'timeout' => 5,
+            'read_only' => false,
+            'read_retries' => 0,
+            'retry_delay_ms' => 0,
+            'timeout_profiles' => [],
         ]);
     }
 
     #[Test]
-    public function all_http_methods_use_the_canonical_client(): void
+    public function all_http_methods_use_the_canonical_client_when_write_is_explicitly_enabled(): void
     {
         Http::fake([
             'https://kimia.test/*' => Http::response(['ok' => true]),
@@ -41,10 +45,29 @@ class KimiaClientTest extends TestCase
         Http::assertSentCount(4);
 
         foreach (['GET', 'POST', 'PUT', 'DELETE'] as $method) {
-            Http::assertSent(
-                fn (Request $request): bool => $request->method() === $method
-            );
+            Http::assertSent(fn (Request $request): bool => $request->method() === $method);
         }
+    }
+
+    #[Test]
+    public function read_only_mode_blocks_write_methods_before_http_dispatch(): void
+    {
+        config()->set('services.kimia.read_only', true);
+        Http::fake();
+
+        foreach (['post', 'put', 'delete'] as $method) {
+            try {
+                app(KimiaClient::class)->{$method}('/api/blocked', ['value' => 1]);
+                $this->fail("Expected {$method} to be blocked.");
+            } catch (KimiaException $exception) {
+                $this->assertSame(
+                    'Kimia write operations are disabled in read-only mode.',
+                    $exception->getMessage()
+                );
+            }
+        }
+
+        Http::assertNothingSent();
     }
 
     #[Test]
@@ -65,10 +88,7 @@ class KimiaClientTest extends TestCase
                 'Kimia GET /api/account failed with HTTP 500.',
                 $exception->getMessage()
             );
-            $this->assertStringNotContainsString(
-                'must-not-leak',
-                $exception->getMessage()
-            );
+            $this->assertStringNotContainsString('must-not-leak', $exception->getMessage());
         }
     }
 
@@ -93,6 +113,7 @@ class KimiaClientTest extends TestCase
                         'method' => 'POST',
                         'uri' => '/api/account',
                         'status' => 200,
+                        'attempt' => 1,
                     ];
             });
     }
