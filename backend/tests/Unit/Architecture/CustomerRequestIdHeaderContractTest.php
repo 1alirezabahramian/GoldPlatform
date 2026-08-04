@@ -12,9 +12,9 @@ final class CustomerRequestIdHeaderContractTest extends TestCase
     {
         $response = (string) file_get_contents(app_path('Support/CustomerApiResponse.php'));
 
-        self::assertSame(2, substr_count($response, "->header('X-Request-ID', $requestId)"));
-        self::assertSame(2, substr_count($response, "(string) $request->attributes->get('request_id')"));
-        self::assertStringContainsString("'request_id' => $requestId", $response);
+        self::assertSame(2, substr_count($response, "->header('X-Request-ID', \$requestId)"));
+        self::assertSame(2, substr_count($response, "(string) \$request->attributes->get('request_id')"));
+        self::assertStringContainsString("'request_id' => \$requestId", $response);
     }
 
     #[Test]
