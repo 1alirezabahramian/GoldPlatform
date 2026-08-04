@@ -96,10 +96,13 @@ class DeliveryService
     {
         return DB::transaction(function () use ($request, $to, $from, $extra): DeliveryRequest {
             $locked = DeliveryRequest::query()->lockForUpdate()->findOrFail($request->id);
+            if ($locked->status->isTerminal()) {
+                throw new LogicException("Terminal delivery cannot transition from {$locked->status->value}.");
+            }
             if ($locked->status === $to) {
                 return $locked;
             }
-            if ($locked->status->isTerminal() || ! in_array($locked->status, $from, true)) {
+            if (! in_array($locked->status, $from, true)) {
                 throw new LogicException("Invalid delivery transition {$locked->status->value} -> {$to->value}.");
             }
             $locked->forceFill($extra + ['status' => $to])->save();
