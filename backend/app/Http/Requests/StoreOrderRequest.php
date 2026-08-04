@@ -23,16 +23,10 @@ class StoreOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'type' => 'required|in:buy,sell',
+            'asset_type' => 'required|string',
+            'quantity' => 'required|numeric|gt:0',
+            'unit_price' => 'required|numeric|gt:0',
         ];
     }
-    public function rules(): array
-{
-    return [
-        'type' => 'required|in:buy,sell',
-        'asset_type' => 'required|string',
-        'quantity' => 'required|numeric|gt:0',
-        'unit_price' => 'required|numeric|gt:0',
-    ];
-}
 }
