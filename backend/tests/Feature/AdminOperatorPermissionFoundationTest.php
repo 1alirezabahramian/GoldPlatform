@@ -50,15 +50,13 @@ class AdminOperatorPermissionFoundationTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_role_without_required_permission_is_denied(): void
+    public function test_operator_role_without_required_permission_is_denied(): void
     {
+        $operatorRole = Role::findByName('operator');
+        $operatorRole->revokePermissionTo(AdminOperatorPermissionCatalog::ORDERS_QUEUE_VIEW);
+
         $user = User::factory()->create();
         $user->assignRole('operator');
-        $user->revokePermissionTo(AdminOperatorPermissionCatalog::ORDERS_QUEUE_VIEW);
-        $user->getRoleNames()->each(fn (string $roleName) => $user->removeRole($roleName));
-
-        Role::findOrCreate('limited-operator')->givePermissionTo(AdminOperatorPermissionCatalog::OPERATOR_ACCESS);
-        $user->assignRole('limited-operator');
         Sanctum::actingAs($user);
 
         $this->getJson('/api/operator/orders/queue')
