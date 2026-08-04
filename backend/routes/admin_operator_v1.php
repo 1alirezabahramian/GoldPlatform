@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AdminAccessControlReadController;
 use App\Http\Controllers\Api\V1\AdminCustodyDeliveryReadController;
 use App\Http\Controllers\Api\V1\AdminCustomerGroupReadController;
 use App\Http\Controllers\Api\V1\AdminDashboardController;
+use App\Http\Controllers\Api\V1\AdminKimiaReadController;
 use App\Http\Controllers\Api\V1\AdminOperatorOperationalQueueController;
 use App\Http\Controllers\Api\V1\AdminOrderReadController;
 use App\Http\Controllers\Api\V1\AdminSettlementReadController;
@@ -57,6 +58,8 @@ Route::middleware(['auth:sanctum', 'throttle:admin'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::SETTLEMENTS_VIEW);
         Route::get('/settlements/{settlement}', [AdminSettlementReadController::class, 'show'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::SETTLEMENTS_DETAIL_VIEW);
+        Route::get('/kimia/overview', AdminKimiaReadController::class)
+            ->middleware('permission:'.AdminOperatorPermissionCatalog::KIMIA_READ);
 
         Route::get('/customer-policy-change-requests', [CustomerPolicyChangeRequestController::class, 'index'])
             ->middleware('permission:'.AdminOperatorPermissionCatalog::POLICY_CHANGES_VIEW);
