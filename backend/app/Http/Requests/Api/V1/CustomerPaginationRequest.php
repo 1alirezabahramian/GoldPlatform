@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-final class CustomerPaginationRequest extends FormRequest
+class CustomerPaginationRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -23,5 +23,12 @@ final class CustomerPaginationRequest extends FormRequest
     public function perPage(): int
     {
         return (int) $this->validated('per_page', 25);
+    }
+
+    public function status(): ?string
+    {
+        $status = $this->validated('status');
+
+        return is_string($status) ? $status : null;
     }
 }
