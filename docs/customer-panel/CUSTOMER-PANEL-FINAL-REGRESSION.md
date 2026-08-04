@@ -13,6 +13,6 @@
 - عدم انتشار `AccountId`، `ProductId`، Voucher، Debit، Credit و Transaction Code
 - بدون Migration و بدون Rule مالی جدید
 
-## وضعیت
+## وضعیت مستقل
 
-این Stage فقط پس از Merge شدن CP-15 تا CP-18 روی Branch اصلی Retarget و با شش Gate استاندارد CI نهایی می‌شود.
+CP-01 تا CP-18 روی Branch اصلی فاز Merge شده‌اند. این Stage اکنون مستقیماً روی `feature/goldplatform-developer-mcp` قرار دارد و باید با شش Gate استاندارد CI به‌صورت مستقل تأیید شود.
