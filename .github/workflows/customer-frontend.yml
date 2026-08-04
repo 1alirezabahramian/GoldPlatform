@@ -1,0 +1,32 @@
+name: Customer Frontend
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/customer-app/**'
+      - 'frontend/customer-foundation/**'
+      - '.github/workflows/customer-frontend.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend/customer-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/customer-app/package-lock.json
+      - name: Install dependencies
+        run: npm install --package-lock-only && npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
