@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\OperatorPanelController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\V1\CustomerActivityController;
 use App\Http\Controllers\Api\V1\CustomerAssetReadController;
+use App\Http\Controllers\Api\V1\CustomerBootstrapController;
 use App\Http\Controllers\Api\V1\CustomerCustodyDeliveryController;
 use App\Http\Controllers\Api\V1\CustomerDashboardController;
 use App\Http\Controllers\Api\V1\CustomerOrderStatusController;
@@ -38,6 +39,7 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
     });
 
     Route::prefix('v1/customer')->middleware('role:customer')->group(function () {
+        Route::get('/bootstrap', CustomerBootstrapController::class);
         Route::get('/dashboard', CustomerDashboardController::class);
         Route::get('/activities', CustomerActivityController::class);
         Route::get('/assets', [CustomerAssetReadController::class, 'index']);
