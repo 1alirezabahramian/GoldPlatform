@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: GoldPlatform Customer API
-  version: 1.1.0-read-model
+  version: 1.2.0-assets
   description: |
     قرارداد افزایشی و Read-only پنل مشتری. مسیرهای Legacy حذف یا تغییر نکرده‌اند.
     هیچ Kimia write، فرمول قیمت یا قانون مالی جدیدی در این قرارداد تعریف نمی‌شود.
@@ -27,6 +27,71 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/RateLimited'
+  /assets:
+    get:
+      operationId: getCustomerAssets
+      summary: دریافت همه مانده‌های مالی مشتری
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: فهرست Money، Gold، Coin و Currency متعلق به مشتری
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetListResponse'
+  /assets/money:
+    get:
+      operationId: getCustomerMoneyAssets
+      summary: دریافت حساب‌های پولی مشتری
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: حساب‌های Money مشتری
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetListResponse'
+  /assets/gold:
+    get:
+      operationId: getCustomerGoldAssets
+      summary: دریافت حساب‌های طلایی مشتری
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: حساب‌های Gold مشتری
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetListResponse'
+  /assets/coins:
+    get:
+      operationId: getCustomerCoinAssets
+      summary: دریافت سکه‌های پویا متعلق به مشتری
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: فهرست Dynamic Coin بدون شناسه داخلی Kimia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetListResponse'
+  /assets/currencies:
+    get:
+      operationId: getCustomerCurrencyAssets
+      summary: دریافت ارزهای پویا متعلق به مشتری
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: فهرست Dynamic Currency بدون شناسه داخلی Kimia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetListResponse'
 components:
   securitySchemes:
     sanctum:
@@ -67,6 +132,32 @@ components:
           maxItems: 8
           items:
             $ref: '#/components/schemas/CustomerActivity'
+    AssetListResponse:
+      type: object
+      required: [data, meta, message]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/AssetBalance'
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/ResponseMeta'
+            - type: object
+              required: [asset_type, count]
+              properties:
+                asset_type:
+                  type: [string, 'null']
+                  enum: [money, gold, coin, currency, null]
+                count:
+                  type: integer
+                  minimum: 0
+        message:
+          type: [string, 'null']
     AssetBalance:
       type: object
       required: [reference, type, title, unit, balance]
@@ -81,7 +172,7 @@ components:
           type: string
         unit:
           type: string
-          description: واحد ذخیره‌شده فعلی Backend؛ قرارداد نمایش تومان در Stage مستقل تثبیت می‌شود
+          description: واحد ذخیره‌شده فعلی Backend؛ IRR/IRT در این Stage تبدیل نمی‌شود
         balance:
           type: object
           required: [total, blocked, available]
