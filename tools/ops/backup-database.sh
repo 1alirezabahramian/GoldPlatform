@@ -21,7 +21,6 @@ mysqldump \
   --routines \
   --triggers \
   --events \
-  --set-gtid-purged=OFF \
   "$DB_DATABASE" | gzip -9 > "$BACKUP_PATH"
 
 sha256sum "$BACKUP_PATH" > "${BACKUP_PATH}.sha256"
