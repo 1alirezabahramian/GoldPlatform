@@ -60,8 +60,12 @@ final class AdminOperatorOperationalQueueReadModel
     public function outbox(Request $request): array
     {
         $query = OutboxMessage::query()
-            ->select(['uuid', 'type', 'available_at', 'processed_at', 'attempts', 'created_at'])
+            ->select(['uuid', 'event_type', 'aggregate_type', 'available_at', 'processed_at', 'attempts', 'created_at'])
             ->latest('id');
+
+        if ($request->filled('event_type')) {
+            $query->where('event_type', $request->string('event_type')->toString());
+        }
 
         return $this->present($query->paginate($this->perPage($request)));
     }
