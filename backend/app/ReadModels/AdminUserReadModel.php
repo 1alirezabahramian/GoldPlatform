@@ -23,7 +23,7 @@ final class AdminUserReadModel
 
         $query = User::query()
             ->select([
-                'id', 'name', 'first_name', 'last_name', 'mobile', 'group_id',
+                'id', 'name', 'mobile', 'group_id',
                 'mobile_verified', 'is_active', 'last_login_at', 'created_at',
             ])
             ->with([
@@ -55,8 +55,6 @@ final class AdminUserReadModel
             $query->where(function ($searchQuery) use ($term): void {
                 $searchQuery
                     ->where('name', 'like', '%'.$term.'%')
-                    ->orWhere('first_name', 'like', '%'.$term.'%')
-                    ->orWhere('last_name', 'like', '%'.$term.'%')
                     ->orWhere('mobile', 'like', '%'.$term.'%');
             });
         }
@@ -70,9 +68,6 @@ final class AdminUserReadModel
         return [
             'items' => collect($paginator->items())->map(function (User $user): array {
                 $displayName = trim((string) $user->name);
-                if ($displayName === '') {
-                    $displayName = trim(implode(' ', array_filter([$user->first_name, $user->last_name])));
-                }
 
                 return [
                     'id' => $user->id,
