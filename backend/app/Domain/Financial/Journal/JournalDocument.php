@@ -21,6 +21,22 @@ final readonly class JournalDocument
         return new self($journal, JournalStatus::DRAFT);
     }
 
+    public static function rehydrate(
+        Journal $journal,
+        JournalStatus $status,
+        ?TraceId $reversalTraceId = null,
+    ): self {
+        if ($status === JournalStatus::REVERSED && $reversalTraceId === null) {
+            throw new DomainException('A reversed journal requires its reversal trace identifier.');
+        }
+
+        if ($status !== JournalStatus::REVERSED && $reversalTraceId !== null) {
+            throw new DomainException('Only a reversed journal may contain a reversal trace identifier.');
+        }
+
+        return new self($journal, $status, $reversalTraceId);
+    }
+
     public function journal(): Journal
     {
         return $this->journal;
