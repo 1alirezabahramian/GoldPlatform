@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 
 class OrderService
@@ -18,12 +19,13 @@ class OrderService
         return Order::create([
             'user_id' => $data['user_id'],
             'type' => $data['type'],
-            'status' => 'pending',
+            'status' => OrderStatus::Pending,
             'gold_weight' => $goldWeight,
             'gold_price' => $goldPrice,
             'commission' => $commission,
             'total_price' => $totalPrice,
             'description' => $data['description'] ?? null,
+            'expires_at' => $data['expires_at'] ?? null,
         ]);
     }
 }
