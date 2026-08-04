@@ -63,6 +63,9 @@ jobs:
       - name: Validate production configuration
         run: docker compose -f docker-compose.production.yml exec -T php php artisan ops:validate-production-config
 
+      - name: Validate operational dependencies
+        run: docker compose -f docker-compose.production.yml exec -T php php artisan ops:health --json --fail-on-degraded
+
       - name: Wait for application health
         shell: bash
         run: |
