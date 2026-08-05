@@ -18,7 +18,8 @@ final class RecoveryCustomerOpenApiIsolationContractTest extends TestCase
             '/custodies/{reference}/delivery-request:',
             '/deliveries/{reference}:',
             'Idempotency-Key',
-            'CUSTODY_NOT_FOUND',
+            'ErrorResponse:',
+            'CustomerNotFound:',
         ] as $expected) {
             self::assertStringContainsString($expected, $openApi);
         }
