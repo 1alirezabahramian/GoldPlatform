@@ -1,0 +1,54 @@
+name: Frontend Release Validation
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/customer-app/**'
+      - 'frontend-admin/**'
+      - 'tests/frontend-e2e/**'
+      - '.github/workflows/frontend-release-validation.yml'
+      - 'docs/recovery/FRONTEND-RELEASE-VALIDATION.md'
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-release-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install customer frontend
+        working-directory: frontend/customer-app
+        run: npm install --no-audit --no-fund
+      - name: Validate customer frontend
+        working-directory: frontend/customer-app
+        run: npm run test:contract && npm run typecheck && npm run build
+      - name: Install admin operator frontend
+        working-directory: frontend-admin
+        run: npm install --no-audit --no-fund
+      - name: Validate admin operator frontend
+        working-directory: frontend-admin
+        run: npm run test:contract && npm run typecheck && npm run build
+      - name: Install browser tests
+        working-directory: tests/frontend-e2e
+        run: npm install --no-audit --no-fund && npx playwright install --with-deps chromium
+      - name: Start built frontends
+        run: |
+          PORT=3001 node frontend/customer-app/.output/server/index.mjs > /tmp/customer.log 2>&1 &
+          PORT=3002 node frontend-admin/.output/server/index.mjs > /tmp/admin.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:3001/dashboard >/dev/null && curl -fsS http://127.0.0.1:3002/admin >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/customer.log /tmp/admin.log
+          exit 1
+      - name: Browser E2E
+        working-directory: tests/frontend-e2e
+        run: npm test
+      - name: Release secret scan
+        run: |
+          ! grep -RInE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|sk-[A-Za-z0-9_-]{20,}|KIMIA_(USERNAME|PASSWORD)=)' frontend frontend-admin tests/frontend-e2e --exclude-dir=node_modules --exclude=package-lock.json
