@@ -1,5 +1,27 @@
 # GoldPlatform Changelog
 
+## 2026-08-05 — Reconstruction Permission Foundation
+
+### Added
+
+- Minimal canonical backoffice permissions: `admin.access` and `operator.access`
+- Spatie role/permission support on the `User` model
+- Role and permission middleware aliases
+- Non-destructive and repeatable permission seeding
+- Regression tests for preservation of existing role and direct-user permissions
+
+### Deliberately Deferred
+
+- Conflicting operational permission names
+- Kimia Write permissions
+- Financial balance mutation permissions
+- Dashboard, queue and frontend authorization wiring
+
+### Test Status
+
+- Tests written: yes
+- Tests executed: pending CI on the exact branch head
+
 ## 2026-08-04 — Business Engine Stage 00
 
 ### Added
