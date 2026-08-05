@@ -4,9 +4,11 @@ on:
   pull_request:
     branches:
       - feature/goldplatform-developer-mcp
+      - recovery/rc2-snapshot-2026-08-04
   push:
     branches:
       - feature/goldplatform-developer-mcp
+      - recovery/rc2-product-rebuild
 
 jobs:
   backend-rc1:
