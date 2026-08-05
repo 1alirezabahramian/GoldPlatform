@@ -6,8 +6,19 @@ use App\Models\WalletAccount;
 use App\Support\Decimal;
 use LogicException;
 
+/**
+ * Internal ledger-derived projection used only for audit, traceability,
+ * reservations, workflow support and reconciliation.
+ *
+ * This service is NOT a source of truth for customer Money, Gold, Coin or
+ * Currency balances. Customer-facing balances must come from Kimia reads.
+ */
 class BalanceProjectionService
 {
+    public const PURPOSE = 'audit_reconciliation_only';
+
+    public const CUSTOMER_BALANCE_SOURCE = false;
+
     /** @return array{total:string,blocked:string,available:string} */
     public function snapshot(WalletAccount $account): array
     {
@@ -18,9 +29,10 @@ class BalanceProjectionService
     }
 
     /**
-     * Uses explicitly eager-loaded relations for read models without changing
-     * the financial calculation. Both relations must be complete for the
-     * intended snapshot; callers own that loading contract.
+     * Uses explicitly eager-loaded relations for internal read models without
+     * changing the financial calculation. Both relations must be complete for
+     * the intended audit/reconciliation snapshot; callers own that loading
+     * contract.
      *
      * @return array{total:string,blocked:string,available:string}
      */
@@ -36,6 +48,12 @@ class BalanceProjectionService
         );
     }
 
+    /**
+     * Rebuilds the internal projection cache only.
+     *
+     * The persisted values must never be presented as authoritative customer
+     * balances and remain rebuildable from internal ledger evidence.
+     */
     public function rebuild(WalletAccount $account): WalletAccount
     {
         $snapshot = $this->snapshot($account);
