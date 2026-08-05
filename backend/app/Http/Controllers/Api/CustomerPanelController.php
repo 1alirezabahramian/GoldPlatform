@@ -15,18 +15,12 @@ class CustomerPanelController extends Controller
     public function overview(Request $request): JsonResponse
     {
         $user = $request->user();
-        $accounts = $user->wallet?->accounts()->where('is_active', true)->get() ?? collect();
 
         return response()->json([
-            'balances' => $accounts->map(fn ($account) => [
-                'type' => $account->asset_type->value,
-                'asset_id' => $account->external_asset_id,
-                'title' => $account->title,
-                'unit' => $account->unit,
-                'total' => (string) $account->balance,
-                'blocked' => (string) $account->blocked_balance,
-                'available' => $account->available_balance,
-            ])->values(),
+            'balances' => [],
+            'balance_source' => 'kimia',
+            'balance_status' => 'unavailable',
+            'balance_error_code' => 'KIMIA_FINANCIAL_BALANCE_SOURCE_REQUIRED',
             'open_orders' => Order::query()->where('user_id', $user->id)->whereNotIn('status', ['completed','rejected','expired','cancelled','failed'])->count(),
             'custody_count' => CustodyAsset::query()->where('user_id', $user->id)->count(),
             'delivery_count' => DeliveryRequest::query()->where('user_id', $user->id)->count(),
