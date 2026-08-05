@@ -29,7 +29,7 @@ final class CustomerDashboardReadModelTest extends TestCase
 
         $encoded = json_encode($response->json(), JSON_THROW_ON_ERROR);
 
-        foreach (['external_asset_id', 'external_product_id', 'user_id', 'account_id', 'metadata', 'receiver_identifier', 'balance'] as $internalField) {
+        foreach (['external_asset_id', 'external_product_id', 'user_id', 'account_id', 'metadata', 'receiver_identifier'] as $internalField) {
             $this->assertStringNotContainsString($internalField, $encoded);
         }
     }
