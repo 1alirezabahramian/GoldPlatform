@@ -36,7 +36,8 @@ final class RecoveryCustomerCustodyDeliveryHttpTest extends TestCase
         $this->actingAs($otherCustomer, 'sanctum')
             ->getJson("/api/v1/customer/custodies/{$asset->uuid}")
             ->assertNotFound()
-            ->assertJsonPath('error.code', 'CUSTODY_NOT_FOUND');
+            ->assertJsonPath('code', 'CUSTODY_NOT_FOUND')
+            ->assertJsonMissingPath('data');
     }
 
     public function test_delivery_request_requires_an_idempotency_key(): void
