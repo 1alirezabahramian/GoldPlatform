@@ -15,7 +15,7 @@ class RegistrationService
                 $data['last_name'] ?? null,
             ])));
 
-            $user = User::create([
+            return User::create([
                 'mobile' => $data['mobile'],
                 'name' => $name !== '' ? $name : null,
                 'national_code' => $data['national_code'] ?? null,
@@ -23,27 +23,6 @@ class RegistrationService
                 'mobile_verified' => true,
                 'is_active' => true,
             ]);
-
-            $wallet = $user->wallet()->create([]);
-
-            $wallet->accounts()->createMany([
-                [
-                    'code' => 'RIAL',
-                    'title' => 'ریال',
-                    'balance' => '0',
-                    'blocked_balance' => '0',
-                    'is_active' => true,
-                ],
-                [
-                    'code' => 'GOLD18',
-                    'title' => 'طلای ۱۸ عیار',
-                    'balance' => '0',
-                    'blocked_balance' => '0',
-                    'is_active' => true,
-                ],
-            ]);
-
-            return $user;
         });
     }
 }
