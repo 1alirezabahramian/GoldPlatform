@@ -137,7 +137,9 @@ class SettlementService
 
         $this->ledgerService->assertBalanced($transaction);
 
-        return $this->complete($settlement, $kimiaReference, $metadata);
+        throw new LogicException(
+            'A balanced internal ledger is audit evidence only and cannot complete a customer financial settlement. Verified Kimia result evidence is required.'
+        );
     }
 
     public function complete(

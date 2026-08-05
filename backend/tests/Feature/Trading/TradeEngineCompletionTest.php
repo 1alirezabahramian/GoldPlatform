@@ -3,7 +3,6 @@
 namespace Tests\Feature\Trading;
 
 use App\Models\Order;
-use App\Models\Settlement;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletAccount;
@@ -19,7 +18,7 @@ class TradeEngineCompletionTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function approved_order_executes_atomically_once_through_ledger_and_settlement(): void
+    public function approved_order_fails_closed_without_verified_kimia_result_and_creates_no_partial_records(): void
     {
         $user = User::query()->create([
             'mobile' => '09120000001',
@@ -42,22 +41,17 @@ class TradeEngineCompletionTest extends TestCase
             'total_price' => '1250000',
         ]);
 
-        $service = app(TradeService::class);
-        $first = $service->execute($order, $from->id, $to->id, 'TOMAN');
-        $second = $service->execute($order->refresh(), $from->id, $to->id, 'TOMAN');
-
-        $this->assertSame($first->id, $second->id);
-        $this->assertSame('completed', $order->refresh()->status->value);
-        $this->assertSame(1, $order->trades()->count());
-        $this->assertSame('executed', $first->refresh()->status);
-        $this->assertSame(2, $first->financialTransaction->ledgerEntries()->count());
-        $this->assertSame('completed', $first->financialTransaction->refresh()->status);
-
-        $settlement = Settlement::query()->sole();
-        $this->assertSame('completed', $settlement->status->value);
-        $this->assertSame('TOMAN', $settlement->asset_type);
-        $this->assertSame($first->id, $settlement->trade_id);
-        $this->assertSame($first->financial_transaction_id, $settlement->financial_transaction_id);
+        try {
+            app(TradeService::class)->execute($order, $from->id, $to->id, 'TOMAN');
+            $this->fail('Expected trade execution to remain blocked until verified Kimia result evidence exists.');
+        } catch (LogicException $exception) {
+            $this->assertStringContainsString('verified Kimia', $exception->getMessage());
+            $this->assertDatabaseCount('trades', 0);
+            $this->assertDatabaseCount('financial_transactions', 0);
+            $this->assertDatabaseCount('ledger_entries', 0);
+            $this->assertDatabaseCount('settlements', 0);
+            $this->assertSame('approved', $order->refresh()->status->value);
+        }
     }
 
     #[Test]
