@@ -24,6 +24,17 @@ class OutboxSensitiveReplayBoundaryTest extends TestCase
         $this->assertStringContainsString("outbox:dispatch --fail-on-error", $consoleRoutes);
     }
 
+    public function test_scheduler_does_not_run_kimia_or_settlement_commands_automatically(): void
+    {
+        $consoleRoutes = file_get_contents(base_path('routes/console.php'));
+
+        $this->assertIsString($consoleRoutes);
+        $this->assertStringNotContainsString("Schedule::command('kimia:", $consoleRoutes);
+        $this->assertStringNotContainsString('Schedule::job(', $consoleRoutes);
+        $this->assertStringNotContainsString('settlement', strtolower($consoleRoutes));
+        $this->assertStringNotContainsString('voucher', strtolower($consoleRoutes));
+    }
+
     public function test_admin_routes_do_not_expose_manual_settlement_retry_or_outbox_replay(): void
     {
         $routes = file_get_contents(base_path('routes/api.php'));
