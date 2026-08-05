@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented — CI pending
+Tested — Not Merged
 
 ## Verified gap
 
@@ -29,5 +29,10 @@ Internal Ledger and FinancialTransaction records remain audit and reconciliation
 
 ## Test status
 
-- Direct completion architecture contract: WRITTEN — NOT EXECUTED
-- Backend RC1 regression: NOT EXECUTED on this branch
+Validation completed on PR #175 head `d8372e4cb92420a60adca66d7a8a6b34a515c6bc` before this documentation-only alignment commit:
+
+- Direct completion architecture contract: EXECUTED — PASS
+- Backend RC1 Validation run #287: EXECUTED — PASS
+- Operational Readiness run #2: EXECUTED — PASS
+
+The final PR Head SHA must pass the same gates before merge.
