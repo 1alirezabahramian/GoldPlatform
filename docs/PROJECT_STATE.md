@@ -2,9 +2,9 @@
 
 - Updated: 2026-08-06
 - Canonical recovery branch: `recovery/rc2-product-rebuild`
-- Canonical SHA before this documentation alignment: `57d72651964bad162abb83e2a8b6753ac32fb168`
-- Recovery status: **Backend recovery hardening in progress — canonical branch healthy**
-- Open product/recovery PRs at this checkpoint: **0**
+- Canonical SHA before Phase 05–08 operationalization: `84cd5d03b427c9d6e3cb58ffa2aaf96f7ce89c4c`
+- Recovery status: **Frontend Recovery Complete — Operationalization In Progress**
+- Open product/recovery PRs before this slice: **0**
 
 ## Source-of-truth contract
 
@@ -25,7 +25,7 @@ GoldPlatform is the source of truth for physical Custody / Amanat. Custody remai
 
 ## Canonical recovery content
 
-The canonical recovery branch now contains:
+The canonical recovery branch contains:
 
 1. Business Engine baseline recovery.
 2. Customer API contracts and explicit customer read resources.
@@ -40,42 +40,29 @@ The canonical recovery branch now contains:
 11. Sensitive outbox replay and automatic outbox scheduling guarded.
 12. Scheduled and queued Kimia/financial execution guarded.
 13. HTTP, service, event/observer and direct financial-model mutation boundaries guarded.
+14. Customer Frontend Foundation and core read pages.
+15. Admin and Operator Frontend Foundation.
+16. Strict Frontend typecheck, production builds and Chromium E2E validation.
 
-## Integrated recovery PRs
+## Frontend recovery closure
 
-Validated recovery PRs merged into the canonical branch include `#149` through `#167`, excluding historical audit-only or superseded PRs that were intentionally closed without merge.
+Merged and validated:
 
-The latest integrated PR is `#167` — `Recovery: guard HTTP financial model mutations`.
+- PR `#170` — Customer Frontend Foundation.
+- PR `#171` — Customer core read pages.
+- PR `#172` — Admin and Operator Frontend Foundation.
+- PR `#173` — Combined Frontend Release Validation.
 
-## Validation status
+Latest Frontend release validation head:
 
-Latest validated PR head before merge:
+- Head SHA: `ddfdf572bbacdaa701b8f158e7d6145491555ca7`
+- Customer Frontend: **EXECUTED — PASS**
+- Admin Operator Frontend: **EXECUTED — PASS**
+- Frontend Release Validation: **EXECUTED — PASS**
+- Chromium E2E: **EXECUTED — PASS**
+- Backend RC1 Regression: **EXECUTED — PASS**
 
-- PR: `#167`
-- Head SHA: `9e867baa455563bdb73154e8f56b1858a0bc6906`
-- Workflow: `Backend RC1 Validation` run `#261`
-- Result: **EXECUTED — PASS**
-
-Passed gates:
-
-- Migration fresh
-- Unit tests
-- Feature tests
-- Financial and Ledger tests
-- Order lifecycle tests
-- Trade idempotency and settlement tests
-- Custody and delivery tests
-- Permission tests
-- Kimia mock tests
-- Kimia read-only integration contract
-- Full regression suite
-- Laravel health check
-- Docker Compose validation
-- Secret scan
-
-Canonical merge commit after that validated head: `57d72651964bad162abb83e2a8b6753ac32fb168`.
-
-Production Ready is **NOT CLAIMED** because frontend, tenant isolation, deployment, backup/restore and final closure validation remain incomplete.
+Canonical merge commit after Frontend recovery: `84cd5d03b427c9d6e3cb58ffa2aaf96f7ce89c4c`.
 
 ## Kimia safety
 
@@ -86,17 +73,40 @@ Production Ready is **NOT CLAIMED** because frontend, tenant isolation, deployme
 - No sample AccountId, ProductId or transaction identifier may be treated as a permanent hard-coded rule.
 - Money and weight calculations must use exact Decimal or String Decimal; float is prohibited.
 
+## Phase 05–08 operationalization
+
+Phase 05 — Business workflow closure:
+
+- Verify Order, Quote, Idempotency, Settlement and Reconciliation capabilities against accepted contracts.
+- Do not enable Kimia Write without accepted real ground truth.
+
+Phase 06 — Security and isolation:
+
+- Prove tenant/company/branch isolation, Permission coverage and IDOR protection.
+
+Phase 07 — Runtime integration:
+
+- Validate live authentication, queue, cache, notification, monitoring and controlled Kimia-read unavailability.
+
+Phase 08 — Production closure:
+
+- Validate deployment manifests, backup/restore, migration procedures, rollback and final release gates.
+
+The first operationalization slice adds a repository-level readiness contract and Docker Compose validation. Full details are recorded in `docs/recovery/PHASE-05-08-OPERATIONALIZATION.md`.
+
 ## Remaining verified gaps
 
-1. Recover and validate the Customer frontend against the canonical API contract.
-2. Reconstruct Admin and Operator capabilities only from inspected historical evidence and current canonical needs.
-3. Verify tenant/company/branch isolation, permission coverage and IDOR protection.
-4. Validate frontend build, typecheck and E2E flows.
-5. Validate OpenAPI against the final customer/admin/operator contracts.
-6. Validate production compose, deployment, monitoring and backup/restore procedures.
-7. Locate or establish the canonical CHANGELOG path; no root `CHANGELOG.md` was found at this checkpoint.
-8. Produce final Recovery Closure only after all remaining product and release gates pass on exact SHAs.
+1. Business workflow closure audit and targeted tests.
+2. Tenant/company/branch isolation and IDOR proof.
+3. Live Frontend authentication and environment integration.
+4. Monitoring and production logging validation.
+5. Backup/restore execution evidence.
+6. Production deployment and rollback validation.
+7. OpenAPI final contract validation.
+8. Final Recovery Closure on one exact green SHA.
+
+Production Ready is **NOT CLAIMED** until these gaps are closed with executed evidence.
 
 ## Current next step
 
-Move from backend architecture hardening to a controlled capability-gap audit for Customer frontend and Admin/Operator recovery. Do not start a new stage unless a genuine missing capability is proven. Preserve historical branches as evidence and reconstruct only small, isolated, testable slices.
+Run the Operational Readiness workflow on its exact PR Head SHA. If green, merge the additive gate, then continue with the smallest verified Phase 05 business-workflow closure gap. Do not introduce financial rules, Kimia Write behavior or tenant architecture by assumption.
