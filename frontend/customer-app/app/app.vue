@@ -17,10 +17,11 @@ const config = useRuntimeConfig()
     </main>
 
     <nav class="gp-bottom-nav" aria-label="ناوبری اصلی">
-      <NuxtLink to="/">خانه</NuxtLink>
-      <span aria-disabled="true">دارایی‌ها</span>
-      <span aria-disabled="true">درخواست‌ها</span>
-      <span aria-disabled="true">حساب من</span>
+      <NuxtLink to="/dashboard">خانه</NuxtLink>
+      <NuxtLink to="/assets">دارایی‌ها</NuxtLink>
+      <NuxtLink to="/orders">سفارش‌ها</NuxtLink>
+      <NuxtLink to="/custody">امانات</NuxtLink>
+      <NuxtLink to="/profile">حساب من</NuxtLink>
     </nav>
   </div>
 </template>
