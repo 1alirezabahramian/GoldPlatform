@@ -38,8 +38,8 @@ jobs:
         run: npm install --no-audit --no-fund && npx playwright install --with-deps chromium
       - name: Prepare Nitro runtime dependencies
         run: |
-          ln -s ../../node_modules frontend/customer-app/.output/server/node_modules
-          ln -s ../../node_modules frontend-admin/.output/server/node_modules
+          ln -s ../../../node_modules frontend/customer-app/.output/server/node_modules
+          ln -s ../../../node_modules frontend-admin/.output/server/node_modules
       - name: Start built frontends
         run: |
           PORT=3001 node frontend/customer-app/.output/server/index.mjs > /tmp/customer.log 2>&1 &
