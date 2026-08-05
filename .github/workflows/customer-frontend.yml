@@ -1,0 +1,36 @@
+name: Customer Frontend
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/customer-app/**'
+      - '.github/workflows/customer-frontend.yml'
+      - 'docs/frontend/**'
+      - 'docs/adr/ADR-030-Customer-Frontend-Technology.md'
+
+permissions:
+  contents: read
+
+jobs:
+  customer-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend/customer-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Contract tests
+        run: npm run test:contract
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Frontend secret scan
+        run: |
+          ! grep -RInE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|sk-[A-Za-z0-9_-]{20,}|KIMIA_(USERNAME|PASSWORD)=)' . --exclude-dir=node_modules --exclude=package-lock.json
