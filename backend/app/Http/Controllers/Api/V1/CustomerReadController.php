@@ -3,17 +3,19 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\Customer\CustodyResource;
+use App\Http\Resources\Api\V1\Customer\DeliveryResource;
+use App\Http\Resources\Api\V1\Customer\OrderResource;
 use App\Models\CustodyAsset;
 use App\Models\DeliveryRequest;
 use App\Models\Order;
 use App\Support\CustomerApiResponse;
-use App\Support\CustomerReadPresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class CustomerReadController extends Controller
 {
-    public function orders(Request $request, CustomerReadPresenter $presenter): JsonResponse
+    public function orders(Request $request): JsonResponse
     {
         $page = Order::query()
             ->where('user_id', $request->user()->id)
@@ -21,11 +23,11 @@ final class CustomerReadController extends Controller
             ->paginate(25);
 
         return CustomerApiResponse::success($request, [
-            'items' => collect($page->items())->map(fn (Order $order) => $presenter->order($order))->all(),
+            'items' => OrderResource::collection(collect($page->items()))->resolve($request),
         ], $this->pagination($page));
     }
 
-    public function custodies(Request $request, CustomerReadPresenter $presenter): JsonResponse
+    public function custodies(Request $request): JsonResponse
     {
         $page = CustodyAsset::query()
             ->where('user_id', $request->user()->id)
@@ -33,11 +35,11 @@ final class CustomerReadController extends Controller
             ->paginate(25);
 
         return CustomerApiResponse::success($request, [
-            'items' => collect($page->items())->map(fn (CustodyAsset $asset) => $presenter->custody($asset))->all(),
+            'items' => CustodyResource::collection(collect($page->items()))->resolve($request),
         ], $this->pagination($page));
     }
 
-    public function deliveries(Request $request, CustomerReadPresenter $presenter): JsonResponse
+    public function deliveries(Request $request): JsonResponse
     {
         $page = DeliveryRequest::query()
             ->with('custodyAsset:id,uuid')
@@ -46,7 +48,7 @@ final class CustomerReadController extends Controller
             ->paginate(25);
 
         return CustomerApiResponse::success($request, [
-            'items' => collect($page->items())->map(fn (DeliveryRequest $delivery) => $presenter->delivery($delivery))->all(),
+            'items' => DeliveryResource::collection(collect($page->items()))->resolve($request),
         ], $this->pagination($page));
     }
 
