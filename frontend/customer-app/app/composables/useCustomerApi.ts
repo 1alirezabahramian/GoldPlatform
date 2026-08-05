@@ -13,7 +13,7 @@ export type CustomerApiState<T> =
   | { status: 'error'; data: null; message: string }
   | { status: 'unavailable'; data: null; message: string }
 
-type ReadOptions = { query?: Record<string, string | number | boolean | undefined> }
+type ReadOptions = { query?: Record<string, string | number | boolean> }
 type MutationOptions = { body?: Record<string, unknown>; idempotencyKey?: string }
 
 export function useCustomerApi() {
@@ -22,7 +22,7 @@ export function useCustomerApi() {
   async function read<T>(path: string, options: ReadOptions = {}): Promise<CustomerEnvelope<T>> {
     return await $fetch<CustomerEnvelope<T>>(`${config.public.apiBase}${path}`, {
       method: 'GET',
-      query: options.query,
+      ...(options.query ? { query: options.query } : {}),
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       credentials: 'include',
       cache: 'no-store',
