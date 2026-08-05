@@ -36,10 +36,10 @@ jobs:
       - name: Install browser tests
         working-directory: tests/frontend-e2e
         run: npm install --no-audit --no-fund && npx playwright install --with-deps chromium
-      - name: Prepare Nitro runtime dependencies
+      - name: Install Nitro runtime dependencies
         run: |
-          ln -s ../../../node_modules frontend/customer-app/.output/server/node_modules
-          ln -s ../../../node_modules frontend-admin/.output/server/node_modules
+          npm install --omit=dev --no-audit --no-fund --prefix frontend/customer-app/.output/server
+          npm install --omit=dev --no-audit --no-fund --prefix frontend-admin/.output/server
       - name: Start built frontends
         run: |
           PORT=3001 node frontend/customer-app/.output/server/index.mjs > /tmp/customer.log 2>&1 &
