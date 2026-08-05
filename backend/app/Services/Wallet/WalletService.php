@@ -4,13 +4,20 @@ namespace App\Services\Wallet;
 
 use App\Models\User;
 use App\Models\WalletTransaction;
-use Illuminate\Support\Facades\DB;
-use RuntimeException;
+use LogicException;
 
+/**
+ * Historical compatibility shell.
+ *
+ * Money, Gold, Coin and Currency balances are authoritative in Kimia.
+ * GoldPlatform must not mutate a competing customer financial balance.
+ */
 class WalletService
 {
+    public const CUSTOMER_FINANCIAL_MUTATIONS_ENABLED = false;
+
     /**
-     * Deposit amount into a wallet account.
+     * @deprecated Internal customer financial deposits are disabled.
      */
     public function deposit(
         User $user,
@@ -19,55 +26,13 @@ class WalletService
         ?string $reference = null,
         ?string $description = null
     ): WalletTransaction {
-
-        return DB::transaction(function () use (
-            $user,
-            $code,
-            $amount,
-            $reference,
-            $description
-        ) {
-
-            $wallet = $user->wallet;
-
-            if (! $wallet) {
-                throw new RuntimeException('Wallet not found.');
-            }
-
-            $account = $wallet
-                ->accounts()
-                ->where('code', $code)
-                ->lockForUpdate()
-                ->first();
-
-            if (! $account) {
-                throw new RuntimeException('Wallet account not found.');
-            }
-
-            $balance = bcadd(
-                $account->balance,
-                $amount,
-                6
-            );
-
-            $account->update([
-                'balance' => $balance,
-            ]);
-
-            return WalletTransaction::create([
-                'wallet_account_id' => $account->id,
-                'wallet_type'       => $code,
-                'type'              => 'deposit',
-                'amount'            => $amount,
-                'balance_after'     => $balance,
-                'reference'         => $reference,
-                'description'       => $description,
-            ]);
-        });
+        throw new LogicException(
+            'Internal wallet deposits are disabled. Customer financial balances are sourced from Kimia.'
+        );
     }
 
     /**
-     * Withdraw amount from a wallet account.
+     * @deprecated Internal customer financial withdrawals are disabled.
      */
     public function withdraw(
         User $user,
@@ -76,54 +41,8 @@ class WalletService
         ?string $reference = null,
         ?string $description = null
     ): WalletTransaction {
-
-        return DB::transaction(function () use (
-            $user,
-            $code,
-            $amount,
-            $reference,
-            $description
-        ) {
-
-            $wallet = $user->wallet;
-
-            if (! $wallet) {
-                throw new RuntimeException('Wallet not found.');
-            }
-
-            $account = $wallet
-                ->accounts()
-                ->where('code', $code)
-                ->lockForUpdate()
-                ->first();
-
-            if (! $account) {
-                throw new RuntimeException('Wallet account not found.');
-            }
-
-            if (bccomp($account->balance, $amount, 6) < 0) {
-                throw new RuntimeException('Insufficient balance.');
-            }
-
-            $balance = bcsub(
-                $account->balance,
-                $amount,
-                6
-            );
-
-            $account->update([
-                'balance' => $balance,
-            ]);
-
-            return WalletTransaction::create([
-                'wallet_account_id' => $account->id,
-                'wallet_type'       => $code,
-                'type'              => 'withdraw',
-                'amount'            => $amount,
-                'balance_after'     => $balance,
-                'reference'         => $reference,
-                'description'       => $description,
-            ]);
-        });
+        throw new LogicException(
+            'Internal wallet withdrawals are disabled. Customer financial balances are sourced from Kimia.'
+        );
     }
 }
