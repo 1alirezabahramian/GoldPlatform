@@ -36,14 +36,10 @@ jobs:
       - name: Install browser tests
         working-directory: tests/frontend-e2e
         run: npm install --no-audit --no-fund && npx playwright install --with-deps chromium
-      - name: Install Nitro runtime dependencies
-        run: |
-          npm install --omit=dev --no-audit --no-fund --prefix frontend/customer-app/.output/server
-          npm install --omit=dev --no-audit --no-fund --prefix frontend-admin/.output/server
       - name: Start built frontends
         run: |
-          PORT=3001 node frontend/customer-app/.output/server/index.mjs > /tmp/customer.log 2>&1 &
-          PORT=3002 node frontend-admin/.output/server/index.mjs > /tmp/admin.log 2>&1 &
+          (cd frontend/customer-app && PORT=3001 ./node_modules/.bin/nuxt preview > /tmp/customer.log 2>&1) &
+          (cd frontend-admin && PORT=3002 ./node_modules/.bin/nuxt preview > /tmp/admin.log 2>&1) &
           for i in {1..30}; do
             curl -fsS http://127.0.0.1:3001/dashboard >/dev/null && curl -fsS http://127.0.0.1:3002/admin >/dev/null && exit 0
             sleep 1
