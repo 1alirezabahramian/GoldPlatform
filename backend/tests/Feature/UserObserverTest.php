@@ -12,30 +12,23 @@ class UserObserverTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function registration_creates_wallet_and_current_default_accounts(): void
+    public function registration_creates_the_user_without_local_financial_balances(): void
     {
         $user = app(RegistrationService::class)->register([
             'mobile' => '09120000001',
             'password' => 'test-password',
         ]);
 
-        $this->assertDatabaseHas('wallets', [
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'mobile' => '09120000001',
+        ]);
+
+        $this->assertDatabaseMissing('wallets', [
             'user_id' => $user->id,
         ]);
 
-        $wallet = $user->fresh()->wallet;
-
-        $this->assertNotNull($wallet);
-        $this->assertSame(2, $wallet->accounts()->count());
-
-        $this->assertDatabaseHas('wallet_accounts', [
-            'wallet_id' => $wallet->id,
-            'code' => 'RIAL',
-        ]);
-
-        $this->assertDatabaseHas('wallet_accounts', [
-            'wallet_id' => $wallet->id,
-            'code' => 'GOLD18',
-        ]);
+        $this->assertNull($user->fresh()->wallet);
+        $this->assertDatabaseCount('wallet_accounts', 0);
     }
 }
