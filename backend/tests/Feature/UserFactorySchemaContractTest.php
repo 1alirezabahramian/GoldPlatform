@@ -30,4 +30,14 @@ class UserFactorySchemaContractTest extends TestCase
 
         $this->assertFalse($user->mobile_verified);
     }
+
+    public function test_user_model_does_not_expose_removed_email_or_split_name_fields(): void
+    {
+        $user = new User();
+
+        $this->assertNotContains('email', $user->getFillable());
+        $this->assertNotContains('first_name', $user->getFillable());
+        $this->assertNotContains('last_name', $user->getFillable());
+        $this->assertArrayNotHasKey('email_verified_at', $user->getCasts());
+    }
 }
