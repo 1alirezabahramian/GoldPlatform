@@ -22,6 +22,16 @@ class WalletAccount extends Model
         'is_active',
     ];
 
+    /**
+     * Internal projection fields are never part of automatic API/Admin serialization.
+     * Kimia remains the final customer balance authority for Money, Gold, Coin and Currency.
+     */
+    protected $hidden = [
+        'balance',
+        'blocked_balance',
+        'available_balance',
+    ];
+
     protected $casts = [
         'asset_type' => AssetType::class,
         'external_asset_id' => 'integer',
