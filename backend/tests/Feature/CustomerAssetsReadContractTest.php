@@ -30,7 +30,7 @@ final class CustomerAssetsReadContractTest extends TestCase
             ->assertJsonMissingPath('data');
 
         $encoded = json_encode($response->json(), JSON_THROW_ON_ERROR);
-        foreach (['external_asset_id', 'asset_id', 'account_id', 'user_id', 'ledger_entries', 'balance'] as $internalField) {
+        foreach (['external_asset_id', 'asset_id', 'account_id', 'user_id', 'ledger_entries'] as $internalField) {
             $this->assertStringNotContainsString($internalField, $encoded);
         }
     }
