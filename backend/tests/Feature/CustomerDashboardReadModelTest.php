@@ -3,10 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Models\WalletAccount;
 use App\Services\CustomerDashboardReadModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -34,35 +32,22 @@ final class CustomerDashboardReadModelTest extends TestCase
         }
     }
 
-    public function test_internal_dashboard_projection_query_count_does_not_grow_with_multiple_asset_accounts(): void
+    public function test_internal_dashboard_read_model_contains_only_goldplatform_owned_operational_data(): void
     {
         $customer = User::factory()->create();
-        $customer->load('wallet');
-        $this->assertNotNull($customer->wallet);
 
-        foreach ([
-            ['code' => 'cp03:money', 'title' => 'Money', 'asset_type' => 'money', 'unit' => 'IRR'],
-            ['code' => 'cp03:gold', 'title' => 'Gold', 'asset_type' => 'gold', 'unit' => 'gram'],
-            ['code' => 'cp03:coin', 'title' => 'Coin', 'asset_type' => 'coin', 'unit' => 'piece'],
-            ['code' => 'cp03:currency', 'title' => 'Currency', 'asset_type' => 'currency', 'unit' => 'unit'],
-        ] as $account) {
-            WalletAccount::query()->create($account + [
-                'wallet_id' => $customer->wallet->id,
-                'balance' => '0',
-                'blocked_balance' => '0',
-                'is_active' => true,
-            ]);
+        $dashboard = app(CustomerDashboardReadModel::class)->for($customer);
+
+        $this->assertArrayNotHasKey('assets', $dashboard);
+        $this->assertArrayHasKey('summary', $dashboard);
+        $this->assertArrayHasKey('highlights', $dashboard);
+        $this->assertArrayHasKey('recent_activity', $dashboard);
+
+        $source = file_get_contents(app_path('Services/CustomerDashboardReadModel.php'));
+        $this->assertIsString($source);
+
+        foreach (['CustomerBalancePresenter', 'ledgerEntries', 'balanceReservations', "->wallet"] as $forbiddenDependency) {
+            $this->assertStringNotContainsString($forbiddenDependency, $source);
         }
-
-        DB::flushQueryLog();
-        DB::enableQueryLog();
-
-        app(CustomerDashboardReadModel::class)->for($customer);
-
-        $this->assertLessThanOrEqual(
-            10,
-            count(DB::getQueryLog()),
-            'Internal dashboard projection exceeded its fixed ten-query read budget.',
-        );
     }
 }
