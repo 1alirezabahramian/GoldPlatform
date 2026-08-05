@@ -3,35 +3,28 @@
 namespace App\Services;
 
 use App\Models\WalletAccount;
-use Illuminate\Support\Facades\DB;
+use LogicException;
 
+/**
+ * @deprecated Financial balances for Money, Gold, Coin and Currency are owned by Kimia.
+ *
+ * This duplicate legacy service is intentionally fail-closed and remains only until
+ * all historical dependencies have been identified and migrated.
+ */
 class WalletService
 {
     public function deposit(int $walletAccountId, string $amount): WalletAccount
     {
-        return DB::transaction(function () use ($walletAccountId, $amount) {
-
-            $account = WalletAccount::lockForUpdate()->findOrFail($walletAccountId);
-
-            $account->balance = bcadd($account->balance, $amount, 6);
-
-            $account->save();
-
-            return $account;
-        });
+        throw new LogicException($this->disabledMessage());
     }
 
     public function withdraw(int $walletAccountId, string $amount): WalletAccount
     {
-        return DB::transaction(function () use ($walletAccountId, $amount) {
+        throw new LogicException($this->disabledMessage());
+    }
 
-            $account = WalletAccount::lockForUpdate()->findOrFail($walletAccountId);
-
-            $account->balance = bcsub($account->balance, $amount, 6);
-
-            $account->save();
-
-            return $account;
-        });
+    private function disabledMessage(): string
+    {
+        return 'Local customer financial balance mutation is disabled; Kimia is the source of truth.';
     }
 }
