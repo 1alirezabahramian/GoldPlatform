@@ -11,6 +11,10 @@ use LogicException;
 
 class BalanceReservationService
 {
+    public const AUTHORITY = 'workflow_only';
+
+    public const CUSTOMER_BALANCE_AUTHORITY = false;
+
     public function __construct(private readonly BalanceProjectionService $projection) {}
 
     public function reserve(
@@ -20,7 +24,7 @@ class BalanceReservationService
         ?Order $order = null,
         bool $allowNegative = false
     ): BalanceReservation {
-        return DB::transaction(function () use ($account, $amount, $idempotencyKey, $order, $allowNegative): BalanceReservation {
+        return DB::transaction(function () use ($account, $amount, $idempotencyKey, $order): BalanceReservation {
             $existing = BalanceReservation::query()->where('idempotency_key', $idempotencyKey)->lockForUpdate()->first();
             if ($existing !== null) {
                 return $existing;
@@ -32,11 +36,9 @@ class BalanceReservationService
                 throw new LogicException('Reservation amount must be positive.');
             }
 
-            $available = $this->projection->snapshot($locked)['available'];
-            if (! $allowNegative && Decimal::compare($available, $amount) < 0) {
-                throw new LogicException('Insufficient available balance for reservation.');
-            }
-
+            // A reservation records workflow intent only. It must never decide whether
+            // the customer has sufficient Money, Gold, Coin or Currency. Kimia is the
+            // final authority for those balances.
             $reservation = BalanceReservation::query()->create([
                 'wallet_account_id' => $locked->id,
                 'order_id' => $order?->id,
