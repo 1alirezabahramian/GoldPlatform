@@ -5,6 +5,7 @@ on:
     branches:
       - feature/goldplatform-developer-mcp
       - recovery/rc2-snapshot-2026-08-04
+      - recovery/rc2-product-rebuild
   push:
     branches:
       - feature/goldplatform-developer-mcp
