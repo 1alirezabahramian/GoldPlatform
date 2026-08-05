@@ -1,0 +1,28 @@
+name: Operational Readiness
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'frontend-admin/**'
+      - 'tests/frontend-e2e/**'
+      - 'docker/**'
+      - 'docker-compose.yml'
+      - 'scripts/validate-operational-readiness.sh'
+      - 'docs/PROJECT_STATE.md'
+      - '.github/workflows/operational-readiness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  operational-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repository readiness contracts
+        run: bash scripts/validate-operational-readiness.sh
+      - name: Validate Docker Compose contract
+        run: docker compose config --quiet
