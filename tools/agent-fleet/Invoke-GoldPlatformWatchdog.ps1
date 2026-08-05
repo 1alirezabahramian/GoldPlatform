@@ -36,8 +36,8 @@ if ($null -eq $task) {
 }
 else {
     $info = Get-ScheduledTaskInfo -TaskName $taskName
-    Add-Check -Name 'agent_task' -Status ([string]$info.State) -Detail "LastRun=$($info.LastRunTime); LastResult=$($info.LastTaskResult)"
-    if ($AllowRestart -and $info.State -eq 'Disabled') {
+    Add-Check -Name 'agent_task' -Status ([string]$task.State) -Detail "LastRun=$($info.LastRunTime); LastResult=$($info.LastTaskResult)"
+    if ($AllowRestart -and $task.State -eq 'Disabled') {
         Enable-ScheduledTask -TaskName $taskName | Out-Null
         Add-Check -Name 'agent_task_recovery' -Status 'enabled' -Detail $taskName
     }
@@ -87,3 +87,4 @@ $reportPath = Join-Path $ReportDirectory ("watchdog-{0}.json" -f (Get-Date -Form
 $report | ConvertTo-Json -Depth 6 | Set-Content -Path $reportPath -Encoding utf8
 Write-Output "WATCHDOG_REPORT=$reportPath"
 Write-Output ($report | ConvertTo-Json -Depth 6)
+
