@@ -6,28 +6,25 @@ use App\Models\CustodyAsset;
 use App\Models\DeliveryRequest;
 use App\Models\Order;
 use App\Models\User;
-use App\Support\CustomerBalancePresenter;
 use App\Support\CustomerReadPresenter;
 
 final class CustomerDashboardReadModel
 {
     public function __construct(
-        private readonly CustomerBalancePresenter $balances,
         private readonly CustomerReadPresenter $resources,
     ) {}
 
-    /** @return array<string, mixed> */
+    /**
+     * Build only GoldPlatform-owned operational dashboard data.
+     *
+     * Money, gold, coin and currency balances are intentionally excluded.
+     * Those balances must be resolved from Kimia by the dedicated customer
+     * balance boundary before they can be exposed publicly.
+     *
+     * @return array<string, mixed>
+     */
     public function for(User $user): array
     {
-        $accounts = $user->wallet?->accounts()
-            ->where('is_active', true)
-            ->with([
-                'ledgerEntries',
-                'balanceReservations' => fn ($query) => $query->where('status', 'active'),
-            ])
-            ->orderBy('id')
-            ->get() ?? collect();
-
         $terminalOrders = ['completed', 'rejected', 'expired', 'cancelled', 'failed'];
 
         $recentOrders = Order::query()
@@ -72,10 +69,6 @@ final class CustomerDashboardReadModel
             ->values();
 
         return [
-            'assets' => $accounts
-                ->map(fn ($account) => $this->balances->presentFromLoadedRelations($account))
-                ->values()
-                ->all(),
             'summary' => [
                 'active_orders' => Order::query()
                     ->where('user_id', $user->id)
