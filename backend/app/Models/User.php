@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
         'first_name',
@@ -47,36 +48,21 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Account Group
-     */
     public function group(): BelongsTo
     {
-        return $this->belongsTo(
-            UserGroup::class,
-            'group_id'
-        );
+        return $this->belongsTo(UserGroup::class, 'group_id');
     }
 
-    /**
-     * Kimia Account
-     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
     }
 
-    /**
-     * Wallet
-     */
     public function wallet(): HasOne
     {
         return $this->hasOne(Wallet::class);
     }
 
-    /**
-     * Orders
-     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
