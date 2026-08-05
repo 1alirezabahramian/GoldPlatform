@@ -23,5 +23,10 @@ export default defineNuxtConfig({
     strict: true,
     typeCheck: true
   },
-  nitro: { preset: 'node-server' }
+  nitro: {
+    preset: 'node-server',
+    externals: {
+      inline: ['vue', '@vue/server-renderer']
+    }
+  }
 })
