@@ -147,28 +147,9 @@ class SettlementService
         ?string $kimiaReference = null,
         array $metadata = []
     ): Settlement {
-        return DB::transaction(function () use ($settlement, $kimiaReference, $metadata): Settlement {
-            $locked = $this->lock($settlement);
-
-            if ($locked->status === SettlementStatus::Completed) {
-                return $locked;
-            }
-
-            if ($locked->status !== SettlementStatus::Processing) {
-                throw new LogicException("Settlement {$locked->uuid} cannot complete from {$locked->status->value}.");
-            }
-
-            $locked->forceFill([
-                'status' => SettlementStatus::Completed,
-                'kimia_reference' => $kimiaReference ?? $locked->kimia_reference,
-                'metadata' => array_replace_recursive($locked->metadata ?? [], $metadata),
-                'completed_at' => now(),
-                'failure_reason' => null,
-                'failed_at' => null,
-            ])->save();
-
-            return $locked->refresh();
-        });
+        throw new LogicException(
+            'Direct customer financial settlement completion is blocked until verified Kimia result evidence and post-write readback are implemented. A reference string alone is not sufficient evidence.'
+        );
     }
 
     public function fail(
