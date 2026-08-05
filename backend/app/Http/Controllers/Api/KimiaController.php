@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Application\Kimia\AccountGroupReadService;
 use App\Http\Controllers\Controller;
-use App\Integrations\Kimia\Repositories\KimiaAccountRepository;
 use Illuminate\Http\JsonResponse;
 
 class KimiaController extends Controller
 {
     public function __construct(
-        protected KimiaAccountRepository $accounts
+        protected AccountGroupReadService $accountGroups
     ) {
     }
 
     public function accountGroups(): JsonResponse
     {
         return response()->json(
-            $this->accounts->groups()
+            $this->accountGroups->read()
         );
     }
 }
