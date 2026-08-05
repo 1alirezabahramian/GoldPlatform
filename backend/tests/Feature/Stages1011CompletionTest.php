@@ -41,18 +41,23 @@ class Stages1011CompletionTest extends TestCase
             ->assertJsonPath('message', 'Idempotency-Key header is required.');
     }
 
-    public function test_policy_change_is_audited_outboxed_and_replayed_once(): void
+    public function test_financial_policy_change_fails_closed_without_side_effects(): void
     {
         $admin = $this->actingAdmin();
         $policy = $this->policy();
         $headers = ['Idempotency-Key' => 'policy-change-1'];
 
-        $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false], $headers)->assertOk();
-        $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false], $headers)->assertOk();
+        $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false], $headers)
+            ->assertStatus(503)
+            ->assertJsonPath('code', 'FINANCIAL_POLICY_GROUND_TRUTH_REQUIRED');
 
-        $this->assertFalse($policy->refresh()->is_active);
-        $this->assertSame(1, AuditLog::query()->where('action', 'customer_policy.updated')->count());
-        $this->assertSame(1, OutboxMessage::query()->where('event_type', 'customer_policy.updated')->count());
+        $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false], $headers)
+            ->assertStatus(503)
+            ->assertJsonPath('code', 'FINANCIAL_POLICY_GROUND_TRUTH_REQUIRED');
+
+        $this->assertTrue($policy->refresh()->is_active);
+        $this->assertSame(0, AuditLog::query()->where('action', 'customer_policy.updated')->count());
+        $this->assertSame(0, OutboxMessage::query()->where('event_type', 'customer_policy.updated')->count());
     }
 
     public function test_every_api_response_has_correlation_id(): void
