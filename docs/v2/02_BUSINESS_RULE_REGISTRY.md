@@ -14,7 +14,7 @@
 
 - Text: Money, Gold, Coin and Currency customer balances are finally authoritative in Kimia. GoldPlatform must not create a competing final balance.
 - Domain: Financial authority
-- Source: Owner mission; Project Memory; Recovery PRs and boundary tests
+- Source: Owner mission; Project Memory; Recovery PRs and boundary tests; Claim Registry `KC-001`, `KC-003`, `KC-020`, `KC-021`, `KC-033`
 - Status: `CONFIRMED BY OWNER`
 - Backend: Customer financial reads must resolve to verified Kimia-backed data; internal projections are audit/reconciliation only.
 - Frontend: Must not show internal Wallet/Ledger values as customer balances; unavailable Kimia data must not be replaced with zero.
@@ -28,7 +28,7 @@
 
 - Text: Physical custody is owned by GoldPlatform and must remain separate from financial balances.
 - Domain: Custody
-- Source: Owner mission; Project Memory; Domain Workshop
+- Source: Owner mission; Project Memory; Domain Workshop; Claim Registry `KC-002`
 - Status: `CONFIRMED BY OWNER`
 - Backend: Custody lifecycle, physical identity, delivery and branch handling remain local platform concerns.
 - Frontend: Display Custody separately from Money/Gold/Coin/Currency.
@@ -39,6 +39,7 @@
 ### BR-V2-0003 — Internal financial records are evidence, not final balances
 
 - Text: Ledger, Journal, Event Store, Idempotency Registry and Balance Projection serve audit, trace, workflow, intent/result and reconciliation.
+- Source: Owner mission; current architecture; Claim Registry `KC-003`, `KC-030`, `KC-033`
 - Status: `CONFIRMED BY OWNER`
 - Backend: They cannot independently approve sufficiency or mark external settlement successful.
 - Related evidence: PRs #153–#156, #158, #175; financial boundary tests.
@@ -47,6 +48,7 @@
 
 - Text: Money and weight use exact Decimal or decimal strings; float is prohibited.
 - Domain: Financial precision
+- Source: Owner rule; Claim Registry `KC-005`
 - Status: `CONFIRMED BY OWNER`
 - Backend: Central exact-decimal utilities and validated scale/rounding rules.
 - Frontend: Decimal values remain strings; no independent financial calculation.
@@ -56,6 +58,7 @@
 ### BR-V2-0005 — Kimia Rial, platform Toman conversion is backend-only
 
 - Text: Kimia operates in Rial while customer-facing platform values are in Toman. Conversion must be central, explicit and tested in Backend.
+- Source: Owner rule; Claim Registry `KC-005`
 - Status: `CONFIRMED BY OWNER`
 - Frontend: No Rial/Toman conversion.
 - Risk: Existing contracts may intentionally preserve raw units where conversion ground truth was not implemented; capability audit must identify every boundary.
@@ -63,6 +66,7 @@
 ### BR-V2-0006 — Coin and Currency catalogs are dynamic
 
 - Text: Coin and Currency identifiers must be read from Kimia and never hard-coded from examples.
+- Source: Owner rule; Claim Registry `KC-004`, `KC-016`, `KC-019`
 - Status: `CONFIRMED BY OWNER`
 - Kimia: `/api/product/coins`, `/api/product/currencies` are documented read sources.
 - Backend: Local snapshots, if present, are rebuildable caches with sync timestamps.
@@ -71,6 +75,7 @@
 ### BR-V2-0007 — Kimia Read and Write are separate capabilities
 
 - Text: Read and Write clients/policies/retry behavior must be separated. Controllers do not call Kimia client directly.
+- Source: Owner rule; Claim Registry `KC-006`, `KC-027`, `KC-036`
 - Status: `CONFIRMED BY OWNER`
 - Backend: Application service/repository boundary required.
 - Related evidence: PRs #150, #164–#165; HTTP and service Kimia boundary tests.
@@ -78,6 +83,7 @@
 ### BR-V2-0008 — Kimia Write is deny-by-default
 
 - Text: No Kimia Write is enabled without real Ground Truth for endpoint, payload, codes, idempotency and result verification.
+- Source: Owner rule; Claim Registry `KC-007`, `KC-008`, `KC-012`, `KC-025`, `KC-026`, `KC-029`, `KC-040`, `KC-045`
 - Status: `CONFIRMED BY OWNER`
 - Backend: Successful Write must be followed by balance readback and reconciliation evidence.
 - Retry: Write retry policy differs from Read and must account for unknown outcome.
@@ -86,6 +92,7 @@
 
 ### BR-V2-0009 — Credentials and secrets are never stored in Git, UI, logs or docs
 
+- Source: Security contract; Claim Registry `KC-035`
 - Status: `ACCEPTED`
 - Scope: Kimia credentials, API keys, tokens, passwords and private endpoints where sensitive.
 - Tests: Secret scans and response/log redaction.
@@ -93,6 +100,7 @@
 ### BR-V2-0010 — Customer frontend is Persian, RTL, mobile-first and simple
 
 - Text: Complexity remains in Backend; customer UI uses human language and never exposes internal accounting terms or Kimia identifiers.
+- Source: Owner rule; Claim Registry `KC-005`, `KC-034`
 - Status: `CONFIRMED BY OWNER`
 - Frontend states: Loading, Empty, Error, Forbidden and Offline are required where applicable.
 - Related evidence: Customer frontend recovery and UX PRs #170–#189.
@@ -107,29 +115,32 @@
 ### BR-V2-0012 — Demo is not product evidence
 
 - Text: Previous HTML/static demos are `SUPERSEDED — TECHNICAL PREVIEW ONLY — NOT PRODUCT EVIDENCE`.
+- Source: Owner rule; Claim Registry `KC-041`
 - Status: `CONFIRMED BY OWNER`
 - Related evidence: PRs #191–#194 explicitly use fictional data and no operational connection.
 
 ### BR-V2-0013 — Negative balances are valid domain values
 
 - Domain: Money/Gold/Coin/Currency
+- Source: Owner rule; Claim Registry `KC-011`, `KC-034`
 - Status: `CONFIRMED BY OWNER`
 - Frontend: Negative must not be clamped to zero or treated as unavailable.
 - Gap: Credit-limit/freeze/approval rules remain separately traceable and cannot be inferred from negative-balance support.
 
-### BR-V2-0014 — Action codes must be endpoint-specific and source-confirmed
+### BR-V2-0014 — Kimia code systems are endpoint-specific and source-confirmed
 
 - Text: No global Action mapping may be inferred across Kimia endpoints.
-- Source: Uploaded Kimia audit, Project Memory and conversation export show conflicting simplified codes versus Swagger bit-flag-style values.
-- Status: `CONFLICTED`
-- Exact conflict: Historical/owner-facing documents contain values such as 1/2/3/4/7/8, while reviewed Swagger descriptions include 2/4/32/64 and other powers of two depending on endpoint.
+- Source: Project Memory; current Kimia Ground Truth; Claim Registry `KC-014`, `KC-015`; Correction Registry `CR-CORR-KIMIA-0001`
+- Status: `CONFIRMED BY REAL KIMIA OUTPUT — LIMITED TO RECORDED MAPPING`
+- Resolved terminology: Runtime evidence for AccountId `350` distinguishes operational/form codes `3/4` from Swagger/API Actions `32/64` for the recorded paper-gold buy/sell direction.
+- Limitation: This evidence does not prove every endpoint, product, environment or write payload and does not authorize Kimia Write.
 - Decision rule: Real Kimia output outranks Swagger; Swagger outranks internal historical notes.
-- Required evidence: Sanitized real request/response and transaction records per operation.
-- Backend: Kimia Write remains blocked; do not encode a default mapping from this conflict.
+- Backend: Keep mappings endpoint-specific, centralized, fail-closed and traceable.
 
 ### BR-V2-0015 — Weight750 formula cannot be inferred
 
 - Text: Frontend never calculates Weight750. Backend may only calculate it after exact formula, unit and rounding are confirmed.
+- Source: Claim Registry `KC-022`
 - Status: `BLOCKED BY GROUND TRUTH`
 - Conflict/risk: Historical text includes standard-industry reasoning, but that is not sufficient Kimia Ground Truth.
 
@@ -149,12 +160,36 @@
 - Text: No force push, destructive reset, broad revert, shared-history rebase, blind cherry-pick or branch/PR deletion without explicit owner instruction.
 - Status: `CONFIRMED BY OWNER`
 
+### BR-V2-0019 — Conversation claims require registry classification
+
+- Text: Historical chat statements must not become requirements, Ground Truth or implementation status merely because they were asserted or accompanied by sample code.
+- Source: `docs/v2/12_CHAT_EXECUTION_AUDIT.md`; `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`; `docs/v2/14_CHAT_CLAIM_REGISTRY_CORRECTIONS.md`
+- Status: `ACCEPTED`
+- Required path: `Claim → Source → Evidence Level → Conflict/Unknown → Final Classification → V2 Action`.
+- Correction rule: When a higher-priority source is recovered, the original claim remains preserved and a linked correction record supersedes only its classification.
+
+### BR-V2-0020 — Missing financial data is not zero
+
+- Text: Missing, unresolved or unavailable Kimia financial data must remain unavailable and must not be serialized as a valid zero balance.
+- Source: Current customer source-state contracts; Claim Registry `KC-034`, `KC-044`
+- Status: `ACCEPTED`
+- Frontend: Distinguish valid zero, negative value and unavailable/error state.
+- Backend: Fail closed when authenticated customer-to-Kimia resolution or authoritative read evidence is absent.
+
+### BR-V2-0021 — Coin/Currency balances cannot be derived as final truth from transaction sums
+
+- Text: Transaction-history aggregation must not become a competing final balance for Coin or Currency.
+- Source: Architecture authority rule; Claim Registry `KC-020`, `KC-021`
+- Status: `ACCEPTED`
+- Backend: Locate the authoritative Kimia read contract; any projection must be Kimia-derived, timestamped, rebuildable and reconcilable.
+
 ## Conflicts requiring evidence, not immediate owner re-entry
 
-1. Kimia Action codes and endpoint semantics.
+1. Exact Kimia Write request payloads, success/error/idempotency semantics and endpoint coverage beyond the recorded mapping.
 2. Exact Weight750 formula, unit and rounding behavior.
-3. Exact Kimia Write payloads and success/error/idempotency behavior.
-4. Whether every historical commission, freeze, credit and anti-scalping rule remains current or was superseded.
-5. Tenant/company/branch authority model.
+3. Whether every historical commission, freeze, credit and anti-scalping rule remains current or was superseded.
+4. Tenant/company/branch authority model.
+5. Registration-to-Kimia account lifecycle and default group policy.
+6. Physical Custody conversion/resale rules and their Kimia effects.
 
 These items remain blocked until the existing source corpus and real output evidence are exhausted. The owner is not asked to restate prior rules from memory.
