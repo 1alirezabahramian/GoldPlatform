@@ -2,7 +2,7 @@ name: Demo Visual Preview
 
 on:
   push:
-    branches: ['demo/visual-preview']
+    branches: ['recovery/rc2-product-rebuild']
     paths:
       - 'demo-preview/**'
       - '.github/workflows/demo-preview-pages.yml'
