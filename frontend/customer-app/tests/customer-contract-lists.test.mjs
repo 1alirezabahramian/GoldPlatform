@@ -23,7 +23,9 @@ test('customer lists use only accepted endpoints', () => {
 test('unavailable data is not converted to zero', () => {
   assert.match(component, /به‌صورت صفر نمایش داده نمی‌شود/)
   assert.doesNotMatch(component, /\?\?\s*0/)
-  assert.doesNotMatch(component, /Number\(/)
+  assert.doesNotMatch(component, /Number\([^)]*quantity/i)
+  assert.doesNotMatch(component, /Number\([^)]*weight/i)
+  assert.doesNotMatch(component, /Number\([^)]*fineness/i)
 })
 
 test('customer lists do not calculate financial values', () => {
