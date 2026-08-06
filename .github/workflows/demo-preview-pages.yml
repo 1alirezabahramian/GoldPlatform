@@ -1,0 +1,49 @@
+name: Demo Visual Preview
+
+on:
+  push:
+    branches: ['demo/visual-preview']
+    paths:
+      - 'demo-preview/**'
+      - '.github/workflows/demo-preview-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: demo-visual-preview
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate safe demo contract
+        run: |
+          test -f demo-preview/index.html
+          grep -q 'نسخه نمایشی' demo-preview/index.html
+          grep -q 'هیچ عملیات مالی' demo-preview/index.html
+          if grep -RInE '94\.101\.184\.26|/api/voucher/|KIMIA_(USERNAME|PASSWORD|TOKEN)|fetch\(|XMLHttpRequest|\$fetch' demo-preview; then
+            echo 'Unsafe external or Kimia reference found in demo preview'
+            exit 1
+          fi
+
+  deploy:
+    needs: validate
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: demo-preview
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
