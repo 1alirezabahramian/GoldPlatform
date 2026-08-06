@@ -30,7 +30,7 @@ This stage creates documentation only. It does not add a feature, migration, fin
 | SRC-V2-0003 | Project Memory | `docs/00_PROJECT_MEMORY.md` and uploaded copy | ACCEPTED LIVING GROUND TRUTH | Contains architecture, financial boundaries, Kimia terminology, rules and historical state. |
 | SRC-V2-0004 | Domain Workshop | uploaded `41_GOLDPLATFORM_DOMAIN_WORKSHOP_2026-07-28.md` | OWNER-ACCEPTED DOMAIN EVIDENCE | Accepted working contract; Alireza is domain expert and financial-rule authority. |
 | SRC-V2-0005 | Kimia Integration Audit | `docs/08_KIMIA_INTEGRATION_AUDIT.md` and uploaded copy | TECHNICAL AUDIT | Draft based on Swagger, runtime logs and repository review; not proof that implementation is complete. |
-| SRC-V2-0006 | Shared Kimia conversation export | uploaded `gp.txt`; shared URL; `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md` | HISTORICAL CONVERSATION EVIDENCE — CLAIMS CLASSIFIED | Claims are now extracted with Evidence Level, Conflict, final status and V2 action; chat text is not canonical ground truth. |
+| SRC-V2-0006 | Shared Kimia conversation export | uploaded `gp.txt`; shared URL; `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`; correction `docs/v2/14_CHAT_CLAIM_REGISTRY_CORRECTIONS.md` | HISTORICAL CONVERSATION EVIDENCE — CLAIMS CLASSIFIED AND CORRECTED | Claims are extracted with Evidence Level, Conflict, final status and V2 action; higher-priority runtime evidence overrides conservative chat-only classifications. |
 | SRC-V2-0007 | Customer OpenAPI | `docs/api/customer-v1.openapi.yaml` | CURRENT CONTRACT EVIDENCE | Must be compared with live routes, resources, tests and frontend clients. |
 | SRC-V2-0008 | Project state files | `docs/PROJECT_STATE.md`, `docs/project_state.md` | DRIFT CANDIDATE | Two case-different state files exist and require comparison/classification. |
 | SRC-V2-0009 | ADR directories | `docs/ADR/`, `docs/adr/` | DRIFT / DUPLICATE-NAMESPACE CANDIDATE | Case-different ADR trees and duplicate ADR numbers exist; preserve and inventory before normalization. |
@@ -58,7 +58,7 @@ This stage creates documentation only. It does not add a feature, migration, fin
 |---|---|---|
 | Full branch inventory with Head SHA | PARTIAL | Page through all branches and classify canonical, merged-history, evidence-only and duplicate candidates. |
 | Complete PR inventory before PR #90 | PARTIAL | Continue paginated PR recovery and build ordered PR ledger. |
-| Real Kimia raw responses | NOT YET VERIFIED IN V2 | Locate sanitized stored outputs/log evidence; do not call Write endpoints. |
+| Real Kimia raw responses | PARTIAL — SANITIZED TRANSACTION EVIDENCE RECORDED | Continue locating sanitized request/response evidence; do not call Write endpoints. |
 | Official Kimia Swagger exact current file | PARTIAL | Locate repository Swagger/OpenAPI and compare to uploaded audit and real-output evidence. |
 | ZIP archives / database exports | NOT YET LOCATED | Search uploaded files, repository history and available library evidence. |
 | Previous conversation artifacts | PARTIAL — ONE SHARED KIMIA CHAT CLASSIFIED | Continue converting each recovered conversation into a Claim Registry rather than copying chat text as truth. |
@@ -72,7 +72,7 @@ This stage creates documentation only. It does not add a feature, migration, fin
 4. Multiple historical Kimia clients/services were removed or replaced; canonical path must be identified per current SHA.
 5. Static demo work is merged but remains non-product evidence.
 6. Older AP/OP stacks are closed-not-merged and cannot be considered canonical, even where later code reused selected patterns.
-7. Shared Kimia conversation contained conflicting Action mappings, schema examples presented as real outputs, Wallet authority drift and unsupported Coin/Currency balance derivation; these are now explicitly classified in `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`.
+7. Shared Kimia conversation contained conflicting Action wording, schema examples presented as real outputs, Wallet authority drift and unsupported Coin/Currency balance derivation. The initial classifications are in Registry 13; higher-priority runtime corrections are in Registry 14.
 
 ## Claim-registry integration
 
@@ -84,7 +84,12 @@ The first completed registry is:
 
 - `CR-CHAT-KIMIA-0001`
 - File: `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`
-- Result: 45 material claims classified; unresolved financial/Kimia mappings remain blocked; unsupported and superseded claims are explicitly rejected.
+- Correction: `docs/v2/14_CHAT_CLAIM_REGISTRY_CORRECTIONS.md`
+- Result: 45 material claims classified; unsupported and superseded claims are rejected; Action and Product code entries are reconciled with the higher-priority sanitized runtime evidence already recorded in `03_KIMIA_GROUND_TRUTH.md`.
+
+## Claim correction rule
+
+A historical Claim Registry preserves what was said and how it was initially evaluated. When a higher-priority source is found or was already present, a correction must be recorded and linked. The corrected classification governs V2; the historical text remains preserved for audit.
 
 ## Evidence handling rule
 
