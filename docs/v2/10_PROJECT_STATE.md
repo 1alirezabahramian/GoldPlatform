@@ -3,29 +3,49 @@
 - Updated: 2026-08-06
 - Owner: Alireza Bahramian
 - Stage: `V2-00 — Complete Source Recovery & Knowledge Reconstruction`
-- Status: `IN PROGRESS — INITIAL RECOVERY MILESTONE`
+- Status: `IN PROGRESS — READINESS EVIDENCE CONSOLIDATION`
 - Evidence branch: `recovery/rc2-product-rebuild`
 - Evidence Head at start: `cd92a1144bdfbe043bae1871aab9d623ce8bad64`
 - V2 working branch: `v2/source-recovery-v2-00`
+- Verified V2 Head before this state update: `497e0fd7ba87e5a7c3a5593642f76d928a41bedb`
+- Pull request: `#195` — Open, Draft, not merged
 - Production Ready: `NOT CLAIMED`
 
-## Completed in this milestone
+## Completed recovery outputs
 
-1. Repository access and permissions verified.
-2. Reference branch existence and exact Head SHA verified.
-3. Initial GitHub PR history recovered, including canonical merged work and closed-not-merged historical stacks.
-4. Uploaded Project Memory, Domain Workshop, Kimia Integration Audit and conversation export inspected.
-5. Initial Source Index created.
-6. Initial Business Rule Registry created.
-7. Initial Capability Traceability Matrix created.
-8. Initial drift, duplicate and missing-source list recorded.
+All eleven mandatory V2-00 documents now exist:
 
-## Files changed
+1. `docs/v2/00_SOURCE_INDEX.md`
+2. `docs/v2/01_MASTER_REQUIREMENTS.md`
+3. `docs/v2/02_BUSINESS_RULE_REGISTRY.md`
+4. `docs/v2/03_KIMIA_GROUND_TRUTH.md`
+5. `docs/v2/04_CAPABILITY_TRACEABILITY_MATRIX.md`
+6. `docs/v2/05_ARCHITECTURE_CONTRACT.md`
+7. `docs/v2/06_IMPLEMENTATION_AUDIT.md`
+8. `docs/v2/07_GAP_AND_DRIFT_REPORT.md`
+9. `docs/v2/08_V2_ROADMAP.md`
+10. `docs/v2/09_DECISION_LOG.md`
+11. `docs/v2/10_PROJECT_STATE.md`
 
-- `docs/v2/00_SOURCE_INDEX.md`
-- `docs/v2/02_BUSINESS_RULE_REGISTRY.md`
-- `docs/v2/04_CAPABILITY_TRACEABILITY_MATRIX.md`
-- `docs/v2/10_PROJECT_STATE.md`
+## Verified architecture state
+
+- Kimia is the final authority for customer Money, Gold, Coin and Currency balances.
+- GoldPlatform is the final authority for physical Custody/Amanat.
+- Ledger, Journal, Event, Idempotency and Projection artifacts are audit, workflow and reconciliation evidence only.
+- Customer financial data must fail closed when verified Kimia account resolution is unavailable.
+- Frontend must not calculate financial values, Weight750 or Rial/Toman conversions.
+- Kimia Read and Kimia Write remain separate boundaries.
+- Kimia Write remains disabled until exact request/response and reconciliation Ground Truth is approved.
+- Static demos remain `SUPERSEDED — TECHNICAL PREVIEW ONLY — NOT PRODUCT EVIDENCE`.
+
+## Recovered Kimia result
+
+Historical confusion between operation/form codes and API Actions has been classified:
+
+- Operational/form terminology may use `3 = buy` and `4 = sell`.
+- Swagger/API Actions use `32 = buy` and `64 = sell`.
+- Runtime evidence recorded for AccountId 350 maps customer buy to Kimia sell/API Action 64 and customer sell to Kimia buy/API Action 32.
+- This evidence does not authorize production Kimia Write.
 
 ## Safety result
 
@@ -34,49 +54,48 @@
 - Kimia Write: unchanged and disabled
 - Migration/database: unchanged
 - API/OpenAPI: unchanged
-- Frontend: unchanged
+- Frontend behavior: unchanged
 - Branch/PR/file deletion: none
 - History rewrite/rebase/force push: none
 
-## Confirmed architecture state
+## Exact-SHA CI evidence
 
-- Kimia remains the final authority for Money, Gold, Coin and Currency.
-- GoldPlatform remains the final authority for physical Custody/Amanat.
-- Internal Ledger/Journal/Event/Projection artifacts are audit/workflow/reconciliation evidence only.
-- Customer financial data must fail closed when verified Kimia account resolution is unavailable.
-- Static demos are fictional technical previews and not product evidence.
+- SHA: `226acad55620c721d563f81c687b37b6e1b0a47f`
+  - Workflow: Backend RC1 Validation
+  - Run: `#331`
+  - Status: `EXECUTED — PASS`
+- SHA: `6d5bc28e6381d2a947bf1ee0c534259a26c72be4`
+  - Workflow: Backend RC1 Validation
+  - Run: `#335`
+  - Status: `EXECUTED — PASS`
+- SHA: `497e0fd7ba87e5a7c3a5593642f76d928a41bedb`
+  - Workflow: Backend RC1 Validation
+  - Run: `#338`
+  - Status: `EXECUTED — PASS`
 
-## Important findings
+This state update creates a newer Head and therefore requires a fresh exact-SHA CI result before closure.
 
-1. `recovery/rc2-product-rebuild` and the earlier `main` Stage-00 line have diverged history; they cannot be treated as interchangeable.
-2. Current reference Head is the merge of demo PR #194, not a product-completion commit.
-3. Exact CI on the current reference merge SHA was not returned by the connector and is therefore `NOT CONFIRMED`.
-4. Case-different project-state and ADR directories exist and require non-destructive consolidation analysis.
-5. Kimia Action codes, Weight750 and Write payload behavior remain blocked by real Ground Truth.
-6. Many AP/OP capabilities exist in closed-not-merged historical stacks; later canonical Recovery work reused only selected patterns.
-7. The real Customer/Admin/Operator frontends exist in the recovery history, but production deployment and visual verification remain separate closure gates.
+## Current Gate status
 
-## Test status
+- Mandatory V2 documents: `PASS`
+- Exact-SHA CI for previous Head: `PASS`
+- Exact-SHA CI for current state-update Head: `PENDING`
+- PR merged: `NO`
+- Complete branch inventory: `INCOMPLETE`
+- Complete all-PR evidence ledger: `INCOMPLETE`
+- Database applied-migration/export evidence: `INCOMPLETE`
+- Real-device visual verification: `INCOMPLETE`
+- Production-environment evidence: `INCOMPLETE`
 
-- Uploaded source inspection: `EXECUTED — PASS`
-- GitHub repository/ref/PR inspection: `EXECUTED — PASS`
-- Documentation content validation: `WRITTEN — NOT EXECUTED`
-- Backend tests: `NOT APPLICABLE` for this documentation-only milestone
-- Frontend tests: `NOT APPLICABLE` for this documentation-only milestone
-- CI exact V2 Head: `NOT YET TRIGGERED / NOT CONFIRMED`
+## Remaining V2-00 blockers
 
-## Current blockers
+1. Complete branch inventory and exact Head SHA ledger.
+2. Complete PR ledger across Open, Draft, Closed and Merged history.
+3. Connect capability records to exact PR, SHA and CI evidence where available.
+4. Recover database/export/applied-migration evidence when available.
+5. Record real visual verification separately from static demo evidence.
+6. Re-run CI on the new Head created by this state update.
 
-- Real Kimia sanitized raw outputs are not yet linked in V2.
-- Complete branch and pre-PR-90 history inventory is incomplete.
-- Database/ZIP/File Library evidence is not yet fully recovered.
-- Tenant/company/branch architecture remains unresolved.
-- Pricing, quote, commission, freeze, credit and anti-scalping rules require full supersession tracing.
+## Honest readiness decision
 
-## Next safe milestone
-
-1. Recover full branch inventory and exact Head SHAs.
-2. Complete ordered PR ledger, including open/draft/closed/merged classifications.
-3. Locate and compare Swagger/OpenAPI, real Kimia outputs and canonical read adapters.
-4. Create `01_MASTER_REQUIREMENTS.md`, `03_KIMIA_GROUND_TRUTH.md`, `05_ARCHITECTURE_CONTRACT.md` and `07_GAP_AND_DRIFT_REPORT.md` from traceable evidence.
-5. Run documentation/secret/markdown CI on the exact V2 Head and record the result.
+`V2-00` is not yet complete. Documentation creation is complete, but repository-history and external-environment evidence remain incomplete. `V2-01` must not begin until the readiness gate is explicitly re-evaluated and passed.
