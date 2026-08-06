@@ -6,7 +6,7 @@
 - Repository: `1alirezabahramian/GoldPlatform`
 - Evidence base: `recovery/rc2-product-rebuild`
 - V2 branch: `v2/source-recovery-v2-00`
-- Status: `IN PROGRESS — BRANCH NAMES AND CURRENT PR SLICE VERIFIED; COMPLETE ALL-SHA LEDGER INCOMPLETE`
+- Status: `IN PROGRESS — CURRENT PR SLICE AND FIVE KEY RECOVERY PR CI MAPPINGS VERIFIED; COMPLETE ALL-SHA LEDGER INCOMPLETE`
 
 ## 1. Evidence rules
 
@@ -69,7 +69,43 @@ Verified at inspected Head `8250090ea3cf48cee43d2ca0bf434c3a88e4c619`:
 
 The connector-reported test merge SHA is not treated as a canonical merge because PR #195 is still open and unmerged.
 
-## 5. Document namespace evidence
+## 5. Key Recovery PR evidence slices
+
+### Metadata slice
+
+`docs/v2/19_RECOVERY_PR_EVIDENCE_SLICE_03.md` records exact Base SHA, Head SHA, Merge SHA, state, scope and safety boundaries for:
+
+- PR #149 — CP-06 Custody/Delivery recovery
+- PR #150 — canonical Kimia Read recovery
+- PR #153 — internal Balance Projection authority guard
+- PR #175 — direct Settlement completion guard
+- PR #186 — Customer Kimia source-state UX
+
+### Exact-Head CI slice
+
+`docs/v2/20_RECOVERY_PR_CI_MAPPING_SLICE_04.md` maps those same PR Heads to exact GitHub Actions runs:
+
+- PR #149 Head `925e2624...`
+  - Backend RC2 Candidate #69 — `EXECUTED — PASS`
+  - Backend RC1 Validation #217 — `EXECUTED — PASS`
+- PR #150 Head `e5d61218...`
+  - Backend RC2 Candidate #49 — `EXECUTED — PASS`
+- PR #153 Head `7f2121d5...`
+  - Backend RC1 Validation #224 — `EXECUTED — PASS`
+- PR #175 Head `be966d97...`
+  - Backend RC1 Validation #288 — `EXECUTED — PASS`
+  - Operational Readiness #3 — `EXECUTED — PASS`
+- PR #186 Head `10121aeb...`
+  - Backend RC1 Validation #313 — `EXECUTED — PASS`
+  - Customer Frontend #15 — `EXECUTED — PASS`
+  - Frontend Release Validation #12 — `EXECUTED — PASS`
+  - Operational Readiness #17 — `EXECUTED — PASS`
+
+For these five PRs, exact-Head CI is now `VERIFIED — EXECUTED — PASS`.
+
+This does not prove current canonical code equivalence, real-device verification, or complete capability closure.
+
+## 6. Document namespace evidence
 
 Duplicate numeric prefixes remain:
 
@@ -82,7 +118,7 @@ Classification: `DUPLICATE NAMESPACE CANDIDATE`.
 
 The contents are distinct. No rename, delete, move or renumber is performed. Full filenames are mandatory in references.
 
-## 6. Exact-SHA CI evidence for V2 documentation
+## 7. Exact-SHA CI evidence for V2 documentation
 
 Verified checkpoints include:
 
@@ -100,24 +136,28 @@ Verified checkpoints include:
 - `8fa2e294c02683c1cd329302b2ac04f8a067b02a` — Run `#359` — `EXECUTED — PASS`
 - `03a0bd091a10328f391eb8fad8ef6e32bcf9e1f5` — Run `#360` — `EXECUTED — PASS`
 - `8250090ea3cf48cee43d2ca0bf434c3a88e4c619` — Run `#363` — `EXECUTED — PASS`
+- `a4678566138e7b5fc6388e9ef4a15d655d78ceae` — Run `#366` — `EXECUTED — PASS`
+- `b416cc06bf90076306ffbe2c082d38d8c53820b1` — Run `#367` — `EXECUTED — PASS`
 
 Every newer documentation Head requires its own exact-SHA verification.
 
-## 7. Remaining repository evidence gaps
+## 8. Remaining repository evidence gaps
 
 1. Exact Head SHA for all 140 branches.
-2. Complete per-PR Head SHA, merge SHA and exact CI mapping.
+2. Complete per-PR Head SHA, merge SHA and exact CI mapping beyond the verified five-PR slice.
 3. Complete Capability → Rule → File → PR → Head SHA → Merge SHA → CI mapping.
-4. Applied migration state and database export evidence.
-5. Current production environment, deployment and restore evidence.
-6. Real-device visual verification for executable Customer, Operator and Admin frontends.
-7. Classification of miscellaneous/noop/tmp branches through actual diffs and commits.
+4. Verification that each merged Recovery capability still exists unchanged on the current canonical evidence Base.
+5. Applied migration state and database export evidence.
+6. Current production environment, deployment and restore evidence.
+7. Real-device visual verification for executable Customer, Operator and Admin frontends.
+8. Classification of miscellaneous/noop/tmp branches through actual diffs and commits.
 
-## 8. Current decision
+## 9. Current decision
 
 - Branch names: `RECOVERED`.
 - Current PR/Base/Head slice: `VERIFIED — EXECUTED`.
-- Current inspected exact-SHA CI: `EXECUTED — PASS`.
+- Five key Recovery PR metadata mappings: `VERIFIED — EXECUTED`.
+- Five key Recovery PR exact-Head CI mappings: `VERIFIED — EXECUTED — PASS`.
 - Full repository evidence ledger: `INCOMPLETE`.
 - V2-00: `GATE NOT PASSED`.
 - V2-01: `NOT STARTED`.
