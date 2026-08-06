@@ -31,7 +31,9 @@
 ## V2-D-0006 — Kimia code systems
 
 **Status:** ACCEPTED FROM RECOVERED RUNTIME EVIDENCE  
-**Decision:** Operational/form codes and Swagger API Actions are distinct. For confirmed paper-gold behavior: customer buy maps to Kimia sell/API Action `64`; customer sell maps to Kimia buy/API Action `32`. Operational codes `4` and `3` must not be sent as API Actions.
+**Decision:** Operational/form codes and Swagger API Actions are distinct. For the recorded AccountId `350` paper-gold behavior: customer buy maps to Kimia sell/API Action `64`; customer sell maps to Kimia buy/API Action `32`. Operational codes `4` and `3` must not be sent as API Actions.
+
+**Boundary:** This is a limited observed mapping, not a universal endpoint dictionary and not authorization for Kimia Write.
 
 ## V2-D-0007 — Kimia Write
 
@@ -68,12 +70,49 @@
 **Status:** ACCEPTED  
 **Decision:** Existing duplicates are preserved during V2-00. Canonical selection requires comparison and documentation before rename, removal or integration.
 
+## V2-D-0014 — Historical conversations use Claim Registry
+
+**Status:** ACCEPTED  
+**Decision:** A historical conversation is integrated into V2 only through a Claim Registry containing Source, Evidence Level, Conflict/Unknown, final classification and V2 action. Conversation text and generated code are not canonical Ground Truth or implementation evidence by themselves.
+
+**Evidence:**
+- `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`
+- `docs/v2/14_CHAT_CLAIM_REGISTRY_CORRECTIONS.md`
+
+## V2-D-0015 — Higher-priority evidence corrects classification without destroying history
+
+**Status:** ACCEPTED  
+**Decision:** When a higher-priority source is recovered, the original claim remains preserved. A linked correction record updates the final V2 classification and explains the prior conflict. Silent rewriting of historical evidence is prohibited.
+
+## V2-D-0016 — Missing financial information is not zero
+
+**Status:** ACCEPTED  
+**Decision:** Missing, unresolved or unavailable Kimia financial data remains unavailable. It must not be presented as valid zero. Valid zero, negative balance and unavailable/error are distinct states.
+
+## V2-D-0017 — Transaction aggregation is not Coin/Currency final balance authority
+
+**Status:** ACCEPTED  
+**Decision:** Coin or Currency transaction-history sums cannot become final customer balances. An authoritative Kimia read source must be recovered. Any local projection must be Kimia-derived, timestamped, rebuildable and reconcilable.
+
+## V2-D-0018 — Generated Kimia adapters remain proposals until GitHub proves implementation
+
+**Status:** ACCEPTED  
+**Decision:** Chat-generated classes such as `TransactionAdapter`, `GoldTradeAdapter`, `CoinTradeAdapter`, `CashTradeAdapter`, `ActionMapper` and command/result DTOs remain `CHAT-ONLY PROPOSAL` unless exact files, branch, commit, PR, tests and exact-SHA CI prove otherwise. Existing canonical equivalents must be searched before creation.
+
 ## Pending decisions
 
-| ID | Topic | Why pending |
-|---|---|---|
-| V2-P-0001 | Tenant/Company/Branch model | Requires complete evidence and owner architecture decision |
-| V2-P-0002 | Approved Kimia write gateway | Requires real payload/result ground truth |
-| V2-P-0003 | Pricing/commission/freeze/credit registry | Requires full rule recovery and conflict resolution |
-| V2-P-0004 | Canonical ADR numbering and directory | Requires complete ADR inventory |
-| V2-P-0005 | Canonical Project State document | Requires comparison of duplicate state files |
+| ID | Topic | Why pending | Current evidence link |
+|---|---|---|---|
+| V2-P-0001 | Tenant/Company/Branch model | Requires complete evidence and owner architecture decision | Gap/Drift and Capability Matrix |
+| V2-P-0002 | Approved Kimia write gateway | Requires real payload/result ground truth | `KC-007`, `KC-008`, `KC-012`, `KC-025`, `KC-026`, `KC-029` |
+| V2-P-0003 | Pricing/commission/freeze/credit registry | Requires full rule recovery and conflict resolution | `KC-022`, `KC-023`, `KC-024` plus Project Memory/Domain Workshop |
+| V2-P-0004 | Canonical ADR numbering and directory | Requires complete ADR inventory | Repository evidence ledger |
+| V2-P-0005 | Canonical Project State document | Requires comparison of duplicate state files | Source Index / Gap report |
+| V2-P-0006 | Customer registration and Kimia account lifecycle | Requires evidence for create/link/match/approval/failure behavior | `KC-031` |
+| V2-P-0007 | Default Kimia customer group policy | Requires source recovery and owner decision only after evidence exhaustion | `KC-031` |
+| V2-P-0008 | Custody conversion/resale semantics | Requires owner-confirmed business rule and Kimia impact evidence | Claim Registry owner-decision section |
+| V2-P-0009 | Approved sanitized Kimia evidence set | Requires selecting safe real accounts/transactions without exposing secrets or customer data | Kimia Ground Truth unresolved evidence |
+
+## Decision timing rule
+
+Pending decisions do not stop documentation and repository recovery. They stop only the implementation or activation that depends on them. The owner is not asked to restate existing rules until all available Project Memory, ADR, Domain Workshop, GitHub, Swagger and real-output evidence has been exhausted.
