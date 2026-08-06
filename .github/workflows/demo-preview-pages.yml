@@ -21,12 +21,15 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Validate safe demo contract
         run: |
           test -f demo-preview/index.html
           grep -q 'نسخه نمایشی' demo-preview/index.html
           grep -q 'هیچ عملیات مالی' demo-preview/index.html
+          grep -q 'داشبورد' demo-preview/index.html
+          grep -q 'صف سفارش‌ها' demo-preview/index.html
+          grep -q 'Audit Logs' demo-preview/index.html
           if grep -RInE '94\.101\.184\.26|/api/voucher/|KIMIA_(USERNAME|PASSWORD|TOKEN)|fetch\(|XMLHttpRequest|\$fetch' demo-preview; then
             echo 'Unsafe external or Kimia reference found in demo preview'
             exit 1
@@ -39,7 +42,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
