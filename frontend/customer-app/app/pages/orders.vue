@@ -1,7 +1,8 @@
 <template>
-  <CustomerReadPage
+  <CustomerContractList
+    kind="orders"
     title="سفارش‌ها"
-    description="وضعیت سفارش‌های شما بدون نمایش اصطلاحات داخلی حسابداری نشان داده می‌شود."
+    description="وضعیت سفارش‌های شما با استفاده از قرارداد رسمی Customer API نمایش داده می‌شود."
     endpoint="/orders"
   />
 </template>
