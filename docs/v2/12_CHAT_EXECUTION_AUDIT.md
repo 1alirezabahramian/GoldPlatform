@@ -15,9 +15,9 @@ At the start of this audit:
 - PR: `#195`
 - PR state: `OPEN — DRAFT — NOT MERGED`
 - Base SHA: `cd92a1144bdfbe043bae1871aab9d623ce8bad64`
-- Head before this audit commit: `9973f2f555a28224c06f57f7aa67defca6bd6737`
-- Comparison result: Head was 13 commits ahead of Base and 0 commits behind.
-- Changed files before this audit: 12 files, all under `docs/v2/`.
+- Head before the first audit commit: `9973f2f555a28224c06f57f7aa67defca6bd6737`
+- Comparison result at that checkpoint: Head was 13 commits ahead of Base and 0 commits behind.
+- Changed files before the first audit commit: 12 files, all under `docs/v2/`.
 - Product code, migrations, API, OpenAPI, permissions, frontend behavior and Kimia Write were unchanged by PR #195.
 
 ## 2. Work actually executed and recorded
@@ -82,6 +82,14 @@ Updated the PR #195 body to reflect:
 
 This changed PR metadata only and did not create a Git commit.
 
+### E-07 — Chat execution audit correction
+
+Created:
+
+- `docs/v2/12_CHAT_EXECUTION_AUDIT.md`
+
+This document formally separates GitHub-executed work from chat-only stage descriptions.
+
 ## 3. Exact-SHA CI evidence verified during the chat
 
 - `226acad55620c721d563f81c687b37b6e1b0a47f` — Backend RC1 Validation #331 — `EXECUTED — PASS`
@@ -89,8 +97,9 @@ This changed PR metadata only and did not create a Git commit.
 - `497e0fd7ba87e5a7c3a5593642f76d928a41bedb` — Backend RC1 Validation #338 — `EXECUTED — PASS`
 - `dbcf13062ff30a3b76f0b182e202725ec8596a75` — Backend RC1 Validation #339 — `EXECUTED — PASS`
 - `9973f2f555a28224c06f57f7aa67defca6bd6737` — Backend RC1 Validation #340 — `EXECUTED — PASS`
+- `ccbbb9ead380df90534b85f28e0cf494a6bd1738` — Backend RC1 Validation #341 — `EXECUTED — PASS`
 
-This audit commit creates a new Head. CI for the new exact Head is not yet recorded and must be checked separately.
+This update creates a newer Head. CI for that newer exact Head must be checked separately before any closure claim.
 
 ## 4. Chat-only stages that were not separately executed
 
@@ -110,11 +119,11 @@ Several responses named additional stages such as:
 - Master Knowledge Index
 - Evidence Cross-Validation
 
-These names did not each produce a distinct GitHub commit, file, complete ledger, test execution or CI result. They must therefore be classified as:
+These names did not each produce a distinct GitHub commit, file, complete ledger, test execution or CI result. They are classified as:
 
 `CHAT-ONLY PLANNING / STATUS DESCRIPTION — NOT A SEPARATE EXECUTED STAGE`
 
-They may describe intended work or parts of the existing documents, but they are not independent completed milestones.
+They may describe intended work or portions of existing documents, but they are not independent completed milestones.
 
 ## 5. Claims requiring correction or tighter wording
 
@@ -134,7 +143,7 @@ Still incomplete:
 
 The Business Rule Registry is a foundation, not proof that all rules from every chat, ZIP, Project Memory, database export and real Kimia output have been recovered.
 
-Status must remain:
+Status remains:
 
 `IN PROGRESS — PARTIAL RECOVERY`
 
@@ -144,14 +153,15 @@ The Capability Matrix is an initial inventory. It is not yet a complete Code ↔
 
 ### 5.4 Gate status
 
-The following are supported:
+Supported:
 
 - required V2 documentation set exists;
 - PR #195 is documentation-only;
-- CI passed on several exact historical Heads including `9973f2f...`;
-- architecture boundaries are documented.
+- CI passed on several exact Heads through `ccbbb9ea...`;
+- architecture boundaries are documented;
+- chat-vs-GitHub execution drift is documented.
 
-The following are not yet supported as complete:
+Not yet supported as complete:
 
 - full historical repository evidence closure;
 - full business knowledge recovery;
@@ -161,10 +171,28 @@ The following are not yet supported as complete:
 - V2-00 closure;
 - V2-01 start.
 
-## 6. Correct current status
+## 6. Strict completion rule
 
-- Documentation baseline: `IMPLEMENTED — CI PASSED ON PREVIOUS HEAD`
-- Chat execution audit: `IMPLEMENTED — NOT YET CI-VERIFIED ON NEW HEAD`
+A V2 stage may be marked `VERIFIED — EXECUTED` only when all applicable evidence exists:
+
+1. named scope;
+2. GitHub commit or immutable external evidence;
+3. Branch and exact Head SHA;
+4. PR or explicit reason why no PR applies;
+5. exact changed files;
+6. test status using the approved vocabulary;
+7. exact-SHA CI result when CI is applicable;
+8. documentation update;
+9. remaining gaps and risks;
+10. no contradiction with a higher-priority source.
+
+Missing evidence means the stage must remain `PARTIALLY VERIFIED`, `CHAT ONLY — NOT EXECUTED`, or `BLOCKED`.
+
+## 7. Correct current status
+
+- Documentation baseline: `IMPLEMENTED`
+- CI through audit Head `ccbbb9ea...`: `EXECUTED — PASS`
+- Chat execution audit: `IMPLEMENTED`
 - Repository history audit: `INCOMPLETE`
 - Business knowledge recovery: `INCOMPLETE`
 - Capability traceability closure: `INCOMPLETE`
@@ -172,7 +200,7 @@ The following are not yet supported as complete:
 - V2-01: `NOT STARTED`
 - Production Ready: `NOT CLAIMED`
 
-## 7. Mandatory operating rule after this audit
+## 8. Mandatory operating rule after this audit
 
 Every future “بعدی” must produce at least one of these outcomes:
 
