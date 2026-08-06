@@ -2,7 +2,7 @@
 
 ## Status
 
-Tested — Not Merged
+Merged — Closure Pending
 
 ## Verified gap
 
@@ -27,12 +27,23 @@ This change adds no Kimia Write, pricing rule, action code, transaction code, ba
 
 Internal Ledger and FinancialTransaction records remain audit and reconciliation evidence only.
 
-## Test status
+## Merge evidence
 
-Validation completed on PR #175 head `d8372e4cb92420a60adca66d7a8a6b34a515c6bc` before this documentation-only alignment commit:
+- PR: `#175`
+- PR Head SHA: `be966d979b7e30ed44ce49416bad8fd73df0f16e`
+- Canonical merge commit: `9942c9cc7f0b9908e7d950d4ffdadeb23047e12e`
+- Merged at: `2026-08-05T22:28:28Z`
+
+## Test and CI evidence
+
+Validation was reported on the PR branch before merge:
 
 - Direct completion architecture contract: EXECUTED — PASS
-- Backend RC1 Validation run #287: EXECUTED — PASS
-- Operational Readiness run #2: EXECUTED — PASS
+- Backend RC1 Validation: EXECUTED — PASS
+- Operational Readiness: EXECUTED — PASS
 
-The final PR Head SHA must pass the same gates before merge.
+The GitHub connector currently returns no workflow run or combined-status entries directly attached to canonical merge commit `9942c9cc7f0b9908e7d950d4ffdadeb23047e12e`. Therefore post-merge CI on the merge commit is **NOT CONFIRMED** and Production Ready is not claimed.
+
+## Remaining closure requirement
+
+Run or verify the required release gates on one exact final canonical SHA and record the run identifiers before changing this status to Complete or Production Ready.
