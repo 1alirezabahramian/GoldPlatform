@@ -47,7 +47,9 @@ The V2-00 documentation set currently includes:
 - 45 material claims extracted and classified.
 - Evidence levels, conflicts, final status and V2 action recorded.
 - Lower-priority chat conclusions corrected where higher-priority Runtime Ground Truth existed.
-- Capability Matrix and Implementation Audit now reference the Claim Registry directly.
+- Source Index, Kimia Ground Truth, Gap/Drift, Chat Audit, Capability Matrix and Implementation Audit reference the Claim Registry.
+- Business Rule Registry now traces accepted, blocked, rejected and superseded claims to rule IDs.
+- Decision Log now records the Claim Registry method, correction rule, missing-not-zero rule, Coin/Currency authority rule and chat-generated adapter classification.
 - Chat-generated Adapter classes and guessed Action defaults remain non-implementation evidence.
 - Coin/Currency transaction-sum balance derivation, internal Wallet authority and unavailable-as-zero behavior are rejected or superseded.
 
@@ -58,12 +60,27 @@ Historical confusion between operation/form codes and API Actions has been class
 - Operational/form terminology may use `3 = buy` and `4 = sell`.
 - Swagger/API Actions use `32 = buy` and `64 = sell`.
 - Runtime evidence recorded for AccountId `350` maps customer buy to Kimia sell/API Action `64` and customer sell to Kimia buy/API Action `32`.
-- This evidence does not authorize production Kimia Write.
+- The Business Rule Registry status for this mapping is now `CONFIRMED BY REAL KIMIA OUTPUT — LIMITED TO RECORDED MAPPING` rather than a generic unresolved conflict.
+- This evidence does not authorize production Kimia Write or prove every endpoint/product/environment.
+
+## Decisions separated from continuing recovery
+
+The following remain pending but do not stop evidence recovery:
+
+- Tenant/Company/Branch architecture.
+- Approved Kimia write gateway and endpoint-specific payload/result semantics.
+- Pricing/commission/freeze/credit registry closure.
+- Canonical ADR and Project State consolidation.
+- Customer registration ↔ Kimia account lifecycle and default group policy.
+- Custody conversion/resale semantics.
+- Approved sanitized real Kimia evidence set.
+
+These items block only dependent implementation or activation. They do not require the owner to repeat previously recorded rules while available evidence remains unexhausted.
 
 ## Safety result
 
 - Feature code: unchanged
-- Financial code/rules: unchanged
+- Financial implementation/rules: unchanged; documentation classification only
 - Kimia Write: unchanged and disabled
 - Migration/database: unchanged
 - API/OpenAPI: unchanged
@@ -78,15 +95,19 @@ Historical confusion between operation/form codes and API Actions has been class
 - `795483794f024e03c7f52cd11123fa29150e4adc` — Backend RC1 Validation #350 — `EXECUTED — PASS`
 - `9159392c9461bd3de3a9aa8aea15e8535759d060` — Backend RC1 Validation #351 — `EXECUTED — PASS`
 - `23ac8e32e97e3187875fda6309636b0dbf187027` — Backend RC1 Validation #352 — `EXECUTED — PASS`
+- `68a36cea210508991ffedf715e0d91c35edbf91b` — Backend RC1 Validation #355 — `IN PROGRESS` at the time of this state update.
 
-Later documentation commits created newer Heads and require their own exact-SHA CI verification before closure.
+This state update creates a newer Head and requires its own exact-SHA CI verification before closure.
 
 ## Current Gate status
 
 - Mandatory V2 documents: `PASS`
 - Shared Kimia conversation Claim Registry: `IMPLEMENTED`
 - Claim correction against higher-priority Ground Truth: `IMPLEMENTED`
-- Capability/Implementation traceability connection: `IMPLEMENTED — CI PENDING ON NEWEST HEAD`
+- Capability/Implementation traceability connection: `IMPLEMENTED`
+- Business Rule Registry integration: `IMPLEMENTED`
+- Decision Log integration: `IMPLEMENTED`
+- Exact-SHA CI for latest pre-update Head: `IN PROGRESS`
 - PR merged: `NO`
 - Complete branch inventory: `INCOMPLETE`
 - Complete all-PR evidence ledger: `INCOMPLETE`
@@ -106,4 +127,4 @@ Later documentation commits created newer Heads and require their own exact-SHA 
 
 ## Honest readiness decision
 
-`V2-00` is not yet complete. Documentation and one major conversation-recovery slice are implemented, but repository-history, complete capability traceability and external-environment evidence remain incomplete. `V2-01` must not begin until the readiness gate is explicitly re-evaluated and passed.
+`V2-00` is not yet complete. The shared Kimia conversation is now integrated across source, rules, Ground Truth, decisions, capability, implementation, drift and state documents; repository-history, complete capability traceability and external-environment evidence remain incomplete. `V2-01` must not begin until the readiness gate is explicitly re-evaluated and passed.
