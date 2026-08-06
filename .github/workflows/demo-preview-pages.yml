@@ -22,16 +22,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Validate safe demo contract
+      - name: Validate safe premium customer demo
         run: |
           test -f demo-preview/index.html
-          grep -q 'نسخه نمایشی' demo-preview/index.html
-          grep -q 'هیچ عملیات مالی' demo-preview/index.html
-          grep -q 'داشبورد' demo-preview/index.html
-          grep -q 'صف سفارش‌ها' demo-preview/index.html
-          grep -q 'Audit Logs' demo-preview/index.html
+          grep -q 'نسخه نمایشی حرفه‌ای' demo-preview/index.html
+          grep -q 'واریز و شارژ حساب' demo-preview/index.html
+          grep -q 'درخواست برداشت' demo-preview/index.html
+          grep -q 'انتقال داخلی' demo-preview/index.html
+          grep -q 'ارتباط با ادمین' demo-preview/index.html
+          grep -q 'تحویل و امانات' demo-preview/index.html
+          grep -q 'تاریخچه درخواست‌ها' demo-preview/index.html
+          grep -q 'مانده‌های پول، طلا، سکه و ارز در نسخه واقعی فقط از Kimia خوانده می‌شوند' demo-preview/index.html
           if grep -RInE '94\.101\.184\.26|/api/voucher/|KIMIA_(USERNAME|PASSWORD|TOKEN)|fetch\(|XMLHttpRequest|\$fetch' demo-preview; then
-            echo 'Unsafe external or Kimia reference found in demo preview'
+            echo 'Unsafe external, API or Kimia reference found in demo preview'
             exit 1
           fi
 
