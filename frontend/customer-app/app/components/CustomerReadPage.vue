@@ -10,7 +10,9 @@ const props = defineProps<{
 const { read } = useCustomerApi()
 const state = ref<CustomerApiState<unknown>>({ status: 'loading', data: null, message: null })
 
-onMounted(async () => {
+const load = async () => {
+  state.value = { status: 'loading', data: null, message: null }
+
   try {
     const response: CustomerEnvelope<unknown> = await read<unknown>(props.endpoint)
     const data = response.data
@@ -35,23 +37,64 @@ onMounted(async () => {
       ? { status: 'unavailable', data: null, message: 'این اطلاعات فعلاً از منبع رسمی در دسترس نیست و به‌صورت صفر نمایش داده نمی‌شود.' }
       : { status: 'error', data: null, message: 'دریافت اطلاعات با خطا روبه‌رو شد.' }
   }
-})
+}
+
+onMounted(load)
 </script>
 
 <template>
-  <section>
+  <section class="gp-page" :aria-labelledby="`page-title-${endpoint.replaceAll('/', '-')}`">
     <header class="gp-card gp-page-header">
-      <p class="gp-eyebrow">پنل مشتری</p>
-      <h2>{{ title }}</h2>
-      <p>{{ description }}</p>
+      <div>
+        <p class="gp-eyebrow">پنل مشتری</p>
+        <h2 :id="`page-title-${endpoint.replaceAll('/', '-')}`">{{ title }}</h2>
+        <p class="gp-page-description">{{ description }}</p>
+      </div>
+      <span class="gp-source-badge">منبع رسمی اطلاعات</span>
     </header>
 
-    <div class="gp-card gp-page-state" aria-live="polite">
-      <p v-if="state.status === 'loading'" class="gp-state">در حال دریافت اطلاعات…</p>
-      <p v-else-if="state.status === 'empty'" class="gp-state">{{ state.message }}</p>
-      <p v-else-if="state.status === 'unavailable'" class="gp-state">{{ state.message }}</p>
-      <p v-else-if="state.status === 'error'" class="gp-state">{{ state.message }}</p>
-      <p v-else class="gp-state gp-state-ready">اطلاعات با موفقیت از API رسمی مشتری دریافت شد.</p>
+    <div class="gp-card gp-page-state" aria-live="polite" aria-atomic="true">
+      <template v-if="state.status === 'loading'">
+        <span class="gp-state-icon gp-state-icon-loading" aria-hidden="true" />
+        <div>
+          <h3>در حال دریافت اطلاعات</h3>
+          <p class="gp-state">لطفاً چند لحظه صبر کنید.</p>
+        </div>
+      </template>
+
+      <template v-else-if="state.status === 'empty'">
+        <span class="gp-state-icon" aria-hidden="true">—</span>
+        <div>
+          <h3>هنوز موردی ثبت نشده است</h3>
+          <p class="gp-state">{{ state.message }}</p>
+        </div>
+      </template>
+
+      <template v-else-if="state.status === 'unavailable'">
+        <span class="gp-state-icon gp-state-icon-warning" aria-hidden="true">!</span>
+        <div>
+          <h3>اطلاعات موقتاً در دسترس نیست</h3>
+          <p class="gp-state">{{ state.message }}</p>
+          <button class="gp-button gp-button-secondary" type="button" @click="load">تلاش دوباره</button>
+        </div>
+      </template>
+
+      <template v-else-if="state.status === 'error'">
+        <span class="gp-state-icon gp-state-icon-danger" aria-hidden="true">!</span>
+        <div>
+          <h3>دریافت اطلاعات انجام نشد</h3>
+          <p class="gp-state">{{ state.message }}</p>
+          <button class="gp-button gp-button-secondary" type="button" @click="load">تلاش دوباره</button>
+        </div>
+      </template>
+
+      <template v-else>
+        <span class="gp-state-icon gp-state-icon-success" aria-hidden="true">✓</span>
+        <div>
+          <h3>اطلاعات به‌روز دریافت شد</h3>
+          <p class="gp-state gp-state-ready">اطلاعات با موفقیت از API رسمی مشتری دریافت شد.</p>
+        </div>
+      </template>
     </div>
   </section>
 </template>
