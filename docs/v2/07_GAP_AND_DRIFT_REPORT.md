@@ -97,6 +97,53 @@ Potential duplicate areas requiring comparison before any new implementation:
 - Project State documents
 - Demo shells and executable Frontend shells
 
+## Shared Kimia conversation drift classification
+
+The shared Kimia conversation is now represented by:
+
+- `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`
+- `docs/v2/14_CHAT_CLAIM_REGISTRY_CORRECTIONS.md`
+
+The first registry extracted 45 claims. Higher-priority evidence then corrected several classifications.
+
+### Resolved terminology drift
+
+The historical `3/4` versus `32/64` conflict is not one interchangeable Action table:
+
+- `3/4` are preserved as operational/form terminology in the recovered runtime mapping.
+- `32/64` are Swagger/API Actions.
+- customer buy maps to Kimia sell/API Action `64` in the recorded AccountId `350` evidence;
+- customer sell maps to Kimia buy/API Action `32`.
+
+This resolves terminology only. It does not approve Kimia Write.
+
+### Still blocked
+
+- exact endpoint and request payload for each GoldPlatform write intent;
+- Product/Source/Target identifiers outside the specific recovered evidence;
+- RequestId replay/idempotency semantics;
+- Coin/Currency authoritative balance-read contract;
+- Weight750, pricing, unit, commission and rounding behavior;
+- customer registration and Kimia account lifecycle.
+
+### Rejected or superseded claims
+
+- deriving final Coin/Currency balances from transaction history;
+- using guessed configurable Action defaults;
+- treating local Wallet as final customer balance authority;
+- converting unavailable Kimia balances to zero;
+- logging raw sensitive Kimia payloads;
+- treating schema examples or static demos as real product evidence;
+- using one automatic retry policy for Kimia Read and Write.
+
+## Exact-SHA evidence added during claim recovery
+
+- `e67b109df29188a1a0762681b8feb7394ab4d5bd` — Backend RC1 Validation `#346` — `EXECUTED — PASS`
+- `d86df86ab5ea2bd8639ced0d3087b0acf3575d14` — Backend RC1 Validation `#347` — `EXECUTED — PASS`
+- `795483794f024e03c7f52cd11123fa29150e4adc` — Backend RC1 Validation `#350` — `EXECUTED — PASS`
+
+These CI results validate the documentation changes on those exact SHAs. They do not validate Kimia Write behavior or financial formulas.
+
 ## Immediate safe actions
 
 1. Complete source/PR/branch inventory.
