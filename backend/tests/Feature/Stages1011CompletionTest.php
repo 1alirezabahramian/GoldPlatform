@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\AuditLog;
+use App\Models\CustodyAsset;
 use App\Models\CustomerTradingPolicy;
+use App\Models\DeliveryRequest;
+use App\Models\Order;
 use App\Models\OutboxMessage;
 use App\Models\User;
 use App\Models\UserGroup;
@@ -105,6 +108,61 @@ class Stages1011CompletionTest extends TestCase
         }
     }
 
+    public function test_operator_queue_responses_redact_sensitive_fields(): void
+    {
+        $operator = $this->actingOperator();
+        $customer = User::factory()->create();
+
+        Order::query()->create([
+            'user_id' => $customer->id,
+            'type' => 'buy',
+            'gold_weight' => '1.250',
+            'gold_price' => '1000000',
+            'commission' => '0',
+            'total_price' => '1250000',
+            'description' => 'sensitive-order-description',
+            'status_reason' => 'sensitive-order-reason',
+            'status' => 'pending',
+        ]);
+
+        $custody = CustodyAsset::query()->create([
+            'user_id' => $customer->id,
+            'asset_type' => 'gold',
+            'title' => 'Operator queue test custody',
+            'quantity' => '1.00000000',
+            'weight' => '1.00000000',
+            'fineness' => '750.0000',
+            'branch_code' => 'TEST',
+        ]);
+
+        DeliveryRequest::query()->create([
+            'custody_asset_id' => $custody->id,
+            'user_id' => $customer->id,
+            'branch_code' => 'TEST',
+            'status' => 'requested',
+            'receiver_name' => 'Sensitive Receiver',
+            'receiver_identifier' => 'sensitive-receiver-identifier',
+            'metadata' => ['token' => 'sensitive-delivery-metadata'],
+        ]);
+
+        $orderResponse = $this->getJson('/api/operator/orders/queue')
+            ->assertOk()
+            ->assertJsonPath('data.0.status', 'pending');
+
+        $deliveryResponse = $this->getJson('/api/operator/deliveries/queue')
+            ->assertOk()
+            ->assertJsonPath('data.0.status', 'requested');
+
+        foreach ([$orderResponse, $deliveryResponse] as $response) {
+            $encoded = json_encode($response->json(), JSON_THROW_ON_ERROR);
+            $this->assertStringNotContainsString('sensitive-order-description', $encoded);
+            $this->assertStringNotContainsString('sensitive-order-reason', $encoded);
+            $this->assertStringNotContainsString('Sensitive Receiver', $encoded);
+            $this->assertStringNotContainsString('sensitive-receiver-identifier', $encoded);
+            $this->assertStringNotContainsString('sensitive-delivery-metadata', $encoded);
+        }
+    }
+
     public function test_every_api_response_has_correlation_id(): void
     {
         $this->getJson('/api/user')->assertHeader('X-Request-Id');
@@ -117,6 +175,15 @@ class Stages1011CompletionTest extends TestCase
         $admin->assignRole('admin');
         Sanctum::actingAs($admin);
         return $admin;
+    }
+
+    private function actingOperator(): User
+    {
+        $operator = User::factory()->create();
+        Role::findOrCreate('operator', 'web');
+        $operator->assignRole('operator');
+        Sanctum::actingAs($operator);
+        return $operator;
     }
 
     private function policy(): CustomerTradingPolicy
