@@ -1,0 +1,22 @@
+{
+  "name": "GoldPlatform | مدیریت دارایی",
+  "short_name": "GoldPlatform",
+  "description": "مدیریت ساده و امن دارایی، سفارش، امانات و تحویل",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f6f5f1",
+  "theme_color": "#5f4a14",
+  "categories": ["finance", "business"],
+  "icons": [
+    {
+      "src": "/icons/goldplatform.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
