@@ -16,12 +16,51 @@ class OperatorPanelController extends Controller
 {
     public function orderQueue(): JsonResponse
     {
-        return response()->json(Order::query()->whereIn('status', ['pending','approved','executing','settling'])->oldest('id')->paginate(50));
+        $page = Order::query()
+            ->whereIn('status', ['pending', 'approved', 'executing', 'settling'])
+            ->oldest('id')
+            ->paginate(50);
+
+        $page->through(fn (Order $order): array => [
+            'id' => $order->id,
+            'user_id' => $order->user_id,
+            'type' => $order->type,
+            'asset_type' => $order->asset_type?->value,
+            'asset_quantity' => $order->asset_quantity,
+            'asset_unit' => $order->asset_unit,
+            'status' => $order->status->value,
+            'gold_weight' => $order->gold_weight,
+            'gold_price' => $order->gold_price,
+            'commission' => $order->commission,
+            'total_price' => $order->total_price,
+            'expires_at' => $order->expires_at?->toISOString(),
+            'created_at' => $order->created_at?->toISOString(),
+        ]);
+
+        return response()->json($page);
     }
 
     public function deliveryQueue(): JsonResponse
     {
-        return response()->json(DeliveryRequest::query()->whereIn('status', ['requested','approved','ready'])->oldest('id')->paginate(50));
+        $page = DeliveryRequest::query()
+            ->whereIn('status', ['requested', 'approved', 'ready'])
+            ->oldest('id')
+            ->paginate(50);
+
+        $page->through(fn (DeliveryRequest $delivery): array => [
+            'id' => $delivery->id,
+            'uuid' => $delivery->uuid,
+            'custody_asset_id' => $delivery->custody_asset_id,
+            'user_id' => $delivery->user_id,
+            'branch_code' => $delivery->branch_code,
+            'requested_for' => $delivery->requested_for?->toISOString(),
+            'status' => $delivery->status->value,
+            'approved_at' => $delivery->approved_at?->toISOString(),
+            'ready_at' => $delivery->ready_at?->toISOString(),
+            'created_at' => $delivery->created_at?->toISOString(),
+        ]);
+
+        return response()->json($page);
     }
 
     public function approveDelivery(Request $request, DeliveryRequest $deliveryRequest, DeliveryService $service, AuditService $audit, OutboxService $outbox): JsonResponse
@@ -51,8 +90,8 @@ class OperatorPanelController extends Controller
     public function deliver(Request $request, DeliveryRequest $deliveryRequest, DeliveryService $service, AuditService $audit, OutboxService $outbox): JsonResponse
     {
         $data = $request->validate([
-            'receiver_name' => ['required','string','max:160'],
-            'receiver_identifier' => ['required','string','max:160'],
+            'receiver_name' => ['required', 'string', 'max:160'],
+            'receiver_identifier' => ['required', 'string', 'max:160'],
         ]);
         $result = DB::transaction(function () use ($request, $deliveryRequest, $service, $audit, $outbox, $data) {
             $before = $deliveryRequest->toArray();
