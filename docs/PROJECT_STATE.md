@@ -2,9 +2,10 @@
 
 - Updated: 2026-08-06
 - Canonical recovery branch: `recovery/rc2-product-rebuild`
-- Canonical SHA before Phase 05–08 operationalization: `84cd5d03b427c9d6e3cb58ffa2aaf96f7ce89c4c`
-- Recovery status: **Frontend Recovery Complete — Operationalization In Progress**
-- Open product/recovery PRs before this slice: **0**
+- Canonical Head SHA: `9942c9cc7f0b9908e7d950d4ffdadeb23047e12e`
+- Latest canonical merge: PR `#175` — Direct Settlement Completion Guard
+- Recovery status: **Release Candidate — Final Audit and Closure In Progress**
+- Open product/recovery PRs observed at audit start: **0**
 
 ## Source-of-truth contract
 
@@ -43,6 +44,8 @@ The canonical recovery branch contains:
 14. Customer Frontend Foundation and core read pages.
 15. Admin and Operator Frontend Foundation.
 16. Strict Frontend typecheck, production builds and Chromium E2E validation.
+17. Repository-level Operational Readiness contract.
+18. Direct settlement completion guard requiring verified Kimia result evidence and post-write readback.
 
 ## Frontend recovery closure
 
@@ -62,8 +65,6 @@ Latest Frontend release validation head:
 - Chromium E2E: **EXECUTED — PASS**
 - Backend RC1 Regression: **EXECUTED — PASS**
 
-Canonical merge commit after Frontend recovery: `84cd5d03b427c9d6e3cb58ffa2aaf96f7ce89c4c`.
-
 ## Kimia safety
 
 - Kimia Read and Kimia Write remain separate paths.
@@ -72,41 +73,29 @@ Canonical merge commit after Frontend recovery: `84cd5d03b427c9d6e3cb58ffa2aaf96
 - Application services may not use raw HTTP or Kimia Client directly outside the accepted integration boundary.
 - No sample AccountId, ProductId or transaction identifier may be treated as a permanent hard-coded rule.
 - Money and weight calculations must use exact Decimal or String Decimal; float is prohibited.
+- Direct customer financial settlement completion is blocked unless verified Kimia result evidence and post-write balance readback exist.
 
-## Phase 05–08 operationalization
+## Current CI evidence
 
-Phase 05 — Business workflow closure:
+The declared canonical branch is identical to commit `9942c9cc7f0b9908e7d950d4ffdadeb23047e12e`.
 
-- Verify Order, Quote, Idempotency, Settlement and Reconciliation capabilities against accepted contracts.
-- Do not enable Kimia Write without accepted real ground truth.
+The GitHub connector currently returns no pull-request-triggered workflow runs and no combined status entries directly attached to this merge commit. This does not prove failure, but it means post-merge CI on the exact canonical merge SHA is **NOT CONFIRMED** from the available connector evidence.
 
-Phase 06 — Security and isolation:
-
-- Prove tenant/company/branch isolation, Permission coverage and IDOR protection.
-
-Phase 07 — Runtime integration:
-
-- Validate live authentication, queue, cache, notification, monitoring and controlled Kimia-read unavailability.
-
-Phase 08 — Production closure:
-
-- Validate deployment manifests, backup/restore, migration procedures, rollback and final release gates.
-
-The first operationalization slice adds a repository-level readiness contract and Docker Compose validation. Full details are recorded in `docs/recovery/PHASE-05-08-OPERATIONALIZATION.md`.
+Production Ready is therefore **NOT CLAIMED**.
 
 ## Remaining verified gaps
 
-1. Business workflow closure audit and targeted tests.
-2. Tenant/company/branch isolation and IDOR proof.
-3. Live Frontend authentication and environment integration.
-4. Monitoring and production logging validation.
-5. Backup/restore execution evidence.
-6. Production deployment and rollback validation.
-7. OpenAPI final contract validation.
-8. Final Recovery Closure on one exact green SHA.
-
-Production Ready is **NOT CLAIMED** until these gaps are closed with executed evidence.
+1. Confirm all required release workflows on one exact final canonical SHA.
+2. Complete business workflow closure audit and targeted tests.
+3. Prove tenant/company/branch isolation and IDOR protection.
+4. Validate live Frontend authentication and environment integration.
+5. Validate monitoring and production logging behavior.
+6. Execute and retain backup/restore evidence.
+7. Validate production deployment, migration and rollback procedures.
+8. Run final OpenAPI contract validation.
+9. Publish final Security, Test, Recovery and Release reports.
+10. Create a final Recovery Closure checkpoint only after all mandatory gates are green on the same SHA.
 
 ## Current next step
 
-Run the Operational Readiness workflow on its exact PR Head SHA. If green, merge the additive gate, then continue with the smallest verified Phase 05 business-workflow closure gap. Do not introduce financial rules, Kimia Write behavior or tenant architecture by assumption.
+Run CI for this documentation-alignment PR. After it is green, merge with exact Head SHA protection. Then select the smallest verified security/isolation or release-evidence gap; do not introduce financial rules, Kimia Write behavior or tenant architecture by assumption.
