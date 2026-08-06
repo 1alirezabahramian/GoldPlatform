@@ -163,6 +163,60 @@ class Stages1011CompletionTest extends TestCase
         }
     }
 
+    public function test_operator_delivery_action_responses_redact_receiver_identity_and_metadata(): void
+    {
+        $operator = $this->actingOperator();
+        $customer = User::factory()->create();
+
+        $custody = CustodyAsset::query()->create([
+            'user_id' => $customer->id,
+            'asset_type' => 'gold',
+            'title' => 'Operator action response test custody',
+            'quantity' => '1.00000000',
+            'weight' => '1.00000000',
+            'fineness' => '750.0000',
+            'branch_code' => 'TEST',
+        ]);
+
+        $delivery = DeliveryRequest::query()->create([
+            'custody_asset_id' => $custody->id,
+            'user_id' => $customer->id,
+            'branch_code' => 'TEST',
+            'status' => 'requested',
+            'metadata' => ['token' => 'sensitive-action-metadata'],
+        ]);
+
+        $approveResponse = $this->postJson(
+            "/api/operator/deliveries/{$delivery->id}/approve",
+            [],
+            ['Idempotency-Key' => 'operator-action-approve-1'],
+        )->assertOk()->assertJsonPath('status', 'approved');
+
+        $readyResponse = $this->postJson(
+            "/api/operator/deliveries/{$delivery->id}/ready",
+            [],
+            ['Idempotency-Key' => 'operator-action-ready-1'],
+        )->assertOk()->assertJsonPath('status', 'ready');
+
+        $deliverResponse = $this->postJson(
+            "/api/operator/deliveries/{$delivery->id}/deliver",
+            [
+                'receiver_name' => 'Sensitive Action Receiver',
+                'receiver_identifier' => 'sensitive-action-identifier',
+            ],
+            ['Idempotency-Key' => 'operator-action-deliver-1'],
+        )->assertOk()->assertJsonPath('status', 'delivered');
+
+        foreach ([$approveResponse, $readyResponse, $deliverResponse] as $response) {
+            $encoded = json_encode($response->json(), JSON_THROW_ON_ERROR);
+            $this->assertStringNotContainsString('Sensitive Action Receiver', $encoded);
+            $this->assertStringNotContainsString('sensitive-action-identifier', $encoded);
+            $this->assertStringNotContainsString('sensitive-action-metadata', $encoded);
+        }
+
+        $this->assertSame('delivered', $delivery->refresh()->status->value);
+    }
+
     public function test_every_api_response_has_correlation_id(): void
     {
         $this->getJson('/api/user')->assertHeader('X-Request-Id');
