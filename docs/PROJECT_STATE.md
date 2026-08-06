@@ -2,10 +2,9 @@
 
 - Updated: 2026-08-06
 - Canonical recovery branch: `recovery/rc2-product-rebuild`
-- Canonical Head SHA: `9942c9cc7f0b9908e7d950d4ffdadeb23047e12e`
-- Latest canonical merge: PR `#175` — Direct Settlement Completion Guard
+- Canonical Head SHA: `fe0aad5c4920a650da2d9ba0755ab7883e5bf4a2`
+- Latest canonical merge: PR `#181` — Operator Permission Gates
 - Recovery status: **Release Candidate — Final Audit and Closure In Progress**
-- Open product/recovery PRs observed at audit start: **0**
 
 ## Source-of-truth contract
 
@@ -46,24 +45,41 @@ The canonical recovery branch contains:
 16. Strict Frontend typecheck, production builds and Chromium E2E validation.
 17. Repository-level Operational Readiness contract.
 18. Direct settlement completion guard requiring verified Kimia result evidence and post-write readback.
+19. Customer order and delivery list owner-isolation regression proof.
+20. Admin observability response redaction.
+21. Operator queue response redaction.
+22. Operator delivery action response redaction.
+23. Explicit per-action operator permission gates with additive rollout compatibility.
 
-## Frontend recovery closure
+## Recent canonical security and closure merges
 
-Merged and validated:
+- PR `#176` — Final audit documentation alignment.
+- PR `#177` — Customer order/delivery list IDOR isolation proof.
+- PR `#178` — Admin observability payload redaction.
+- PR `#179` — Operator queue response redaction.
+- PR `#180` — Operator delivery action response redaction.
+- PR `#181` — Explicit operator permission gates.
 
-- PR `#170` — Customer Frontend Foundation.
-- PR `#171` — Customer core read pages.
-- PR `#172` — Admin and Operator Frontend Foundation.
-- PR `#173` — Combined Frontend Release Validation.
+## Latest validated CI evidence
 
-Latest Frontend release validation head:
+PR `#181` was validated on exact Head SHA:
 
-- Head SHA: `ddfdf572bbacdaa701b8f158e7d6145491555ca7`
-- Customer Frontend: **EXECUTED — PASS**
-- Admin Operator Frontend: **EXECUTED — PASS**
-- Frontend Release Validation: **EXECUTED — PASS**
-- Chromium E2E: **EXECUTED — PASS**
-- Backend RC1 Regression: **EXECUTED — PASS**
+- Head SHA: `016d6f878e69e425badce36d92799949b87fd180`
+- Operational Readiness #11: **EXECUTED — PASS**
+- Backend RC1 Validation #302: **EXECUTED — PASS**
+- Migration fresh: **PASS**
+- Unit tests: **PASS**
+- Feature tests: **PASS**
+- Permission tests: **PASS**
+- Full regression: **PASS**
+
+Canonical merge SHA after PR `#181`:
+
+- `fe0aad5c4920a650da2d9ba0755ab7883e5bf4a2`
+
+The available connector confirms the merge commit and the pre-merge exact-Head CI evidence. A separate push-triggered post-merge workflow result attached directly to this merge SHA is not claimed unless independently observed.
+
+Production Ready is therefore **NOT CLAIMED**.
 
 ## Kimia safety
 
@@ -75,27 +91,17 @@ Latest Frontend release validation head:
 - Money and weight calculations must use exact Decimal or String Decimal; float is prohibited.
 - Direct customer financial settlement completion is blocked unless verified Kimia result evidence and post-write balance readback exist.
 
-## Current CI evidence
-
-The declared canonical branch is identical to commit `9942c9cc7f0b9908e7d950d4ffdadeb23047e12e`.
-
-The GitHub connector currently returns no pull-request-triggered workflow runs and no combined status entries directly attached to this merge commit. This does not prove failure, but it means post-merge CI on the exact canonical merge SHA is **NOT CONFIRMED** from the available connector evidence.
-
-Production Ready is therefore **NOT CLAIMED**.
-
 ## Remaining verified gaps
 
-1. Confirm all required release workflows on one exact final canonical SHA.
-2. Complete business workflow closure audit and targeted tests.
-3. Prove tenant/company/branch isolation and IDOR protection.
-4. Validate live Frontend authentication and environment integration.
-5. Validate monitoring and production logging behavior.
-6. Execute and retain backup/restore evidence.
-7. Validate production deployment, migration and rollback procedures.
-8. Run final OpenAPI contract validation.
-9. Publish final Security, Test, Recovery and Release reports.
-10. Create a final Recovery Closure checkpoint only after all mandatory gates are green on the same SHA.
+1. Prove tenant/company/branch isolation after accepted architecture ground truth exists.
+2. Validate live Frontend authentication and environment integration.
+3. Validate monitoring and production logging behavior.
+4. Execute and retain backup/restore evidence.
+5. Validate production deployment, migration and rollback procedures.
+6. Run final OpenAPI contract validation.
+7. Publish final Security, Test, Recovery and Release reports.
+8. Create a final Recovery Closure checkpoint only after all mandatory gates are green on the same SHA.
 
 ## Current next step
 
-Run CI for this documentation-alignment PR. After it is green, merge with exact Head SHA protection. Then select the smallest verified security/isolation or release-evidence gap; do not introduce financial rules, Kimia Write behavior or tenant architecture by assumption.
+Validate and merge this documentation-alignment change on its exact Head SHA. Then continue with the smallest verified release-evidence or security gap that does not require guessing financial rules, Kimia Write behavior, tenant architecture, company scope or branch scope.
