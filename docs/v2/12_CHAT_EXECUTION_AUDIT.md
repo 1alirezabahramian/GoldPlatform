@@ -90,6 +90,32 @@ Created:
 
 This document formally separates GitHub-executed work from chat-only stage descriptions.
 
+### E-08 — Shared Kimia conversation Claim Registry
+
+Created:
+
+- `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`
+
+The registry extracted 45 material claims from the preserved shared conversation and assigned source, evidence level, conflict/uncertainty, final classification and V2 action. It did not treat chat text as implementation or Kimia Ground Truth.
+
+The registry was linked from:
+
+- `docs/v2/00_SOURCE_INDEX.md`
+
+### E-09 — Higher-priority Kimia evidence correction
+
+Created:
+
+- `docs/v2/14_CHAT_CLAIM_REGISTRY_CORRECTIONS.md`
+
+This correction applies the existing higher-priority runtime evidence already recorded in `03_KIMIA_GROUND_TRUTH.md`:
+
+- the apparent `3/4` versus `32/64` conflict is resolved for the inspected Paper Gold read scenario by separating operational/form codes from Swagger API Actions;
+- customer buy maps to Kimia sell/API Action `64`;
+- customer sell maps to Kimia buy/API Action `32`;
+- Money product code `4` is runtime-confirmed for the recorded mapping;
+- Kimia Write remains blocked and no identifier is added to executable behavior.
+
 ## 3. Exact-SHA CI evidence verified during the chat
 
 - `226acad55620c721d563f81c687b37b6e1b0a47f` — Backend RC1 Validation #331 — `EXECUTED — PASS`
@@ -98,8 +124,10 @@ This document formally separates GitHub-executed work from chat-only stage descr
 - `dbcf13062ff30a3b76f0b182e202725ec8596a75` — Backend RC1 Validation #339 — `EXECUTED — PASS`
 - `9973f2f555a28224c06f57f7aa67defca6bd6737` — Backend RC1 Validation #340 — `EXECUTED — PASS`
 - `ccbbb9ead380df90534b85f28e0cf494a6bd1738` — Backend RC1 Validation #341 — `EXECUTED — PASS`
+- `e67b109df29188a1a0762681b8feb7394ab4d5bd` — Backend RC1 Validation #346 — `EXECUTED — PASS`
+- `d86df86ab5ea2bd8639ced0d3087b0acf3575d14` — Backend RC1 Validation #347 — `EXECUTED — PASS`
 
-This update creates a newer Head. CI for that newer exact Head must be checked separately before any closure claim.
+Any newer documentation commit creates a newer exact Head and requires its own CI verification before closure.
 
 ## 4. Chat-only stages that were not separately executed
 
@@ -141,7 +169,7 @@ Still incomplete:
 
 ### 5.2 Business-rule completeness
 
-The Business Rule Registry is a foundation, not proof that all rules from every chat, ZIP, Project Memory, database export and real Kimia output have been recovered.
+The Business Rule Registry and chat Claim Registry are foundations, not proof that all rules from every chat, ZIP, Project Memory, database export and real Kimia output have been recovered.
 
 Status remains:
 
@@ -151,15 +179,20 @@ Status remains:
 
 The Capability Matrix is an initial inventory. It is not yet a complete Code ↔ Rule ↔ PR ↔ SHA ↔ CI ledger.
 
-### 5.4 Gate status
+### 5.4 Chat claim correction rule
+
+A chat claim classified conservatively must be corrected when higher-priority evidence already exists. The historical chat source remains preserved, but its classification may not override sanitized runtime evidence or the canonical Kimia Ground Truth document.
+
+### 5.5 Gate status
 
 Supported:
 
 - required V2 documentation set exists;
 - PR #195 is documentation-only;
-- CI passed on several exact Heads through `ccbbb9ea...`;
+- CI passed on several exact Heads through `d86df86a...`;
 - architecture boundaries are documented;
-- chat-vs-GitHub execution drift is documented.
+- chat-vs-GitHub execution drift is documented;
+- the shared Kimia conversation has a formal Claim Registry and higher-priority evidence correction.
 
 Not yet supported as complete:
 
@@ -191,7 +224,9 @@ Missing evidence means the stage must remain `PARTIALLY VERIFIED`, `CHAT ONLY �
 ## 7. Correct current status
 
 - Documentation baseline: `IMPLEMENTED`
-- CI through audit Head `ccbbb9ea...`: `EXECUTED — PASS`
+- CI through Claim Registry linkage Head `d86df86a...`: `EXECUTED — PASS`
+- Shared Kimia chat Claim Registry: `IMPLEMENTED`
+- Claim Registry higher-priority correction: `IMPLEMENTED — CI PENDING ON NEWER HEAD`
 - Chat execution audit: `IMPLEMENTED`
 - Repository history audit: `INCOMPLETE`
 - Business knowledge recovery: `INCOMPLETE`
@@ -202,7 +237,7 @@ Missing evidence means the stage must remain `PARTIALLY VERIFIED`, `CHAT ONLY �
 
 ## 8. Mandatory operating rule after this audit
 
-Every future “بعدی” must produce at least one of these outcomes:
+Every future “بعدی” or `V2GO` must produce at least one of these outcomes:
 
 1. a verified GitHub read with concrete new evidence;
 2. a GitHub commit or PR metadata change;
