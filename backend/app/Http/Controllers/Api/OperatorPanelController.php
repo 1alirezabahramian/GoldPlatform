@@ -72,7 +72,8 @@ class OperatorPanelController extends Controller
             $outbox->enqueue('delivery.approved', ['delivery_id' => $delivery->id], $delivery);
             return $delivery;
         });
-        return response()->json($result);
+
+        return response()->json($this->presentDeliveryAction($result));
     }
 
     public function markDeliveryReady(Request $request, DeliveryRequest $deliveryRequest, DeliveryService $service, AuditService $audit, OutboxService $outbox): JsonResponse
@@ -84,7 +85,8 @@ class OperatorPanelController extends Controller
             $outbox->enqueue('delivery.ready', ['delivery_id' => $delivery->id], $delivery);
             return $delivery;
         });
-        return response()->json($result);
+
+        return response()->json($this->presentDeliveryAction($result));
     }
 
     public function deliver(Request $request, DeliveryRequest $deliveryRequest, DeliveryService $service, AuditService $audit, OutboxService $outbox): JsonResponse
@@ -100,6 +102,23 @@ class OperatorPanelController extends Controller
             $outbox->enqueue('delivery.delivered', ['delivery_id' => $delivery->id], $delivery);
             return $delivery;
         });
-        return response()->json($result);
+
+        return response()->json($this->presentDeliveryAction($result));
+    }
+
+    private function presentDeliveryAction(DeliveryRequest $delivery): array
+    {
+        return [
+            'id' => $delivery->id,
+            'uuid' => $delivery->uuid,
+            'custody_asset_id' => $delivery->custody_asset_id,
+            'user_id' => $delivery->user_id,
+            'branch_code' => $delivery->branch_code,
+            'status' => $delivery->status->value,
+            'approved_at' => $delivery->approved_at?->toISOString(),
+            'ready_at' => $delivery->ready_at?->toISOString(),
+            'delivered_at' => $delivery->delivered_at?->toISOString(),
+            'updated_at' => $delivery->updated_at?->toISOString(),
+        ];
     }
 }
