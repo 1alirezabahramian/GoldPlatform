@@ -104,6 +104,30 @@ Status: REUSE AFTER FIX
 
 Recovered evidence distinguishes operational/form concepts from API Action values. Endpoint-specific mappings must remain centralized and traceable. No universal guessed Action constant is allowed.
 
+Recorded distinction for the inspected AccountId `350` evidence:
+
+- customer buy → Kimia sell → operational/form code `4` → API Action `64`
+- customer sell → Kimia buy → operational/form code `3` → API Action `32`
+
+This resolves terminology for the observed path only. It does not authorize any Kimia Write implementation.
+
+### Shared Kimia conversation claims
+Status: CLASSIFIED — NOT IMPLEMENTATION EVIDENCE
+
+Source `SRC-V2-0006` was converted into:
+
+- `docs/v2/13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`
+- `docs/v2/14_CHAT_CLAIM_REGISTRY_CORRECTIONS.md`
+
+Implementation conclusions:
+
+- Accepted architecture claims were reused only where supported by owner rules, Project Memory or GitHub.
+- Transaction-history derivation of Coin/Currency balances was rejected.
+- Internal Wallet authority and unavailable-as-zero behavior were superseded/rejected.
+- Generated `TransactionAdapter`, `GoldTradeAdapter`, `CoinTradeAdapter`, `CashTradeAdapter` and guessed Action defaults remain `CHAT-ONLY PROPOSAL` or `UNSUPPORTED — REJECT`.
+- `ProductId = 4` and the operational/API code distinction are accepted only for the recorded runtime mapping; they are not generic write authorization.
+- RequestId runtime semantics, exchange endpoint mapping, pricing, Weight750, unit behavior and error/retry safety remain blocked.
+
 ## 5. Customer platform audit
 
 ### Authentication and OTP
@@ -173,7 +197,7 @@ A complete immutable quote contract and accepted expiry/freeze relationship requ
 ### Buy and Sell
 Status: BLOCKED BY GROUND TRUTH
 
-Order/trade/ledger foundations exist historically, but final Kimia Write, pricing, credit and settlement evidence is incomplete.
+Order/trade/ledger foundations exist historically, but final Kimia Write, pricing, credit and settlement evidence is incomplete. The recovered `3/4` versus `32/64` distinction is terminology evidence, not an executable contract.
 
 ### Conversion
 Status: BLOCKED BY GROUND TRUTH
@@ -325,12 +349,17 @@ No duplicate is to be deleted during V2-00. Each must be preserved, compared and
 
 ## 11. Test and CI audit
 
-Verified V2 documentation evidence:
-- PR #195 Head `6d5bc28e6381d2a947bf1ee0c534259a26c72be4`
-- Backend RC1 Validation run #335
-- Status: EXECUTED — PASS
+Verified Claim Registry recovery evidence:
 
-This verifies the prior documentation head only. New documentation commits require fresh exact-SHA CI evidence.
+- `e67b109df29188a1a0762681b8feb7394ab4d5bd` — Backend RC1 Validation #346 — `EXECUTED — PASS`
+- `d86df86ab5ea2bd8639ced0d3087b0acf3575d14` — Backend RC1 Validation #347 — `EXECUTED — PASS`
+- `795483794f024e03c7f52cd11123fa29150e4adc` — Backend RC1 Validation #350 — `EXECUTED — PASS`
+- `9159392c9461bd3de3a9aa8aea15e8535759d060` — Backend RC1 Validation #351 — `EXECUTED — PASS`
+- `23ac8e32e97e3187875fda6309636b0dbf187027` — Backend RC1 Validation #352 — `EXECUTED — PASS`
+
+These runs validate documentation and regression safety on their exact Heads. They do not prove Kimia Write behavior or close capability-level traceability.
+
+This update creates a newer Head and requires fresh exact-SHA CI evidence.
 
 Historic CI claims must be connected to their exact PR Head SHA or merge SHA. A merged PR without exact-SHA evidence is not automatically complete.
 
