@@ -176,6 +176,7 @@ class Stages1011CompletionTest extends TestCase
             'weight' => '1.00000000',
             'fineness' => '750.0000',
             'branch_code' => 'TEST',
+            'status' => 'delivery_requested',
         ]);
 
         $delivery = DeliveryRequest::query()->create([
