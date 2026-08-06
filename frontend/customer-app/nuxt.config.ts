@@ -6,9 +6,19 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'fa', dir: 'rtl' },
       titleTemplate: '%s | GoldPlatform',
+      link: [
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'icon', href: '/icons/goldplatform.svg', type: 'image/svg+xml' },
+        { rel: 'apple-touch-icon', href: '/icons/goldplatform.svg' }
+      ],
       meta: [
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'color-scheme', content: 'light' }
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+        { name: 'color-scheme', content: 'light' },
+        { name: 'theme-color', content: '#5f4a14' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+        { name: 'apple-mobile-web-app-title', content: 'GoldPlatform' }
       ]
     }
   },
