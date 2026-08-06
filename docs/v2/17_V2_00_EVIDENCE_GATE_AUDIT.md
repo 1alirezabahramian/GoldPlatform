@@ -11,44 +11,21 @@
 
 ## 1. Purpose
 
-This document evaluates the actual V2-00 exit gate. Documentation existence, a merged historical PR, or green CI on an earlier Head does not close the stage.
+This document evaluates the actual V2-00 exit gate. It does not close the stage merely because documentation exists or CI passed on earlier documentation Heads.
 
-## 2. Current verified GitHub slice
+## 2. Current verified V2 evidence
 
-The latest completed repository slice is recorded in `docs/v2/18_REPOSITORY_EVIDENCE_SLICE_02.md`.
+- PR #195 remains `OPEN — DRAFT — NOT MERGED`.
+- Base is `recovery/rc2-product-rebuild` at `cd92a1144bdfbe043bae1871aab9d623ce8bad64`.
+- All inspected V2 changes remain documentation-only under `docs/v2/`.
+- No feature code, migration, API, OpenAPI, permission, frontend behavior or Kimia Write path is changed.
+- V2 documentation CI is verified through Head `b416cc06bf90076306ffbe2c082d38d8c53820b1`, Backend RC1 Validation Run #367 — `EXECUTED — PASS`.
 
-At inspected Head `8250090ea3cf48cee43d2ca0bf434c3a88e4c619`:
+## 3. Document inventory and namespace
 
-- Branch comparison: `36 ahead / 0 behind`
-- Merge base: exact declared Base SHA
-- Changed files: `20`
-- All changed paths: `docs/v2/*.md`
-- PR #195: `OPEN — DRAFT — NOT MERGED`
-- PR mergeable at inspection: `YES`
-- Exact-SHA CI: Backend RC1 Validation `#363` — `EXECUTED — PASS`
+The current V2 evidence set includes the baseline documents plus strict restart, source recovery, namespace, gate, repository, PR metadata and PR CI slices.
 
-Classification: `DOCUMENTATION-ONLY RECOVERY WORK`.
-
-No Feature, Migration, Database, API, OpenAPI, Permission, Frontend, financial implementation or Kimia Write path changed.
-
-## 3. Current document inventory
-
-The V2 evidence namespace now includes 21 distinct Markdown files, from the baseline documents through:
-
-- `13_RULE_CAPABILITY_EVIDENCE_AUDIT.md`
-- `13_CHAT_CLAIM_REGISTRY_SHARED_KIMIA_CONVERSATION.md`
-- `14_V2_00_RESTART_BASELINE.md`
-- `14_CHAT_CLAIM_REGISTRY_CORRECTIONS.md`
-- `15_SOURCE_RECOVERY_SLICE_01.md`
-- `16_DOCUMENT_NAMESPACE_AUDIT.md`
-- `17_V2_00_EVIDENCE_GATE_AUDIT.md`
-- `18_REPOSITORY_EVIDENCE_SLICE_02.md`
-
-Full filenames, not numeric prefixes alone, are mandatory in references.
-
-## 4. Namespace result
-
-Duplicate numeric prefixes exist for `13` and `14`.
+Duplicate numeric prefixes remain for two `13` files and two `14` files.
 
 - Duplicate content: `NOT ESTABLISHED`
 - Duplicate numbering: `CONFIRMED`
@@ -56,30 +33,40 @@ Duplicate numeric prefixes exist for `13` and `14`.
 - Current action: preserve all files and use full filenames
 - Rename/delete/renumber: `NOT PERFORMED`
 
-This drift does not block evidence recovery, but it prevents claiming a normalized canonical document namespace unless a documented carry-forward or normalization decision is made.
+## 4. Claim Registry result
 
-## 5. Claim Registry integration result
+The shared Kimia conversation is classified through `CR-CHAT-KIMIA-0001` and a separate correction ledger.
 
-The shared Kimia conversation is classified through `CR-CHAT-KIMIA-0001` rather than copied as truth.
-
-- Material claims classified: `45`
-- Source, Evidence Level, Conflict/Unknown, final classification and V2 action: recorded
+- Material claims classified: 45
+- Source/Evidence/Conflict/Final status/V2 action: recorded
 - Higher-priority runtime corrections: recorded separately
-- Business Rules, Kimia Ground Truth, Capability Matrix, Implementation Audit, Gap/Drift, Decision Log, Chat Audit and Project State: connected
+- Rules, Kimia Ground Truth, Capability Matrix, Implementation Audit, Gap/Drift, Decision Log, Chat Audit and Project State: connected
+- Unsupported Coin/Currency transaction-sum balances, missing-as-zero behavior, guessed Action defaults and chat-generated adapters as implementation: rejected
+- Kimia Write: remains deny-by-default
 
-Unsupported outcomes remain rejected, including transaction-sum Coin/Currency balances, missing-as-zero behavior, guessed Action defaults and chat-generated adapters presented as implementation.
+## 5. Repository and PR evidence progress
 
-## 6. Exact-SHA CI evidence
+### Current V2 PR slice
 
-Verified documentation checkpoints now include Backend RC1 Validation Runs:
+`docs/v2/18_REPOSITORY_EVIDENCE_SLICE_02.md` verifies the inspected Base/Head/PR comparison and documentation-only scope.
 
-- `#346`, `#347`, `#350`, `#351`, `#352`, `#355`, `#358`, `#359`, `#360`, `#363` — `EXECUTED — PASS`
+### Five key Recovery PR metadata slice
 
-The exact mapping is retained in `docs/v2/11_REPOSITORY_EVIDENCE_LEDGER.md`.
+`docs/v2/19_RECOVERY_PR_EVIDENCE_SLICE_03.md` records exact Base SHA, Head SHA, Merge SHA, state and scope for PRs #149, #150, #153, #175 and #186.
 
-Every newer documentation commit creates a new Head and requires its own exact-SHA CI result.
+### Five key Recovery PR exact-Head CI slice
 
-## 7. Exit-gate evaluation
+`docs/v2/20_RECOVERY_PR_CI_MAPPING_SLICE_04.md` verifies exact-Head CI:
+
+- PR #149 — Backend RC2 Candidate #69 and Backend RC1 Validation #217 — `EXECUTED — PASS`
+- PR #150 — Backend RC2 Candidate #49 — `EXECUTED — PASS`
+- PR #153 — Backend RC1 Validation #224 — `EXECUTED — PASS`
+- PR #175 — Backend RC1 Validation #288 and Operational Readiness #3 — `EXECUTED — PASS`
+- PR #186 — Backend RC1 Validation #313, Customer Frontend #15, Frontend Release Validation #12 and Operational Readiness #17 — `EXECUTED — PASS`
+
+This closes exact-Head CI mapping for those five PRs only. It does not establish current canonical code equivalence or complete capability closure.
+
+## 6. Exit-gate evaluation
 
 | Gate | Result |
 |---|---|
@@ -88,33 +75,37 @@ Every newer documentation commit creates a new Head and requires its own exact-S
 | Architecture boundaries documented | `PASS` |
 | No runtime/financial/Kimia Write change | `PASS` |
 | Current Branch/Base/PR identified | `PASS` |
-| Current inspected Head CI | `PASS — RUN #363` |
-| Final V2-00 Head CI | `PENDING UNTIL FINAL HEAD EXISTS` |
+| Current inspected V2 documentation CI | `PASS — THROUGH RUN #367` |
+| Five key Recovery PR metadata mappings | `PASS` |
+| Five key Recovery PR exact-Head CI mappings | `PASS` |
+| Exact CI on final V2-00 Head | `PENDING — HEAD CONTINUES TO MOVE` |
 | Document namespace canonical and unambiguous | `FAIL — DUPLICATE NUMBERING` |
 | Full branch Head SHA ledger | `INCOMPLETE` |
 | Full PR Base/Head/Merge SHA/CI ledger | `INCOMPLETE` |
+| Current canonical code equivalence for mapped PRs | `INCOMPLETE` |
 | Complete Capability → Rule → File → PR → SHA → CI traceability | `INCOMPLETE` |
 | Broader sanitized Kimia evidence | `INCOMPLETE` |
 | Database/applied migration/export evidence | `INCOMPLETE` |
 | Real frontend visual verification | `INCOMPLETE` |
 | Production environment/restore/monitoring evidence | `INCOMPLETE` |
 
-## 8. Gate decision
+## 7. Gate decision
 
 `V2-00 — GATE NOT PASSED`
 
-Primary reasons:
+Reasons:
 
-1. full branch and PR immutable evidence ledgers remain incomplete;
-2. capability traceability remains partial;
-3. external/runtime evidence remains incomplete;
-4. document namespace remains non-canonical or lacks a formal carry-forward decision;
-5. a final V2-00 Head has not yet been declared and verified.
+1. final exact-Head CI is not yet available because documentation recovery continues;
+2. namespace duplication remains unresolved or lacks a formal carry-forward decision;
+3. full branch and PR exact-SHA ledgers remain incomplete;
+4. mapped PRs are not yet verified against current canonical code for continued equivalence;
+5. complete capability traceability and external/runtime evidence remain incomplete.
 
-## 9. Safety and next action
+## 8. Safety and next action
 
 - V2-01 remains `NOT STARTED`.
 - No destructive normalization is authorized.
-- Continue bounded V2-00 evidence slices.
+- Continue bounded Recovery PR and branch evidence slices.
+- Verify current canonical code equivalence separately from historical PR CI.
+- Use full filenames in all references.
 - Do not enable Kimia Write or infer missing financial rules.
-- Re-evaluate only after the remaining evidence gates materially improve and the final Head is explicitly identified.
