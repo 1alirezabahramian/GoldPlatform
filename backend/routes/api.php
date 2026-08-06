@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\CustomerDashboardController;
 use App\Http\Controllers\Api\V1\CustomerOrderStatusController;
 use App\Http\Controllers\Api\V1\CustomerProfileController;
 use App\Http\Controllers\Api\V1\CustomerReadController;
+use App\Support\OperatorPermissionCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -56,15 +57,19 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'throttle:operator'])
-    ->prefix('operator')->middleware('role:operator|admin')->group(function () {
-        Route::get('/orders/queue', [OperatorPanelController::class, 'orderQueue']);
-        Route::get('/deliveries/queue', [OperatorPanelController::class, 'deliveryQueue']);
+    ->prefix('operator')
+    ->middleware(['role:operator|admin', 'permission:'.OperatorPermissionCatalog::OPERATOR_ACCESS])
+    ->group(function () {
+        Route::get('/orders/queue', [OperatorPanelController::class, 'orderQueue'])
+            ->middleware('permission:'.OperatorPermissionCatalog::ORDERS_QUEUE_VIEW);
+        Route::get('/deliveries/queue', [OperatorPanelController::class, 'deliveryQueue'])
+            ->middleware('permission:'.OperatorPermissionCatalog::DELIVERIES_QUEUE_VIEW);
         Route::post('/deliveries/{deliveryRequest}/approve', [OperatorPanelController::class, 'approveDelivery'])
-            ->middleware('idempotency:delivery.approve');
+            ->middleware(['permission:'.OperatorPermissionCatalog::DELIVERIES_APPROVE, 'idempotency:delivery.approve']);
         Route::post('/deliveries/{deliveryRequest}/ready', [OperatorPanelController::class, 'markDeliveryReady'])
-            ->middleware('idempotency:delivery.ready');
+            ->middleware(['permission:'.OperatorPermissionCatalog::DELIVERIES_READY, 'idempotency:delivery.ready']);
         Route::post('/deliveries/{deliveryRequest}/deliver', [OperatorPanelController::class, 'deliver'])
-            ->middleware('idempotency:delivery.deliver');
+            ->middleware(['permission:'.OperatorPermissionCatalog::DELIVERIES_COMPLETE, 'idempotency:delivery.deliver']);
     });
 
 Route::middleware(['auth:sanctum', 'throttle:admin'])
