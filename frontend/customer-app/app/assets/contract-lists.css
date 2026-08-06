@@ -1,0 +1,17 @@
+.gp-contract-grid { display: grid; gap: var(--gp-space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+.gp-contract-card { display: grid; gap: var(--gp-space-4); }
+.gp-contract-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--gp-space-3); }
+.gp-contract-head h3 { margin: var(--gp-space-1) 0 0; font-size: var(--gp-font-size-lg); }
+.gp-status-badge { display: inline-flex; align-items: center; min-height: 2rem; padding-inline: var(--gp-space-3); border: 1px solid var(--gp-border); border-radius: var(--gp-radius-pill); background: var(--gp-surface-subtle); color: var(--gp-text); font-size: var(--gp-font-size-sm); white-space: nowrap; }
+.gp-data-list { display: grid; gap: var(--gp-space-3); margin: 0; }
+.gp-data-list > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gp-space-3); padding-block-end: var(--gp-space-2); border-bottom: 1px solid var(--gp-border); }
+.gp-data-list > div:last-child { padding-block-end: 0; border-bottom: 0; }
+.gp-data-list dt { color: var(--gp-text-muted); font-size: var(--gp-font-size-sm); }
+.gp-data-list dd { margin: 0; font-weight: 700; text-align: end; overflow-wrap: anywhere; }
+.gp-inline-note { margin: 0; padding: var(--gp-space-3); border-radius: var(--gp-radius-md); background: var(--gp-warning-soft); color: var(--gp-warning); font-size: var(--gp-font-size-sm); }
+@media (max-width: 30rem) {
+  .gp-contract-head { align-items: stretch; flex-direction: column; }
+  .gp-status-badge { align-self: flex-start; }
+  .gp-data-list > div { align-items: flex-start; flex-direction: column; gap: var(--gp-space-1); }
+  .gp-data-list dd { text-align: start; }
+}
