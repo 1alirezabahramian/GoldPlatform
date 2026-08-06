@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-08-01',
   devtools: { enabled: false },
-  css: ['../../shared-ui/styles/tokens.css', '~/assets/main.css'],
+  css: ['../../shared-ui/styles/tokens.css', '~/assets/main.css', '~/assets/contract-lists.css'],
   app: {
     head: {
       htmlAttrs: { lang: 'fa', dir: 'rtl' },
