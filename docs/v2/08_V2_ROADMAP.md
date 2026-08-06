@@ -44,16 +44,26 @@ Create the single traceable knowledge baseline for V2.
 - `09_DECISION_LOG.md`
 - `10_PROJECT_STATE.md`
 
+Additional evidence documents may be created, but their existence does not expand or silently satisfy the exit gate.
+
 ### Exit gates
-- All 11 documents exist and are internally consistent
+- All 11 mandatory documents exist and are internally consistent
 - Current reference Branch/Base/Head/PR are recorded
 - CI passes on the exact final documentation Head SHA
-- Capability matrix covers all major domains
+- Capability matrix covers all major domains with traceable evidence depth sufficient for stage closure
 - Known conflicts and missing sources are explicit
+- Current document namespace is unambiguous or its drift is formally accepted for the next stage
 - No Feature, financial rule, Kimia Write or migration is introduced
+- `17_V2_00_EVIDENCE_GATE_AUDIT.md` explicitly records `GATE PASSED`
 
 ### Current status
-`IN PROGRESS — FINAL EVIDENCE GATE PENDING`
+`IN PROGRESS — GATE NOT PASSED`
+
+Current evidence:
+- Namespace drift is documented in `16_DOCUMENT_NAMESPACE_AUDIT.md`.
+- Duplicate numeric prefixes `13` and `14` remain preserved as `DUPLICATE NAMESPACE CANDIDATE`.
+- Current Gate result is recorded in `17_V2_00_EVIDENCE_GATE_AUDIT.md`.
+- Exact-SHA CI through Backend RC1 Validation Run #360 passed, but later documentation commits require their own exact-SHA CI.
 
 ## 4. Stage V2-01 — Canonical Repository and Traceability Closure
 
@@ -66,7 +76,7 @@ Turn the initial knowledge baseline into a complete canonical evidence ledger.
 - Classify Closed — Not Merged work as historical evidence
 - Map PR Head SHA, merge SHA and exact CI
 - Build capability-to-file/PR/SHA/test/CI links
-- Resolve duplicate documentation paths and ADR number drift by classification, not deletion
+- Resolve duplicate documentation paths, numeric namespace drift and ADR number drift by classification, not deletion
 - Record applied migration state where evidence is available
 
 ### Prohibited
@@ -357,4 +367,4 @@ Work should proceed in this order unless a newly discovered Ground Truth depende
 
 ## 17. Current next action
 
-Complete V2-00 exact-SHA CI and evidence Gate. Do not start V2-01 merely because the documents exist; the final Head, PR status, unresolved evidence gaps and Gate result must be recorded in `10_PROJECT_STATE.md` and the PR discussion.
+Continue V2-00 evidence recovery against the explicit Gate Audit. Do not start V2-01 merely because documents and CI exist. First close or formally carry forward the branch/PR/SHA/CI ledger, capability traceability, source recovery, database evidence, namespace drift, visual verification and external environment gaps. Record every re-evaluation in `10_PROJECT_STATE.md`, `17_V2_00_EVIDENCE_GATE_AUDIT.md` and PR #195.
