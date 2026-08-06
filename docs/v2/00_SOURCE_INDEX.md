@@ -40,6 +40,8 @@ This stage creates documentation only. It does not add a feature, migration, fin
 | SRC-V2-0013 | Static demo | `demo-preview/` and PRs #191–#194 | SUPERSEDED — TECHNICAL PREVIEW ONLY — NOT PRODUCT EVIDENCE | Fictional, disconnected and intentionally non-operational. |
 | SRC-V2-0014 | Backend code/tests | `backend/` | CURRENT IMPLEMENTATION EVIDENCE | Includes Kimia read boundary, financial guards, customer resources, operator/admin endpoints, tests and migrations. |
 | SRC-V2-0015 | Frontends | canonical Customer and Admin/Operator packages | CURRENT IMPLEMENTATION EVIDENCE | Must be mapped to exact backend contracts and visual verification status. |
+| SRC-V2-0016 | Document Namespace Audit | `docs/v2/16_DOCUMENT_NAMESPACE_AUDIT.md` | CURRENT V2-00 DRIFT EVIDENCE | Duplicate numeric prefixes 13 and 14 are confirmed; contents are distinct and no destructive normalization is allowed in V2-00. |
+| SRC-V2-0017 | V2-00 Evidence Gate Audit | `docs/v2/17_V2_00_EVIDENCE_GATE_AUDIT.md` | CURRENT STAGE GATE EVIDENCE | Records which V2-00 gates passed and which remain incomplete; document existence alone is not closure. |
 
 ## GitHub findings — first pass
 
@@ -73,6 +75,7 @@ This stage creates documentation only. It does not add a feature, migration, fin
 5. Static demo work is merged but remains non-product evidence.
 6. Older AP/OP stacks are closed-not-merged and cannot be considered canonical, even where later code reused selected patterns.
 7. Shared Kimia conversation contained conflicting Action wording, schema examples presented as real outputs, Wallet authority drift and unsupported Coin/Currency balance derivation. The initial classifications are in Registry 13; higher-priority runtime corrections are in Registry 14.
+8. Numeric document prefixes `13` and `14` each occur twice. Full filenames are mandatory until a later controlled normalization decision.
 
 ## Claim-registry integration
 
@@ -90,6 +93,10 @@ The first completed registry is:
 ## Claim correction rule
 
 A historical Claim Registry preserves what was said and how it was initially evaluated. When a higher-priority source is found or was already present, a correction must be recorded and linked. The corrected classification governs V2; the historical text remains preserved for audit.
+
+## Stage-gate rule
+
+`docs/v2/17_V2_00_EVIDENCE_GATE_AUDIT.md` is the current gate reference. CI success on documentation commits proves repository validation for that SHA; it does not by itself close repository history, capability traceability, Kimia Ground Truth, database, visual or production evidence gaps.
 
 ## Evidence handling rule
 
