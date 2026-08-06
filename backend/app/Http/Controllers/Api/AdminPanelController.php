@@ -16,12 +16,37 @@ class AdminPanelController extends Controller
         $query = AuditLog::query()->latest('id');
         if ($request->filled('action')) $query->where('action', $request->string('action'));
         if ($request->filled('request_id')) $query->where('request_id', $request->string('request_id'));
-        return response()->json($query->paginate(100));
+
+        $page = $query->paginate(100);
+        $page->through(fn (AuditLog $log): array => [
+            'id' => $log->id,
+            'actor_id' => $log->actor_id,
+            'action' => $log->action,
+            'subject_type' => $log->subject_type,
+            'subject_id' => $log->subject_id,
+            'request_id' => $log->request_id,
+            'created_at' => $log->created_at?->toISOString(),
+        ]);
+
+        return response()->json($page);
     }
 
     public function outbox(): JsonResponse
     {
-        return response()->json(OutboxMessage::query()->latest('id')->paginate(100));
+        $page = OutboxMessage::query()->latest('id')->paginate(100);
+        $page->through(fn (OutboxMessage $message): array => [
+            'uuid' => $message->uuid,
+            'event_type' => $message->event_type,
+            'aggregate_type' => $message->aggregate_type,
+            'aggregate_id' => $message->aggregate_id,
+            'attempts' => $message->attempts,
+            'available_at' => $message->available_at?->toISOString(),
+            'processed_at' => $message->processed_at?->toISOString(),
+            'created_at' => $message->created_at?->toISOString(),
+            'updated_at' => $message->updated_at?->toISOString(),
+        ]);
+
+        return response()->json($page);
     }
 
     public function policies(): JsonResponse
