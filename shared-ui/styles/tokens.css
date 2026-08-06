@@ -1,0 +1,78 @@
+:root {
+  color-scheme: light;
+
+  /* Brand — Trusted Financial Minimal */
+  --gp-brand-700: #5f4a14;
+  --gp-brand-600: #765d1a;
+  --gp-brand-500: #8b6b20;
+  --gp-brand-100: #f4ecd6;
+
+  /* Neutral surfaces */
+  --gp-bg: #f6f5f1;
+  --gp-surface: #ffffff;
+  --gp-surface-subtle: #fbfaf7;
+  --gp-text: #1f2933;
+  --gp-text-muted: #5d6670;
+  --gp-border: #d9d7cf;
+  --gp-border-strong: #b8b5ac;
+
+  /* Semantic states — meaning must not be changed by tenant themes */
+  --gp-success: #176b4d;
+  --gp-success-bg: #e8f5ef;
+  --gp-warning: #8a5400;
+  --gp-warning-bg: #fff4dc;
+  --gp-danger: #a12b2b;
+  --gp-danger-bg: #fdecec;
+  --gp-info: #245f87;
+  --gp-info-bg: #e9f3fa;
+  --gp-pending: #6a5a13;
+  --gp-pending-bg: #f5f0d8;
+  --gp-readonly: #4d5965;
+  --gp-readonly-bg: #eef1f3;
+
+  /* Typography */
+  --gp-font-sans: Tahoma, Arial, sans-serif;
+  --gp-font-mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --gp-font-size-xs: 0.75rem;
+  --gp-font-size-sm: 0.875rem;
+  --gp-font-size-md: 1rem;
+  --gp-font-size-lg: 1.125rem;
+  --gp-font-size-xl: 1.5rem;
+  --gp-line-height: 1.65;
+
+  /* Layout */
+  --gp-space-1: 0.25rem;
+  --gp-space-2: 0.5rem;
+  --gp-space-3: 0.75rem;
+  --gp-space-4: 1rem;
+  --gp-space-5: 1.25rem;
+  --gp-space-6: 1.5rem;
+  --gp-space-8: 2rem;
+  --gp-radius-sm: 0.5rem;
+  --gp-radius-md: 0.75rem;
+  --gp-radius-lg: 1rem;
+  --gp-radius-pill: 999px;
+  --gp-shadow-sm: 0 0.25rem 1rem rgb(31 41 51 / 0.06);
+  --gp-shadow-md: 0 0.75rem 2rem rgb(31 41 51 / 0.08);
+  --gp-content-max: 72rem;
+  --gp-touch-target: 2.75rem;
+  --gp-focus-ring: 0 0 0 0.2rem rgb(36 95 135 / 0.28);
+  --gp-motion-fast: 120ms;
+  --gp-motion-normal: 200ms;
+  --gp-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 0.125rem solid var(--gp-info);
+  outline-offset: 0.125rem;
+  box-shadow: var(--gp-focus-ring);
+}
