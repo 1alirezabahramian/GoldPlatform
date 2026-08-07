@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Account;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
 use Tests\TestCase;
@@ -18,10 +17,10 @@ class AccountTenancyPilotBackfillTest extends TestCase
     public function migration_backfills_existing_unassigned_accounts_to_the_explicit_pilot_tenant(): void
     {
         $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
-
         $account = Account::create(['kimia_id' => 350, 'tenant_id' => null]);
 
-        DB::table('accounts')->where('id', $account->id)->update(['tenant_id' => $tenant->id]);
+        $migration = require database_path('migrations/2026_08_08_000400_backfill_existing_accounts_to_khalifeh_pilot_tenant.php');
+        $migration->up();
 
         $this->assertDatabaseHas('accounts', [
             'id' => $account->id,
@@ -30,9 +29,8 @@ class AccountTenancyPilotBackfillTest extends TestCase
     }
 
     #[Test]
-    public function backfill_rule_refuses_conflicting_existing_tenant_assignments(): void
+    public function migration_refuses_conflicting_existing_tenant_assignments(): void
     {
-        $pilot = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
         $other = Tenant::create([
             'name' => 'Other Tenant',
             'slug' => 'other-test-tenant',
@@ -41,11 +39,11 @@ class AccountTenancyPilotBackfillTest extends TestCase
 
         Account::create(['kimia_id' => 351, 'tenant_id' => $other->id]);
 
-        $conflictExists = DB::table('accounts')
-            ->whereNotNull('tenant_id')
-            ->where('tenant_id', '!=', $pilot->id)
-            ->exists();
+        $migration = require database_path('migrations/2026_08_08_000400_backfill_existing_accounts_to_khalifeh_pilot_tenant.php');
 
-        $this->assertTrue($conflictExists);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('conflicting tenant assignments');
+
+        $migration->up();
     }
 }
