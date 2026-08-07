@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Tenancy\UserTenancyBindingPreflightService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,18 +21,18 @@ class UserTenancyBindingPreflightTest extends TestCase
         $firstAccount = Account::create(['kimia_id' => 7001]);
         $secondAccount = Account::create(['kimia_id' => 7002]);
 
-        $first = User::factory()->create(['mobile' => '09120000001', 'account_id' => $firstAccount->id]);
-        $second = User::factory()->create(['mobile' => '09120000002', 'account_id' => $secondAccount->id]);
-        $third = User::factory()->create(['mobile' => '09120000003', 'account_id' => null]);
+        User::factory()->create(['mobile' => '09120000001', 'account_id' => $firstAccount->id]);
+        User::factory()->create(['mobile' => '09120000002', 'account_id' => $secondAccount->id]);
+        User::factory()->create(['mobile' => '09120000003', 'account_id' => null]);
 
-        $before = User::query()->orderBy('id')->get(['id', 'mobile', 'account_id'])->toArray();
+        $before = User::query()->orderBy('id')->get(['id', 'mobile', 'tenant_id', 'account_id'])->toArray();
 
         $result = app(UserTenancyBindingPreflightService::class)->inspect();
 
-        $after = User::query()->orderBy('id')->get(['id', 'mobile', 'account_id'])->toArray();
+        $after = User::query()->orderBy('id')->get(['id', 'mobile', 'tenant_id', 'account_id'])->toArray();
 
         $this->assertSame($before, $after);
-        $this->assertFalse($result['tenant_id_column_exists']);
+        $this->assertTrue($result['tenant_id_column_exists']);
         $this->assertSame(3, $result['total_users']);
         $this->assertSame(2, $result['linked_users']);
         $this->assertSame(1, $result['unlinked_users']);
@@ -49,15 +50,37 @@ class UserTenancyBindingPreflightTest extends TestCase
         User::factory()->create(['mobile' => '09120000011', 'account_id' => $account->id]);
         User::factory()->create(['mobile' => '09120000012', 'account_id' => $account->id]);
 
-        $before = User::query()->orderBy('id')->pluck('account_id', 'id')->all();
+        $before = User::query()->orderBy('id')->get(['id', 'tenant_id', 'account_id'])->toArray();
 
         $result = app(UserTenancyBindingPreflightService::class)->inspect();
 
-        $after = User::query()->orderBy('id')->pluck('account_id', 'id')->all();
+        $after = User::query()->orderBy('id')->get(['id', 'tenant_id', 'account_id'])->toArray();
 
         $this->assertSame($before, $after);
         $this->assertSame(1, $result['duplicate_account_bindings']);
         $this->assertFalse($result['unique_account_binding_preflight_passes']);
+    }
+
+    #[Test]
+    public function it_reports_authenticated_tenancy_ready_only_after_explicit_assignment(): void
+    {
+        $tenant = Tenant::create([
+            'name' => 'Test Tenant',
+            'slug' => 'test-tenant',
+            'is_active' => true,
+        ]);
+
+        User::factory()->create([
+            'mobile' => '09120000020',
+            'tenant_id' => $tenant->id,
+            'account_id' => null,
+        ]);
+
+        $result = app(UserTenancyBindingPreflightService::class)->inspect();
+
+        $this->assertTrue($result['tenant_id_column_exists']);
+        $this->assertSame(0, $result['users_missing_tenant_assignment']);
+        $this->assertTrue($result['authenticated_tenancy_activation_ready']);
     }
 
     #[Test]
@@ -69,7 +92,7 @@ class UserTenancyBindingPreflightTest extends TestCase
         $result = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertSame(0, $exitCode);
-        $this->assertFalse($result['tenant_id_column_exists']);
+        $this->assertTrue($result['tenant_id_column_exists']);
         $this->assertSame(1, $result['users_missing_tenant_assignment']);
         $this->assertFalse($result['authenticated_tenancy_activation_ready']);
     }
