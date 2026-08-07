@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAuthenticatedUserMatchesTenant;
 use App\Http\Middleware\IdempotencyMiddleware;
 use App\Http\Middleware\RequestContext;
 use App\Http\Middleware\ResolveTenantFromDomain;
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'tenant.resolve' => ResolveTenantFromDomain::class,
+            'tenant.user-match' => EnsureAuthenticatedUserMatchesTenant::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
