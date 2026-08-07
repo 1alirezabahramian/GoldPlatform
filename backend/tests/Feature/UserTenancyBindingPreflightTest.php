@@ -16,6 +16,16 @@ class UserTenancyBindingPreflightTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
+    public function it_registers_the_explicit_khalifeh_pilot_tenant(): void
+    {
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->first();
+
+        $this->assertNotNull($tenant);
+        $this->assertSame('طلا و سکه خلیفه', $tenant->name);
+        $this->assertTrue($tenant->is_active);
+    }
+
+    #[Test]
     public function it_reports_current_user_tenancy_and_binding_readiness_without_mutation(): void
     {
         $firstAccount = Account::create(['kimia_id' => 7001]);
@@ -64,11 +74,7 @@ class UserTenancyBindingPreflightTest extends TestCase
     #[Test]
     public function it_reports_authenticated_tenancy_ready_only_after_explicit_assignment(): void
     {
-        $tenant = Tenant::create([
-            'name' => 'Test Tenant',
-            'slug' => 'test-tenant',
-            'is_active' => true,
-        ]);
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
 
         User::factory()->create([
             'mobile' => '09120000020',
