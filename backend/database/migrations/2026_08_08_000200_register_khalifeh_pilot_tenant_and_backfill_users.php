@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 return new class extends Migration
 {
@@ -11,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         if (DB::table('tenants')->where('slug', self::PILOT_SLUG)->exists()) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 'Pilot tenant khalifeh-coin already exists; refusing implicit adoption during migration.'
             );
         }
