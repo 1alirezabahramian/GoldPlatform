@@ -26,12 +26,6 @@ class AccountTenancyBackfillPreflightTest extends TestCase
     #[Test]
     public function it_reports_unlinked_accounts_as_unsafe(): void
     {
-        Tenant::create([
-            'name' => 'Khalifeh',
-            'slug' => 'khalifeh-coin',
-            'is_active' => true,
-        ]);
-
         Account::create(['kimia_id' => 350]);
 
         $result = app(AccountTenancyBackfillPreflightService::class)->inspect('khalifeh-coin');
@@ -44,11 +38,7 @@ class AccountTenancyBackfillPreflightTest extends TestCase
     #[Test]
     public function it_reports_safe_only_when_every_account_is_linked_to_the_target_tenant_users(): void
     {
-        $tenant = Tenant::create([
-            'name' => 'Khalifeh',
-            'slug' => 'khalifeh-coin',
-            'is_active' => true,
-        ]);
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
 
         $firstAccount = Account::create(['kimia_id' => 350]);
         $secondAccount = Account::create(['kimia_id' => 351]);
