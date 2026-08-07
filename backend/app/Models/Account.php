@@ -28,6 +28,7 @@ class Account extends Model
 
     protected $fillable = [
 
+        'tenant_id',
         'kimia_id',
         'account_code',
 
@@ -66,6 +67,11 @@ class Account extends Model
         'is_visible' => 'boolean',
 
     ];
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     /**
      * گروه حساب در کیمیا
