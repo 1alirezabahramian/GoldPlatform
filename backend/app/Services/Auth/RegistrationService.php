@@ -21,46 +21,22 @@ class RegistrationService
     private function registerWithTenant(array $data, ?int $tenantId): User
     {
         return DB::transaction(function () use ($data, $tenantId) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Create User
-            |--------------------------------------------------------------------------
-            */
+            $name = trim(implode(' ', array_filter([
+                $data['first_name'] ?? null,
+                $data['last_name'] ?? null,
+            ])));
 
             $user = User::create([
-
                 'mobile' => $data['mobile'],
-
-                'first_name' => $data['first_name'] ?? null,
-
-                'last_name' => $data['last_name'] ?? null,
-
+                'name' => $name !== '' ? $name : null,
                 'national_code' => $data['national_code'] ?? null,
-
                 'password' => $data['password'],
-
                 'mobile_verified' => true,
-
                 'is_active' => true,
-
                 'tenant_id' => $tenantId,
-
             ]);
 
-            /*
-            |--------------------------------------------------------------------------
-            | Create Wallet
-            |--------------------------------------------------------------------------
-            */
-
             $wallet = $user->wallet()->create([]);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Create Default Wallet Accounts
-            |--------------------------------------------------------------------------
-            */
 
             $wallet->accounts()->createMany([
                 [
