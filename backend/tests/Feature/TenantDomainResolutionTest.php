@@ -115,7 +115,7 @@ class TenantDomainResolutionTest extends TestCase
             }
         );
 
-        $this->withHeader('Host', 'resolved.example.test')
+        $this->withServerVariables(['HTTP_HOST' => 'resolved.example.test'])
             ->getJson('/_tests/tenant-context')
             ->assertOk()
             ->assertExactJson([
@@ -123,7 +123,7 @@ class TenantDomainResolutionTest extends TestCase
                 'request' => 'resolved-shop',
             ]);
 
-        $this->withHeader('Host', 'unknown.example.test')
+        $this->withServerVariables(['HTTP_HOST' => 'unknown.example.test'])
             ->getJson('/_tests/tenant-context')
             ->assertNotFound()
             ->assertJsonPath('success', false)
