@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 return new class extends Migration
 {
@@ -9,19 +10,19 @@ return new class extends Migration
 
     public function up(): void
     {
-        $tenant = DB::table('tenants')->where('slug', self::PILOT_SLUG)->first();
-
-        if ($tenant === null) {
-            $tenantId = DB::table('tenants')->insertGetId([
-                'name' => 'طلا و سکه خلیفه',
-                'slug' => self::PILOT_SLUG,
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        } else {
-            $tenantId = (int) $tenant->id;
+        if (DB::table('tenants')->where('slug', self::PILOT_SLUG)->exists()) {
+            throw new RuntimeException(
+                'Pilot tenant khalifeh-coin already exists; refusing implicit adoption during migration.'
+            );
         }
+
+        $tenantId = DB::table('tenants')->insertGetId([
+            'name' => 'طلا و سکه خلیفه',
+            'slug' => self::PILOT_SLUG,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         DB::table('users')
             ->whereNull('tenant_id')
