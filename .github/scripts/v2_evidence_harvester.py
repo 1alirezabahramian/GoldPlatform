@@ -1,26 +1,9 @@
 #!/usr/bin/env python3
 """GoldPlatform V2 read-only GitHub evidence harvester.
 
-Purpose:
-- Batch-read PR metadata, exact PR-head workflow runs, and canonical ancestry.
-- Produce deterministic JSON or Markdown evidence tables for V2 recovery audits.
-
-Safety:
-- Read-only GitHub REST calls only.
-- No merge, branch mutation, issue/PR update, workflow rerun, or repository write.
-- No business-rule, Kimia, financial, capability-completion, or Production-Ready inference.
-- Missing evidence is emitted as UNKNOWN / NOT_FOUND rather than guessed.
-
-Environment:
-- GITHUB_TOKEN: required unless --token is supplied.
-- GITHUB_API_URL: optional, defaults to https://api.github.com.
-
-Example:
-  python .github/scripts/v2_evidence_harvester.py \
-    --repo 1alirezabahramian/GoldPlatform \
-    --start-pr 151 --end-pr 168 \
-    --canonical-ref recovery/rc2-product-rebuild \
-    --format markdown
+Batch-reads PR metadata, exact-head workflow runs and canonical ancestry.
+It never infers business rules, Kimia behavior, capability completion or
+Production Ready status. Missing evidence remains UNKNOWN / NOT_FOUND.
 """
 
 from __future__ import annotations
@@ -44,6 +27,8 @@ class WorkflowEvidence:
     run_number: int | None
     status: str
     conclusion: str | None
+    event: str | None
+    run_attempt: int | None
 
 
 @dataclass
@@ -61,7 +46,8 @@ class PrEvidence:
     changed_files: int | None
     additions: int | None
     deletions: int | None
-    workflow: WorkflowEvidence
+    backend_rc1: WorkflowEvidence
+    workflows: list[WorkflowEvidence]
     canonical_relation: str
     canonical_ahead_by: int | None
     canonical_behind_by: int | None
@@ -77,13 +63,16 @@ class GitHubReader:
 
     def get(self, path: str) -> Any:
         url = f"{self.api_url}{path}"
-        headers = {
-            "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer {self.token}",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": "goldplatform-v2-evidence-harvester",
-        }
-        request = urllib.request.Request(url, headers=headers, method="GET")
+        request = urllib.request.Request(
+            url,
+            headers={
+                "Accept": "application/vnd.github+json",
+                "Authorization": f"Bearer {self.token}",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": "goldplatform-v2-evidence-harvester",
+            },
+            method="GET",
+        )
         last_error: Exception | None = None
         for attempt in range(1, self.retries + 1):
             try:
@@ -111,61 +100,87 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def exact_head_workflow(reader: GitHubReader, repo: str, head_sha: str | None) -> WorkflowEvidence:
-    if not head_sha:
-        return WorkflowEvidence(None, None, None, "NOT_FOUND", None)
-    encoded_sha = urllib.parse.quote(head_sha, safe="")
-    payload = reader.get(f"/repos/{repo}/actions/runs?head_sha={encoded_sha}&per_page=100")
-    runs = [run for run in payload.get("workflow_runs", []) if run.get("head_sha") == head_sha]
-    if not runs:
-        return WorkflowEvidence(None, None, None, "NOT_FOUND", None)
-    runs.sort(key=lambda run: (run.get("run_number") or 0, run.get("run_attempt") or 0), reverse=True)
-    run = runs[0]
+def workflow_from_run(run: dict[str, Any]) -> WorkflowEvidence:
     return WorkflowEvidence(
         run_id=run.get("id"),
         name=run.get("name"),
         run_number=run.get("run_number"),
         status=run.get("status") or "UNKNOWN",
         conclusion=run.get("conclusion"),
+        event=run.get("event"),
+        run_attempt=run.get("run_attempt"),
     )
 
 
-def canonical_relation(reader: GitHubReader, repo: str, head_sha: str | None, canonical_ref: str) -> tuple[str, int | None, int | None]:
+def exact_head_workflows(reader: GitHubReader, repo: str, head_sha: str | None) -> list[WorkflowEvidence]:
+    if not head_sha:
+        return []
+    encoded_sha = urllib.parse.quote(head_sha, safe="")
+    payload = reader.get(f"/repos/{repo}/actions/runs?head_sha={encoded_sha}&per_page=100")
+    runs = [run for run in payload.get("workflow_runs", []) if run.get("head_sha") == head_sha]
+    runs.sort(
+        key=lambda run: (
+            str(run.get("name") or ""),
+            run.get("run_number") or 0,
+            run.get("run_attempt") or 0,
+        )
+    )
+    return [workflow_from_run(run) for run in runs]
+
+
+def select_latest_named(workflows: list[WorkflowEvidence], name: str) -> WorkflowEvidence:
+    matches = [workflow for workflow in workflows if workflow.name == name]
+    if not matches:
+        return WorkflowEvidence(None, name, None, "NOT_FOUND", None, None, None)
+    return max(matches, key=lambda workflow: (workflow.run_number or 0, workflow.run_attempt or 0))
+
+
+def canonical_relation(
+    reader: GitHubReader,
+    repo: str,
+    head_sha: str | None,
+    canonical_ref: str,
+) -> tuple[str, int | None, int | None]:
     if not head_sha:
         return "UNKNOWN", None, None
     base = urllib.parse.quote(head_sha, safe="")
     head = urllib.parse.quote(canonical_ref, safe="")
     payload = reader.get(f"/repos/{repo}/compare/{base}...{head}")
-    status = (payload.get("status") or "UNKNOWN").upper()
-    return status, payload.get("ahead_by"), payload.get("behind_by")
+    return (
+        (payload.get("status") or "UNKNOWN").upper(),
+        payload.get("ahead_by"),
+        payload.get("behind_by"),
+    )
 
 
 def collect_pr(reader: GitHubReader, repo: str, number: int, canonical_ref: str) -> PrEvidence:
     try:
         pr = reader.get(f"/repos/{repo}/pulls/{number}")
+        merged = bool(pr.get("merged"))
         head_sha = (pr.get("head") or {}).get("sha")
-        workflow = exact_head_workflow(reader, repo, head_sha)
+        workflows = exact_head_workflows(reader, repo, head_sha)
         relation, ahead_by, behind_by = canonical_relation(reader, repo, head_sha, canonical_ref)
         return PrEvidence(
             number=number,
             title=pr.get("title"),
             state=pr.get("state") or "UNKNOWN",
-            merged=bool(pr.get("merged")),
+            merged=merged,
             draft=bool(pr.get("draft")),
             base_ref=(pr.get("base") or {}).get("ref"),
             base_sha=(pr.get("base") or {}).get("sha"),
             head_ref=(pr.get("head") or {}).get("ref"),
             head_sha=head_sha,
-            merge_sha=pr.get("merge_commit_sha"),
+            merge_sha=pr.get("merge_commit_sha") if merged else None,
             changed_files=pr.get("changed_files"),
             additions=pr.get("additions"),
             deletions=pr.get("deletions"),
-            workflow=workflow,
+            backend_rc1=select_latest_named(workflows, "Backend RC1 Validation"),
+            workflows=workflows,
             canonical_relation=relation,
             canonical_ahead_by=ahead_by,
             canonical_behind_by=behind_by,
         )
-    except Exception as exc:  # Evidence collection must fail closed per PR, not invent data.
+    except Exception as exc:
         return PrEvidence(
             number=number,
             title=None,
@@ -180,12 +195,22 @@ def collect_pr(reader: GitHubReader, repo: str, number: int, canonical_ref: str)
             changed_files=None,
             additions=None,
             deletions=None,
-            workflow=WorkflowEvidence(None, None, None, "UNKNOWN", None),
+            backend_rc1=WorkflowEvidence(None, "Backend RC1 Validation", None, "UNKNOWN", None, None, None),
+            workflows=[],
             canonical_relation="UNKNOWN",
             canonical_ahead_by=None,
             canonical_behind_by=None,
             evidence_error=f"{type(exc).__name__}: {exc}",
         )
+
+
+def render_workflow(workflow: WorkflowEvidence) -> str:
+    if workflow.run_number is None:
+        return workflow.status
+    value = f"#{workflow.run_number} {workflow.status}"
+    if workflow.conclusion:
+        value += f" / {workflow.conclusion}"
+    return value
 
 
 def render_markdown(rows: list[PrEvidence], repo: str, canonical_ref: str) -> str:
@@ -196,29 +221,25 @@ def render_markdown(rows: list[PrEvidence], repo: str, canonical_ref: str) -> st
         f"Canonical ref: `{canonical_ref}`  ",
         "Classification: `READ-ONLY EVIDENCE — NO COMPLETION INFERENCE`",
         "",
-        "| PR | State | Merged | Head SHA | Exact-head CI | Canonical relation | Error |",
-        "|---:|---|:---:|---|---|---|---|",
+        "| PR | State | Merged | Head SHA | Backend RC1 exact-head CI | All exact-head runs | Canonical relation | Error |",
+        "|---:|---|:---:|---|---|---:|---|---|",
     ]
     for row in rows:
-        ci = row.workflow.status
-        if row.workflow.run_number is not None:
-            ci = f"#{row.workflow.run_number} {row.workflow.status}"
-        if row.workflow.conclusion:
-            ci += f" / {row.workflow.conclusion}"
         lines.append(
-            "| {number} | {state} | {merged} | `{sha}` | {ci} | {relation} | {error} |".format(
+            "| {number} | {state} | {merged} | `{sha}` | {backend} | {run_count} | {relation} | {error} |".format(
                 number=row.number,
                 state=row.state,
                 merged="yes" if row.merged else "no",
                 sha=row.head_sha or "UNKNOWN",
-                ci=ci,
+                backend=render_workflow(row.backend_rc1),
+                run_count=len(row.workflows),
                 relation=row.canonical_relation,
                 error=(row.evidence_error or "").replace("|", "\\|"),
             )
         )
     lines.extend([
         "",
-        "> This output is evidence only. It does not authorize Kimia Write, financial rules, merge, stage closure, or Production Ready claims.",
+        "> Evidence only: no Kimia Write, financial-rule, merge, capability-completion, stage-closure or Production Ready authorization is inferred.",
     ])
     return "\n".join(lines)
 
@@ -234,7 +255,6 @@ def main() -> int:
 
     reader = GitHubReader(args.token, args.api_url)
     rows = [collect_pr(reader, args.repo, number, args.canonical_ref) for number in range(args.start_pr, args.end_pr + 1)]
-
     if args.format == "markdown":
         print(render_markdown(rows, args.repo, args.canonical_ref))
     else:
