@@ -1,0 +1,106 @@
+name: V2 Evidence Harvest
+
+# V2-00 evidence checkpoint: this workflow is intentionally read-only and may be
+# retriggered by documentation-only metadata edits to refresh immutable evidence.
+
+on:
+  push:
+    branches:
+      - v2/source-recovery-v2-00
+    paths:
+      - '.github/scripts/v2_evidence_harvester.py'
+      - '.github/workflows/v2-evidence-harvest.yml'
+  pull_request:
+    branches:
+      - recovery/rc2-product-rebuild
+    paths:
+      - '.github/scripts/v2_evidence_harvester.py'
+      - '.github/workflows/v2-evidence-harvest.yml'
+  workflow_dispatch:
+    inputs:
+      start_pr:
+        description: First PR number to inspect
+        required: true
+        default: '145'
+      end_pr:
+        description: Last PR number to inspect
+        required: true
+        default: '194'
+      canonical_ref:
+        description: Canonical reference used for ancestry comparison
+        required: true
+        default: recovery/rc2-product-rebuild
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: v2-evidence-harvest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      START_PR: ${{ inputs.start_pr || '145' }}
+      END_PR: ${{ inputs.end_pr || '194' }}
+      CANONICAL_REF: ${{ inputs.canonical_ref || 'recovery/rc2-product-rebuild' }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout exact V2 head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Validate harvester syntax
+        run: python3 -m py_compile .github/scripts/v2_evidence_harvester.py
+
+      - name: Harvest PR JSON evidence
+        run: |
+          python3 .github/scripts/v2_evidence_harvester.py \
+            --repo "${{ github.repository }}" \
+            --mode prs \
+            --start-pr "$START_PR" \
+            --end-pr "$END_PR" \
+            --canonical-ref "$CANONICAL_REF" \
+            --format json > v2-pr-evidence.json
+
+      - name: Harvest PR Markdown evidence
+        run: |
+          python3 .github/scripts/v2_evidence_harvester.py \
+            --repo "${{ github.repository }}" \
+            --mode prs \
+            --start-pr "$START_PR" \
+            --end-pr "$END_PR" \
+            --canonical-ref "$CANONICAL_REF" \
+            --format markdown > v2-pr-evidence.md
+
+      - name: Harvest branch head JSON evidence
+        run: |
+          python3 .github/scripts/v2_evidence_harvester.py \
+            --repo "${{ github.repository }}" \
+            --mode branches \
+            --format json > v2-branch-heads.json
+
+      - name: Harvest branch head Markdown evidence
+        run: |
+          python3 .github/scripts/v2_evidence_harvester.py \
+            --repo "${{ github.repository }}" \
+            --mode branches \
+            --format markdown > v2-branch-heads.md
+
+      - name: Upload immutable evidence artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-evidence-${{ github.sha }}
+          path: |
+            v2-pr-evidence.json
+            v2-pr-evidence.md
+            v2-branch-heads.json
+            v2-branch-heads.md
+          if-no-files-found: error
+          retention-days: 30
