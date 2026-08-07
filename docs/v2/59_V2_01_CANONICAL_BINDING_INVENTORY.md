@@ -7,7 +7,7 @@
 
 ## Result first
 
-The canonical source proves the structural chain:
+Canonical GitHub proves this structural chain:
 
 `Authenticated User -> users.account_id -> accounts.id -> accounts.kimia_id`
 
@@ -15,9 +15,13 @@ and a separate synchronized Kimia projection:
 
 `external_accounts.provider = kimia -> external_accounts.external_id`
 
-The current canonical registration path does **not** populate or approve `users.account_id`; `RegistrationService` explicitly retains a TODO for `Create Kimia Account / Link Account / Assign Default Group`. Therefore the schema relation is not an approved runtime binding workflow.
+Canonical `RegistrationService` does **not** populate or approve `users.account_id`; it retains an explicit TODO for `Create Kimia Account / Link Account / Assign Default Group`. Therefore the schema relation is not evidence of an approved runtime binding workflow.
 
-The owner-approved binding cardinality is recoverable from Accepted Project Memory, but the historical unique-binding and immutability implementation was only prepared and is not evidenced as canonical runtime code. Accepted multi-tenant direction also exists, while canonical runtime remains without an implemented Tenant root. Customer financial reads therefore remain correctly fail-closed.
+A prior V2-01 documentation pass also referred to historical `ADR-024` / `ADR-026`, unique-binding enforcement, immutability guards, and detailed Tenant rules as accepted Ground Truth. During the current evidence pass those exact claims could not be re-established from current GitHub search, the available `00_PROJECT_MEMORY.md`, the Domain Workshop, or the Kimia integration audit. Under NO GUESSING they are therefore downgraded to **UNVERIFIED HISTORICAL CLAIM / BLOCKED BY SOURCE RECOVERY** and must not drive schema or resolver implementation until their source is recovered.
+
+White-label remains a confirmed product requirement from current project instructions. That does not, by itself, define a specific Tenant database model, host-routing rule, uniqueness scope, or Kimia connector/book mapping.
+
+Customer financial reads therefore remain correctly fail-closed.
 
 ## Canonical inventory
 
@@ -26,47 +30,37 @@ The owner-approved binding cardinality is recoverable from Accepted Project Memo
 | `Account` model | `backend/app/Models/Account.php` | REUSE AS-IS | Explicit `kimia_id`; no fallback allowed. |
 | `accounts.kimia_id` DB constraint | `2026_07_19_140812_create_accounts_table.php` | REUSE AS-IS | Non-null and unique. |
 | `User -> Account` relation | `backend/app/Models/User.php` | REUSE AS-IS | Structural relation only; runtime approval/population is absent. |
-| `users.account_id` DB constraint | `2026_07_19_141317_add_account_id_to_users_table.php` | REUSE AFTER FIX | Nullable FK only; no unique non-null enforcement. |
+| `users.account_id` DB constraint | `2026_07_19_141317_add_account_id_to_users_table.php` | REUSE AS-IS | Nullable FK; no unique constraint evidenced. Do not invent one before source recovery and data preflight. |
 | `ExternalAccount` Kimia projection | `backend/app/Models/ExternalAccount.php` | REUSE AS-IS | Read/reconciliation projection only. |
 | Kimia HTTP read boundary | `backend/app/Clients/KimiaReadClient.php` | REUSE AS-IS | Canonical GET-only client with explicit error propagation. |
-| Account read repository | merged PR #150 | REUSE AS-IS | Confirmed `Type=3` retail-account read. |
-| Balance read repository | merged PR #150 | REUSE AS-IS | `/api/voucher/balance/{AccountId}`. |
-| Dynamic Coin/Currency reads | merged PR #150 | REUSE AS-IS | No fixed Coin/Currency identifier list. |
+| Account/Balance/Product read repositories | merged PR #150 | REUSE AS-IS | Existing canonical Kimia Read foundation. |
 | Customer dashboard/assets fail-closed reads | canonical Customer controllers | REUSE AS-IS | HTTP 503 until verified Kimia resolution exists. |
 | Authenticated customer account resolver | no dedicated canonical implementation evidenced | NOT IMPLEMENTED | No inference by mobile/name/national code/account code/sample IDs. |
 | Registration -> Kimia binding | canonical `RegistrationService` TODO; no assignment to `account_id` | NOT IMPLEMENTED | No auto-link or guessed Kimia create/link behavior. |
-| Owner-approved binding cardinality | Accepted Project Memory / ADR-024 reference | REUSE AFTER FIX | Rule is accepted; canonical enforcement is incomplete. |
-| Unique `users.account_id` historical migration | Accepted Project Memory says prepared, not runtime-applied | HISTORICAL ONLY | Candidate for controlled recovery only after tenant/runtime preconditions. |
-| User/Account/ExternalAccount immutability guards | Accepted Project Memory says prepared | HISTORICAL ONLY | Not treated as canonical implementation. |
-| Tenant architecture rule | Accepted Project Memory / ADR-026 direction | REUSE AFTER FIX | White-label/multi-tenant direction is accepted. |
-| Canonical Tenant runtime root | no active canonical Tenant implementation evidenced in reviewed runtime | NOT IMPLEMENTED | Do not cement single-tenant assumptions with a binding migration. |
-| Tenant -> Kimia connector/book runtime mapping | accepted direction exists; canonical runtime mapping not evidenced | BLOCKED BY GROUND TRUTH | Required before tenant-aware financial resolver activation. |
-| Read-only reconciliation bridge | reconstructed from PR #196 concept | TESTED — NOT MERGED | Exact-head `058680093fea90a30235acc1171c744a3c472ca1`: Backend RC1 #437 PASS; Operational Readiness #47 PASS. |
+| Exact binding cardinality beyond current schema | prior V2 notes referenced ADR-024, but source not re-established | BLOCKED BY GROUND TRUTH | Do not convert historical claim into migration/guard. |
+| Binding immutability guard | prior V2 notes referenced prepared historical guards, but source not re-established | BLOCKED BY GROUND TRUTH | No canonical guard evidenced. |
+| White-label product requirement | current project instructions | REUSE AS-IS | Product requirement only; does not define Tenant schema. |
+| Canonical Tenant runtime root | no active canonical Tenant implementation evidenced | NOT IMPLEMENTED | Specific model/scoping remains unresolved. |
+| Tenant/Company/Connector/Book identity rules | no exact current source recovered | BLOCKED BY GROUND TRUTH | Do not guess routing or uniqueness scope. |
+| Read-only reconciliation bridge | reconstructed from PR #196 concept | TESTED — NOT MERGED | Exact-head CI evidence recorded below. |
 | Kimia Write | deny-by-default foundation | BLOCKED BY GROUND TRUTH | No production write activation or payload mapping. |
 
-## Accepted binding rule vs implementation state
+## Source correction — historical ADR/Tenant claims
 
-Accepted Project Memory records:
+Current evidence recovery attempted all of the following:
 
-`one GoldPlatform login -> zero or one local Account -> zero or one Kimia AccountId`
+- GitHub PR search for Tenant/Kimia connector/book/binding terms;
+- GitHub commit search for `ADR-024`;
+- GitHub code search for `tenant_id`;
+- GitHub branch search for Tenant-related branches;
+- available `00_PROJECT_MEMORY.md`;
+- `41_GOLDPLATFORM_DOMAIN_WORKSHOP_2026-07-28.md`;
+- `08_KIMIA_INTEGRATION_AUDIT.md`;
+- continuation/handoff text available to this mission.
 
-`one Kimia AccountId -> no more than one GoldPlatform login`
+The exact ADR-024/ADR-026 documents or an equivalent authoritative source for the previously stated cardinality/Tenant rules were not recovered in this pass. First-search absence is not proof of non-existence, so the correct state is **BLOCKED BY SOURCE RECOVERY**, not `NOT IMPLEMENTED` based solely on absence and not accepted Ground Truth based solely on prior assistant text.
 
-and records an established Kimia AccountId binding as immutable. This is valid business/architecture Ground Truth. It does **not** mean the current canonical runtime enforces the rule: the current `users.account_id` migration is a nullable FK without the historical prepared unique index, and the current registration path does not create or approve a link.
-
-Classification:
-
-- binding rule: **REUSE AFTER FIX** into canonical runtime;
-- historical prepared enforcement: **HISTORICAL ONLY** until reconstructed and revalidated;
-- current end-to-end runtime binding: **NOT IMPLEMENTED**.
-
-## Tenant prerequisite
-
-Accepted historical architecture says GoldPlatform is White-label / Multi-tenant and Khalifeh Coin is the first tenant, not a hidden global default. The prepared direction includes tenant-owned records, tenant-scoped mobile identity, verified Host Tenant, authenticated user/Tenant equality, and a tenant-specific Kimia connector/book boundary.
-
-Current canonical runtime does not evidence that Tenant root. Historical PR #131 explicitly described Tenant/Company/tenant-specific Kimia configuration as absent and was closed without merge; it is evidence only. Historical stacked tenant work such as PR #109 is not a canonical integration source.
-
-Therefore V2-01 does not add a `users.account_id` unique migration or activate a Customer financial resolver yet. Doing so before the Tenant identity boundary is canonical could silently harden an interim single-tenant model.
+The Domain Workshop does independently support an important identity principle for products: mutable Kimia shortcut/search code must not be the stable identity; immutable Kimia ID is the stable integration identifier. That product identity rule must not be silently generalized into an unproven Customer↔Account cardinality rule.
 
 ## Registration/Auth drift
 
@@ -76,7 +70,7 @@ Canonical `UserObserver`, registered by `AppServiceProvider`, also creates a Wal
 
 Classification: **DUPLICATE CANDIDATE**.
 
-This drift is recorded but not repaired inside the reconciliation slice because changing Registration/Auth behavior needs a controlled Auth comparison and is not necessary to prove read-only reconciliation.
+This drift is recorded but not repaired inside the reconciliation slice because changing Registration/Auth behavior requires a controlled Auth comparison and is not necessary to prove read-only reconciliation.
 
 ## PR #196 historical compare
 
@@ -101,7 +95,7 @@ Structurally the code can express:
 `-> Account.kimia_id`  
 `-> BalanceReadRepository::forAccount(kimia AccountId)`
 
-But a logged-in Customer cannot yet be declared to resolve to the **correct verified** Kimia AccountId because canonical code does not prove who/what populates and approves `users.account_id`, and the Tenant/connector identity context is not implemented.
+But a logged-in Customer cannot yet be declared to resolve to the **correct verified** Kimia AccountId because canonical code does not prove who/what populates and approves `users.account_id`. Any additional Tenant/Company/Connector/Book scope needed by the White-label architecture is also not yet grounded to an exact runtime model.
 
 End-to-end authenticated resolver: **NOT IMPLEMENTED**.  
 Resolver activation: **BLOCKED BY GROUND TRUTH**.
@@ -127,9 +121,12 @@ CI history:
   - Operational Readiness #45 — EXECUTED — PASS
   - Backend RC1 Validation #435 — EXECUTED — FAIL
 - Failure source was a test fixture incompatible with canonical non-null `accounts.kimia_id`; fixture corrected without business behavior change.
-- Exact head `058680093fea90a30235acc1171c744a3c472ca1`
+- Head `058680093fea90a30235acc1171c744a3c472ca1`
   - Operational Readiness #47 — EXECUTED — PASS
   - Backend RC1 Validation #437 — EXECUTED — PASS
+- Head `1b7380abc688b4fea295176ffd759e3396164b71`
+  - Operational Readiness #50 — EXECUTED — PASS
+  - Backend RC1 Validation #440 — EXECUTED — PASS
 
 Current reconciliation status: **TESTED — NOT MERGED**.
 
@@ -137,11 +134,11 @@ Current reconciliation status: **TESTED — NOT MERGED**.
 
 No migration is introduced in this slice.
 
-The historical nullable-unique `users.account_id` migration and immutability guards are recovery candidates, not safe copy targets. Before any binding migration, V2-01 must reconcile them with the accepted Tenant architecture and current canonical schema/runtime.
+A unique `users.account_id` constraint, immutability guard, Tenant-scoped uniqueness, or connector/book foreign-key model must not be created from unrecovered historical claims. Any future migration requires exact Ground Truth, read-only duplicate/orphan preflight, preservation/rollback analysis, tests, and exact-head CI.
 
 ## API / OpenAPI / Frontend conclusion
 
-No API/OpenAPI/Frontend change in this slice. Existing Customer financial endpoints remain fail-closed and no unavailable balance is converted to zero.
+No API/OpenAPI/Frontend behavior change in this slice. Existing Customer financial endpoints remain fail-closed and no unavailable balance is converted to zero.
 
 ## Permission / Audit / Idempotency
 
@@ -151,8 +148,8 @@ No API/OpenAPI/Frontend change in this slice. Existing Customer financial endpoi
 
 ## Next exact work
 
-1. Record a compact binding/Tenant traceability activation gate.
-2. Preserve the historical unique-binding and immutability code as `HISTORICAL ONLY / REUSE AFTER FIX`; do not copy blindly.
-3. Prove the canonical Tenant/Company/Connector root or explicitly reconstruct it under its accepted architecture before a financial resolver is activated.
-4. Define/implement the approved source that creates `users.account_id` without inference or Kimia Write guessing.
-5. Only then implement the fail-closed authenticated resolver and connect Customer financial reads through canonical Kimia read repositories.
+1. Keep the read-only reconciliation capability stable and green.
+2. Continue source recovery specifically for the previously referenced ADR-024/ADR-026 or equivalent accepted decisions; do not substitute prior assistant prose for source evidence.
+3. Continue Canonical/Historical search for the actual workflow that creates or approves `users.account_id`.
+4. Determine the exact White-label Tenant/Company/Connector/Book runtime model only from recovered authoritative evidence or an explicit owner decision if evidence truly cannot be recovered.
+5. Only then implement a fail-closed authenticated resolver and connect Customer financial reads through canonical Kimia read repositories.
