@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - feature/goldplatform-developer-mcp
+      - recovery/rc2-product-rebuild
   workflow_dispatch:
 
 permissions:
