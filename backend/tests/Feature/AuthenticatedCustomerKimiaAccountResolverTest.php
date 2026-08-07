@@ -44,7 +44,7 @@ class AuthenticatedCustomerKimiaAccountResolverTest extends TestCase
     }
 
     #[Test]
-    public function it_fails_closed_until_account_tenant_ownership_is_proven(): void
+    public function it_fails_closed_when_account_has_no_tenant_assignment(): void
     {
         $tenant = Tenant::create(['name' => 'Khalifeh', 'slug' => 'khalifeh-test', 'is_active' => true]);
         $account = Account::create(['kimia_id' => 350]);
@@ -55,7 +55,40 @@ class AuthenticatedCustomerKimiaAccountResolverTest extends TestCase
         $result = app(AuthenticatedCustomerKimiaAccountResolver::class)->resolve($user, $context);
 
         $this->assertFalse($result['resolved']);
-        $this->assertSame('ACCOUNT_TENANT_OWNERSHIP_NOT_PROVEN', $result['reason']);
+        $this->assertSame('ACCOUNT_TENANT_OWNERSHIP_REQUIRED', $result['reason']);
         $this->assertNull($result['kimia_account_id']);
+    }
+
+    #[Test]
+    public function it_fails_closed_when_account_tenant_does_not_match_active_tenant(): void
+    {
+        $firstTenant = Tenant::create(['name' => 'First', 'slug' => 'first-account', 'is_active' => true]);
+        $secondTenant = Tenant::create(['name' => 'Second', 'slug' => 'second-account', 'is_active' => true]);
+        $account = Account::create(['tenant_id' => $firstTenant->id, 'kimia_id' => 350]);
+        $user = User::factory()->create(['tenant_id' => $secondTenant->id, 'account_id' => $account->id]);
+        $context = new TenantContext();
+        $context->activate($secondTenant);
+
+        $result = app(AuthenticatedCustomerKimiaAccountResolver::class)->resolve($user, $context);
+
+        $this->assertFalse($result['resolved']);
+        $this->assertSame('ACCOUNT_TENANT_MISMATCH', $result['reason']);
+        $this->assertNull($result['kimia_account_id']);
+    }
+
+    #[Test]
+    public function it_resolves_only_when_tenant_user_account_and_kimia_identity_match(): void
+    {
+        $tenant = Tenant::create(['name' => 'Khalifeh', 'slug' => 'khalifeh-resolved', 'is_active' => true]);
+        $account = Account::create(['tenant_id' => $tenant->id, 'kimia_id' => 350]);
+        $user = User::factory()->create(['tenant_id' => $tenant->id, 'account_id' => $account->id]);
+        $context = new TenantContext();
+        $context->activate($tenant);
+
+        $result = app(AuthenticatedCustomerKimiaAccountResolver::class)->resolve($user, $context);
+
+        $this->assertTrue($result['resolved']);
+        $this->assertSame('RESOLVED', $result['reason']);
+        $this->assertSame('350', $result['kimia_account_id']);
     }
 }
