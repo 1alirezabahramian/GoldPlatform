@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\User;
 use App\Services\Tenancy\UserTenancyBindingPreflightService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -64,9 +65,12 @@ class UserTenancyBindingPreflightTest extends TestCase
     {
         User::factory()->create(['mobile' => '09120000021', 'account_id' => null]);
 
-        $this->artisan('tenancy:inspect-user-binding-readiness', ['--json' => true])
-            ->expectsOutputToContain('"tenant_id_column_exists": false')
-            ->expectsOutputToContain('"users_missing_tenant_assignment": 1')
-            ->assertSuccessful();
+        $exitCode = Artisan::call('tenancy:inspect-user-binding-readiness', ['--json' => true]);
+        $result = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertSame(0, $exitCode);
+        $this->assertFalse($result['tenant_id_column_exists']);
+        $this->assertSame(1, $result['users_missing_tenant_assignment']);
+        $this->assertFalse($result['authenticated_tenancy_activation_ready']);
     }
 }
