@@ -39,6 +39,10 @@ final class AuthenticatedCustomerKimiaAccountResolver
             return $this->blocked('CUSTOMER_ACCOUNT_NOT_FOUND');
         }
 
+        if ($account->tenant_id === null) {
+            return $this->blocked('ACCOUNT_TENANT_OWNERSHIP_REQUIRED');
+        }
+
         if ((int) $account->tenant_id !== (int) $tenant->id) {
             return $this->blocked('ACCOUNT_TENANT_MISMATCH');
         }
