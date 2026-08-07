@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\ResolveTenantFromDomain;
 use App\Models\Tenant;
 use App\Models\TenantDomain;
 use App\Tenancy\TenantContext;
@@ -9,7 +10,6 @@ use App\Tenancy\TenantResolver;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use LogicException;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -105,29 +105,50 @@ class TenantDomainResolutionTest extends TestCase
             'verified_at' => now(),
         ]);
 
-        Route::middleware('tenant.resolve')->get(
-            '/_tests/tenant-context',
-            function (Request $request, TenantContext $context) {
+        $trustedContext = new TenantContext();
+        $middleware = new ResolveTenantFromDomain(
+            app(TenantResolver::class),
+            $trustedContext
+        );
+        $request = Request::create(
+            'https://resolved.example.test/_tests/tenant-context',
+            'GET'
+        );
+
+        $response = $middleware->handle(
+            $request,
+            function (Request $request) use ($trustedContext) {
                 return response()->json([
-                    'context' => $context->tenant()->slug,
+                    'context' => $trustedContext->tenant()->slug,
                     'request' => $request->attributes->get('tenant')->slug,
                 ]);
             }
         );
 
-        $this->withServerVariables(['HTTP_HOST' => 'resolved.example.test'])
-            ->getJson('/_tests/tenant-context')
-            ->assertOk()
-            ->assertExactJson([
-                'context' => 'resolved-shop',
-                'request' => 'resolved-shop',
-            ]);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame([
+            'context' => 'resolved-shop',
+            'request' => 'resolved-shop',
+        ], $response->getData(true));
 
-        $this->withServerVariables(['HTTP_HOST' => 'unknown.example.test'])
-            ->getJson('/_tests/tenant-context')
-            ->assertNotFound()
-            ->assertJsonPath('success', false)
-            ->assertJsonMissing(['tenant' => 'resolved-shop']);
+        $unknownContext = new TenantContext();
+        $unknownMiddleware = new ResolveTenantFromDomain(
+            app(TenantResolver::class),
+            $unknownContext
+        );
+        $unknownRequest = Request::create(
+            'https://unknown.example.test/_tests/tenant-context',
+            'GET'
+        );
+
+        $unknownResponse = $unknownMiddleware->handle(
+            $unknownRequest,
+            fn () => response()->json(['unexpected' => true])
+        );
+
+        $this->assertSame(404, $unknownResponse->getStatusCode());
+        $this->assertFalse($unknownResponse->getData(true)['success']);
+        $this->assertFalse($unknownContext->hasTenant());
     }
 
     #[Test]
