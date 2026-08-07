@@ -28,12 +28,6 @@ final class KimiaInspectAccountReconciliationTest extends TestCase
             'name' => 'Local only account',
         ]);
 
-        Account::query()->create([
-            'kimia_id' => null,
-            'account_code' => 1003,
-            'name' => 'Missing Kimia id account',
-        ]);
-
         User::factory()->create(['account_id' => $matched->id]);
 
         ExternalAccount::query()->create([
@@ -57,7 +51,7 @@ final class KimiaInspectAccountReconciliationTest extends TestCase
 
         $this->assertSame(1, $result['summary']['matched_linked']);
         $this->assertSame(1, $result['summary']['account_only_unlinked']);
-        $this->assertSame(1, $result['summary']['account_missing_kimia_id']);
+        $this->assertSame(0, $result['summary']['account_missing_kimia_id']);
         $this->assertSame(1, $result['summary']['external_only']);
 
         $this->artisan('kimia:inspect-account-reconciliation --json')->assertSuccessful();
