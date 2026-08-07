@@ -36,24 +36,16 @@ class RegistrationService
                 'tenant_id' => $tenantId,
             ]);
 
-            $wallet = $user->wallet()->create([]);
-
-            $wallet->accounts()->createMany([
-                [
-                    'code' => 'RIAL',
-                    'title' => 'ریال',
-                    'balance' => '0',
-                    'blocked_balance' => '0',
-                    'is_active' => true,
-                ],
-                [
-                    'code' => 'GOLD18',
-                    'title' => 'طلای ۱۸ عیار',
-                    'balance' => '0',
-                    'blocked_balance' => '0',
-                    'is_active' => true,
-                ],
-            ]);
+            /*
+            |--------------------------------------------------------------------------
+            | Wallet lifecycle
+            |--------------------------------------------------------------------------
+            |
+            | UserObserver is the canonical owner of creating the user's wallet and
+            | default internal wallet-account projections after User creation.
+            | RegistrationService must not duplicate that observer side effect.
+            |
+            */
 
             /*
             |--------------------------------------------------------------------------
