@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Observers\UserObserver;
 use App\Services\Sms\Contracts\SmsProvider;
 use App\Services\Sms\Providers\SmsIrProvider;
+use App\Tenancy\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(TenantContext::class, fn (): TenantContext => new TenantContext());
         $this->app->bind(SmsProvider::class, SmsIrProvider::class);
     }
 
