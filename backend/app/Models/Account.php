@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\BusinessException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -10,6 +11,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Account extends Model
 {
     use SoftDeletes;
+
+    /**
+     * @throws BusinessException
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (self $account): void {
+            if ($account->isDirty('kimia_id')) {
+                throw new BusinessException(
+                    'A Kimia AccountId cannot be changed after synchronization.'
+                );
+            }
+        });
+    }
 
     protected $fillable = [
 
