@@ -5,11 +5,13 @@
 
 ## Result first
 
-The previously referenced ADR-024 / ADR-026 evidence has now been recovered from preserved Project Memory and the historical GitHub branch `work/product-kimia-next`.
+ADR-024 / ADR-026 evidence has been recovered from preserved Project Memory and historical GitHub branch `work/product-kimia-next`.
 
-The historical branch is **HISTORICAL ONLY** as a branch-level integration source because it is materially diverged from canonical (`6` commits ahead and `577` behind). No broad merge or cherry-pick is allowed.
+The historical branch remains **HISTORICAL ONLY** as a branch-level integration source because it is materially diverged from canonical (`6` commits ahead and `577` behind). No broad merge or cherry-pick is allowed.
 
-The accepted ADR-026 bounded checkpoint was reconstructed file-by-file on the current V2 branch after compatibility inspection. ADR-024 identity immutability guards were subsequently reconstructed as a separate narrow slice without applying the historical unique-index migration.
+The accepted ADR-026 bounded Tenant foundation and ADR-024 identity immutability guards have been reconstructed narrowly on the current V2 branch and are now **TESTED — NOT MERGED** on exact-head CI.
+
+A separate read-only `users` tenancy/account-binding preflight has also been implemented and tested. It reports current schema/data readiness but never creates `tenant_id`, assigns a Tenant, repairs duplicate account bindings, or infers Customer→Account links.
 
 ## Recovered Ground Truth
 
@@ -22,9 +24,9 @@ Accepted rules include:
 - established Kimia AccountId is unique and immutable;
 - mobile is unique inside a Tenant in the target tenancy model;
 - national code may be reused across independent accounts;
-- account_code is display/search data and never replaces AccountId.
+- `account_code` is display/search data and never replaces AccountId.
 
-Canonical and historical `RegistrationService` inspected so far still retain `Create Kimia Account / Link Account / Assign Default Group` as TODO and do not populate `users.account_id`. No implemented approved linking workflow has yet been recovered.
+Canonical and historical `RegistrationService` still retain `Create Kimia Account / Link Account / Assign Default Group` as TODO and do not populate `users.account_id`. No implemented approved linking workflow has been recovered. No linking may be inferred from mobile, name, national code, account code, first record, sample IDs, or zero/default IDs.
 
 ### ADR-026 — Multi-tenancy Isolation Strategy
 
@@ -40,7 +42,7 @@ Accepted architecture:
 - table-group migrations only; no all-table migration;
 - no unique-index replacement without duplicate preflight.
 
-The ADR explicitly authorizes the first bounded checkpoint as Tenant root + verified domain + explicit context/resolver + isolation tests, without attaching tenancy to production business routes or migrating all business tables.
+Historical tenancy foundation explicitly deferred `users.tenant_id`, user backfill, authenticated Tenant activation, tenant-scoped mobile uniqueness, and all existing business-table ownership changes to later separately reviewed checkpoints.
 
 ## Historical implementation compare
 
@@ -49,7 +51,7 @@ Compare to canonical `recovery/rc2-product-rebuild`: **DIVERGED — 6 ahead / 57
 
 Classification of the entire branch: **HISTORICAL ONLY**.
 
-Reusable bounded files were inspected individually before reconstruction.
+No historical `users.tenant_id` migration/backfill implementation was recovered from that bounded checkpoint; the documentation states it was intentionally deferred.
 
 ## Reconstructed bounded Tenant foundation
 
@@ -63,82 +65,161 @@ Reusable bounded files were inspected individually before reconstruction.
 - `backend/database/migrations/2026_08_03_130100_create_tenant_domains_table.php`
 - `backend/tests/Feature/TenantDomainResolutionTest.php`
 
-Canonical integration adjustments:
-
-- `AppServiceProvider` preserves current rate-limit/observability behavior and adds only scoped `TenantContext` registration.
-- `bootstrap/app.php` preserves current RequestContext, SecurityHeaders, Idempotency, Role and Permission middleware and adds only the inactive `tenant.resolve` alias.
-
 Runtime properties:
 
 - Host normalization handles case/port/trailing-dot.
 - Resolver accepts only active + verified TenantDomain with active Tenant.
 - Unknown/unverified/inactive domain fails closed; no Khalifeh Coin fallback.
 - TenantContext cannot switch inside one execution scope.
-- `tenant.resolve` is not attached to current production Customer/Admin/Operator/Kimia routes by this slice.
+- `tenant.resolve` is registered but remains unattached to current production Customer/Admin/Operator/Kimia routes.
 
-## Exact CI evidence for Tenant recovery
-
-Head `2d15d25cc9cbac9e0061c0f41bd327ff9547f036`:
-
-- Operational Readiness #69 — **EXECUTED — PASS**
-- Backend RC1 Validation #459 — **EXECUTED — FAIL**
-
-The CI log showed:
-
-- migration fresh PASS, including `tenants` and `tenant_domains`;
-- Unit suite PASS: 66 tests / 357 assertions;
-- Feature suite: 86 PASS and one failure;
-- four of five TenantDomainResolution tests PASS;
-- only the middleware HTTP test failed because the historical test injected `Host` as a request header while the current Laravel test request host is sourced from server variables.
-
-No resolver, migration, isolation, financial or Tenant-rule failure was evidenced.
-
-Test-only compatibility fix commit: `2128bd42e0829e5d182115150261b62686bef3f9`, replacing `withHeader('Host', ...)` with explicit `HTTP_HOST` server variables. Exact-head CI is required before closing this fix.
+Status: **TESTED — NOT MERGED**.
 
 ## ADR-024 identity immutability slice
 
-Recovered after current consumer comparison:
+Recovered narrowly:
 
 - `Account.kimia_id` cannot be changed after creation/synchronization;
 - `ExternalAccount.provider` / `external_id` cannot be changed after synchronization;
 - `User.account_id` may be populated from null once, but an established non-null binding cannot be changed or removed.
 
-The current account sync tests update mutable ExternalAccount fields while preserving `(provider, external_id)`, so the identity guard does not block the evidenced valid sync path.
-
-Focused test added:
+Focused test:
 
 - `backend/tests/Feature/KimiaIdentityImmutabilityTest.php`
 
-This test intentionally excludes historical unique-index and national-code constraint tests because those migrations are not activated in this slice.
+Status: **TESTED — NOT MERGED**.
 
-Current identity-guard status: **IMPLEMENTED — NOT TESTED** on latest exact head until CI completes.
+The historical unique `users.account_id` migration is not applied.
+
+## Read-only users tenancy/binding preflight
+
+Implemented:
+
+- `backend/app/Services/Tenancy/UserTenancyBindingPreflightService.php`
+- `backend/app/Console/Commands/InspectUserTenancyBindingReadiness.php`
+- `backend/tests/Feature/UserTenancyBindingPreflightTest.php`
+
+The preflight reports:
+
+- whether `users` exists;
+- whether `users.tenant_id` exists;
+- total / linked / unlinked users;
+- duplicate non-null `users.account_id` bindings;
+- users missing explicit Tenant assignment;
+- whether unique-account-binding preflight passes;
+- whether authenticated tenancy activation is structurally ready.
+
+Safety properties:
+
+- read-only DB access;
+- no insert/update/delete/backfill;
+- no duplicate repair;
+- no Tenant inference;
+- no Account/Kimia binding inference.
+
+Current canonical schema evidence:
+
+- `users.tenant_id` does not exist;
+- `users.mobile` is still globally unique;
+- `users.account_id` is nullable and not unique;
+- therefore authenticated Tenant activation is not yet structurally ready.
+
+Status: **TESTED — NOT MERGED**.
+
+## CI evidence
+
+### Prior Tenant test-harness failures
+
+Earlier runs #459 and #465 failed only on the Tenant middleware HTTP test harness while migrations, resolver behavior, and other Tenant tests passed. The test was ultimately rewritten to exercise the Middleware with an actual `Illuminate\Http\Request::create()` host rather than relying on dynamic Router test host injection.
+
+Exact head `4d0208fce93bb19aae015096415fb5584aa530bc`:
+
+- Operational Readiness #76 — **EXECUTED — PASS**
+- Backend RC1 Validation #466 — **EXECUTED — PASS**
+
+This promoted the bounded Tenant foundation and ADR-024 immutability guards to **TESTED — NOT MERGED**.
+
+### Users preflight CI
+
+Head `51999217665591f948df5951cdf39c71141fff4a`:
+
+- Operational Readiness #79 — **EXECUTED — PASS**
+- Backend RC1 Validation #469 — **EXECUTED — FAIL**
+
+#469 evidence:
+
+- migration fresh PASS;
+- Unit: 66 PASS / 359 assertions;
+- Feature: 91 PASS / 1 FAIL;
+- the two service/zero-mutation preflight tests PASS;
+- only the command JSON assertion failed because it matched pretty-printed output as a spacing-sensitive string.
+
+No service, query, schema, tenancy, financial, Kimia, or mutation failure was evidenced.
+
+Test-only fix commit `8b1dcd2b0545088b79de161fcea90d252a68f7c5` changed only the command-output test to parse JSON structurally using `Artisan::call()` / `Artisan::output()` and `json_decode()`.
+
+Exact head `8b1dcd2b0545088b79de161fcea90d252a68f7c5`:
+
+- Operational Readiness #80 — **EXECUTED — PASS**
+- Backend RC1 Validation #470 — **EXECUTED — PASS**
+- Migration Fresh — PASS
+- Unit Tests — PASS
+- Feature Tests — PASS
+- Financial/Ledger — PASS
+- Order Lifecycle — PASS
+- Trade Idempotency/Settlement — PASS
+- Custody/Delivery — PASS
+- Permission — PASS
+- Kimia Mock — PASS
+- Kimia Read-Only Integration Contract — PASS
+- Full Regression — PASS
+- Laravel Health — PASS
+- Docker Compose Validation — PASS
+- Secret Scan — PASS
+
+The users tenancy/binding preflight is therefore **TESTED — NOT MERGED**.
+
+## Next bounded checkpoint constraints
+
+Do not combine these operations into one migration/checkpoint:
+
+1. adding nullable `users.tenant_id`;
+2. assigning/backfilling users to a Tenant;
+3. replacing global `users.mobile` uniqueness with tenant-scoped uniqueness;
+4. enforcing unique `users.account_id`;
+5. implementing Registration→Account binding;
+6. activating Host Tenant ↔ authenticated User Tenant cross-check.
+
+Each requires its own evidence, preflight, rollback/reversibility and CI closure.
+
+The accepted architecture supports a future nullable `users.tenant_id` schema checkpoint, but **does not provide a ground-truth user→Tenant backfill mapping**. No automatic backfill or default Khalifeh assignment is authorized by current evidence.
 
 ## Explicitly not included
 
-- no `users.tenant_id` migration or backfill;
+- no `users.tenant_id` migration/backfill yet;
 - no Product/Order/Wallet/Ledger/Custody tenant migration;
 - no tenant-specific Kimia credential storage;
 - no connector/book credential movement;
 - no authenticated user/Tenant cross-check activation yet;
 - no Customer financial resolver activation;
 - no unique `users.account_id` migration application;
+- no Registration→Account linking implementation;
 - no Kimia Write.
-
-## Historical unique-binding migration
-
-Historical `2026_08_03_120100_enforce_unique_user_account_binding.php` performs duplicate non-null preflight before adding unique `users.account_id`.
-
-It remains **HISTORICAL ONLY / REUSE AFTER FIX candidate** and is not applied until current runtime duplicate/orphan evidence and tenant-aware migration sequencing are approved.
 
 ## Current classifications
 
 - ADR-024 rule: **REUSE AS-IS**.
 - ADR-026 decisions: **REUSE AS-IS**.
 - Historical `work/product-kimia-next` branch: **HISTORICAL ONLY**.
-- Bounded Tenant foundation: **IMPLEMENTED — NOT TESTED** on latest head pending exact-head CI.
-- ADR-024 immutability guards: **IMPLEMENTED — NOT TESTED** pending exact-head CI.
+- Read-only reconciliation: **TESTED — NOT MERGED**.
+- Bounded Tenant foundation: **TESTED — NOT MERGED**.
+- ADR-024 immutability guards: **TESTED — NOT MERGED**.
+- Users tenancy/binding preflight: **TESTED — NOT MERGED**.
 - Historical unique-binding migration: **HISTORICAL ONLY**, candidate **REUSE AFTER FIX**.
+- `users.tenant_id` migration/backfill: **NOT IMPLEMENTED**.
 - Registration -> approved `users.account_id` workflow: **NOT IMPLEMENTED**.
+- Authenticated Host Tenant ↔ User Tenant cross-check: **NOT IMPLEMENTED**.
 - Authenticated Customer -> Kimia resolver: **NOT IMPLEMENTED**.
 - Tenant -> Kimia connector/book runtime implementation: **NOT IMPLEMENTED**.
+- Customer financial fail-closed behavior: **REUSE AS-IS**.
 - Kimia Write: **BLOCKED BY GROUND TRUTH**.
