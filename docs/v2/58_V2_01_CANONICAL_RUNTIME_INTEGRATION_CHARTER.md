@@ -1,170 +1,106 @@
 # GoldPlatform V2-01 — Canonical Runtime Integration & Customer↔Kimia Binding Verification
 
-**Status:** IN PROGRESS — RECONCILIATION TESTED — RESOLVER BLOCKED  
+**Status:** IN PROGRESS — RECONCILIATION TESTED — TENANT FOUNDATION RECOVERED / CI PENDING  
 **Base branch:** `recovery/rc2-product-rebuild`  
 **Base exact SHA:** `d9ee5fee69969fa02ac25c96d8e1653143ba413b`  
 **Working branch:** `v2/v2-01-canonical-runtime-integration`
 
 ## Outcome
 
-Establish a canonical, read-only, fail-closed runtime path that can prove how an authenticated GoldPlatform customer resolves to the correct Kimia account and how Money/Gold/Coin/Currency reads are reconciled against Kimia without creating a competing customer balance source.
-
-V2-01 is not a rewrite of existing foundations. Existing canonical capabilities must be reused where valid.
-
-## Current result
-
-Canonical source proves a structural `User.account_id -> Account.kimia_id` path and contains canonical Kimia read repositories. It does not contain an approved runtime workflow that populates `users.account_id`.
-
-A narrowly reconstructed read-only reconciliation capability is present and tested. It reports conflicts and performs no repair. Customer financial endpoints remain intentionally fail-closed.
-
-White-label is a confirmed product requirement, but the exact Tenant/Company/Connector/Book runtime model is not yet grounded by a currently recovered authoritative source.
-
-## Source-integrity correction
-
-Earlier V2-01 notes referred to `ADR-024` / `ADR-026`, detailed binding cardinality/immutability rules, and a specific Tenant/connector model as accepted Ground Truth. During the current evidence pass those exact sources could not be re-established from:
-
-- current GitHub PR/commit/code/branch searches;
-- available `00_PROJECT_MEMORY.md`;
-- `41_GOLDPLATFORM_DOMAIN_WORKSHOP_2026-07-28.md`;
-- `08_KIMIA_INTEGRATION_AUDIT.md`;
-- current continuation/handoff sources.
-
-Under NO GUESSING those details are now **BLOCKED BY SOURCE RECOVERY** and are not allowed to drive a migration, guard or resolver until the authoritative source is recovered or a genuine owner decision is required.
-
-This does not claim those ADRs never existed. A first-search miss is not absence proof.
+Establish a canonical, read-only, fail-closed path from an authenticated GoldPlatform customer to the exact Kimia account used for Money/Gold/Coin/Currency reads, without creating a competing balance source.
 
 ## Source-of-truth boundaries
 
-1. **Kimia is final authority** for customer Money, Gold, Coin and Currency balances.
-2. GoldPlatform must not create, infer, repair, or promote a competing financial balance.
-3. GoldPlatform remains final authority for physical Custody/Amanat only.
-4. Internal Ledger / Projection / Reservation structures are audit/workflow/reconciliation aids only.
-5. Kimia Write remains disabled/deny-by-default.
-6. White-label is required, but its storage/routing implementation must be evidence-driven rather than invented.
+1. Kimia is final authority for Money/Gold/Coin/Currency.
+2. GoldPlatform is final authority for physical Custody/Amanat.
+3. Ledger/Projection/Reservation remain audit/workflow/reconciliation aids only.
+4. Kimia Write remains deny-by-default.
+5. No binding may be inferred from mobile/name/national code/account code/sample/first/zero ID.
 
-## Existing evidence reused
+## Recovered accepted Ground Truth
 
-### Canonical Kimia Read
+Source recovery located the Accepted Project Memory snapshot and exact historical ADR files on `work/product-kimia-next`.
 
-Merged PR #150 supplies the isolated Kimia read client and Account/Balance/Product repositories. Classification: **REUSE AS-IS**.
+### ADR-024
 
-### Customer fail-closed financial state
+- one GoldPlatform login/account -> zero or one local Account -> zero or one Kimia AccountId;
+- one Kimia AccountId -> no more than one platform login/account;
+- established AccountId binding is unique and immutable;
+- mobile uniqueness target is inside Tenant;
+- national code may repeat across independent accounts;
+- account_code never replaces AccountId.
 
-Current Customer Dashboard/Assets controllers return `KIMIA_FINANCIAL_BALANCE_SOURCE_REQUIRED` until a verified resolver exists. Classification: **REUSE AS-IS**.
+### ADR-026
 
-### PR #196 — evidence candidate, not merge source
+- shared database/shared schema with mandatory tenant ownership;
+- verified active domain/subdomain is the public Tenant source;
+- authenticated requests must later cross-check resolved Tenant with user's Tenant;
+- one active Kimia connector/book per Tenant in first release;
+- Platform Super Admin separate from Tenant Admin/Operator;
+- no all-table migration; table-group migration with preflight only.
 
-Reusable concepts:
-
-- SELECT-only reconciliation classification;
-- inspection of `accounts`, `external_accounts`, and `users.account_id`;
-- duplicate/orphan conflict reporting;
-- zero-mutation proof.
-
-Classification: **REUSE AFTER FIX**.
-
-No broad merge or cherry-pick from PR #196 is permitted.
-
-## Explicitly forbidden in V2-01 unless separate Ground Truth/owner decision exists
-
-- auto-link by mobile, name, national code, account code, similarity, first record, zero or sample ID;
-- creation/update/delete/backfill of customer-account bindings from reconciliation inspection;
-- Kimia Write or guessed write payload/action/transaction code;
-- independent Money/Gold/Coin/Currency balance mutation;
-- invented Tenant/Company/Connector/Book schema or routing;
-- broad cherry-pick/merge from PR #196;
-- migration creation merely to force an assumed binding model.
+The historical branch is 6 commits ahead and 577 behind canonical, so it is **HISTORICAL ONLY** as a branch-level integration source. No broad merge/cherry-pick is permitted.
 
 ## Canonical findings
 
-- `accounts.kimia_id` is non-null and unique in canonical migration.
-- `users.account_id` is a nullable FK and is not unique in canonical migration.
-- `RegistrationService` does not populate or approve `users.account_id`; it retains an explicit Kimia-link TODO.
-- Registration and `UserObserver` both create Wallet/default accounts: **DUPLICATE CANDIDATE**; not silently repaired in this slice.
-- no dedicated authenticated Customer→Kimia resolver is evidenced: **NOT IMPLEMENTED**.
-- no active canonical Tenant root is evidenced: **NOT IMPLEMENTED**.
-- exact Tenant/Company/Connector/Book identity/routing semantics: **BLOCKED BY GROUND TRUTH**.
-- previously cited ADR-024/ADR-026 detailed rules: **BLOCKED BY SOURCE RECOVERY** until exact source is recovered.
+- `accounts.kimia_id`: non-null + unique — **REUSE AS-IS**.
+- `users.account_id`: nullable FK, no unique index — **REUSE AS-IS** as current schema, enforcement incomplete.
+- Registration does not assign/approve `users.account_id` and retains Kimia-link TODO — **NOT IMPLEMENTED**.
+- RegistrationService + active UserObserver both create Wallet/default accounts — **DUPLICATE CANDIDATE**.
+- Customer financial controllers correctly return `KIMIA_FINANCIAL_BALANCE_SOURCE_REQUIRED` until verified resolution — **REUSE AS-IS**.
+- Canonical Kimia Read repositories from merged PR #150 — **REUSE AS-IS**.
 
-## Reconciliation implementation
+## Implemented V2-01 slices
 
-Current V2-01 files:
+### Read-only reconciliation
 
-- `backend/app/Services/Kimia/CustomerAccountReconciliationService.php`
-- `backend/app/Console/Commands/KimiaInspectAccountReconciliation.php`
-- `backend/tests/Feature/KimiaInspectAccountReconciliationTest.php`
-- `docs/v2/59_V2_01_CANONICAL_BINDING_INVENTORY.md`
-- `docs/v2/60_V2_01_BINDING_TENANT_TRACEABILITY_GATE.md`
+- `CustomerAccountReconciliationService`
+- `kimia:inspect-account-reconciliation`
+- zero-mutation/duplicate-binding tests
 
-The service/command are read-only. Tests prove no mutation and prove duplicate bindings are reported rather than repaired.
+Status: **TESTED — NOT MERGED**.
 
-## Validation evidence
+Exact head `245875155793e20258f460018efb3ad4a94c3207`:
 
-Exact head `058680093fea90a30235acc1171c744a3c472ca1`:
+- Backend RC1 Validation #444 — EXECUTED — PASS
+- Operational Readiness #54 — EXECUTED — PASS
 
-- Backend RC1 Validation #437 — **EXECUTED — PASS**
-- Operational Readiness #47 — **EXECUTED — PASS**
+### Bounded Tenant foundation
 
-Exact head `1b7380abc688b4fea295176ffd759e3396164b71`:
+Recovered file-by-file from the accepted ADR-026 historical checkpoint:
 
-- Backend RC1 Validation #440 — **EXECUTED — PASS**
-- Operational Readiness #50 — **EXECUTED — PASS**
+- Tenant / TenantDomain models;
+- TenantHost / TenantContext / TenantResolver;
+- fail-closed ResolveTenantFromDomain middleware;
+- additive `tenants` / `tenant_domains` migrations;
+- middleware alias only, not attached to production routes;
+- Tenant domain isolation tests.
 
-Read-only reconciliation classification: **TESTED — NOT MERGED**.
+Status: **IMPLEMENTED — NOT TESTED** until exact-head CI for the new recovery commits.
 
-Subsequent source-integrity documentation commits require their own exact-head CI before a newer PR-level PASS claim.
+Explicitly excluded:
 
-## Target canonical resolution chain
+- no `users.tenant_id` migration/backfill;
+- no tenant migration of business tables;
+- no connector credential movement;
+- no Customer resolver activation;
+- no binding unique-index migration application;
+- no Kimia Write.
 
-The proven minimum future chain is:
+## Target resolution chain
 
-`Authenticated Customer -> approved platform binding -> exact local Account -> exact Kimia AccountId -> canonical Kimia Read -> reconciliation metadata -> customer-safe financial presentation`
+`Authenticated Customer -> verified Tenant context (when authenticated tenancy is activated) -> approved users.account_id binding -> exact Account.kimia_id -> canonical Kimia Read -> reconciliation metadata -> customer-safe financial presentation`
 
-Any White-label Tenant/Company/Connector/Book context required by the final recovered architecture must be inserted into this chain only after it is grounded.
+Every link must be evidenced. Missing/ambiguous links fail closed.
 
-No link may be invented.
+## Remaining V2-01 blockers
 
-## Activation prerequisites
-
-Before activating Customer financial resolution:
-
-1. the approved workflow that populates `users.account_id` must be grounded and implemented without inference;
-2. referenced Account must exist and expose its exact canonical `kimia_id`;
-3. duplicate/orphan/ambiguous states must fail closed under the final accepted cardinality rules;
-4. any required White-label identity/routing context must have exact Ground Truth and backend enforcement;
-5. no hard-coded/sample/fallback Kimia AccountId may exist;
-6. no Kimia Write is required or authorized by this resolver.
+1. Approved runtime workflow that populates `users.account_id` is still **NOT IMPLEMENTED**.
+2. `users.tenant_id` and authenticated user/Tenant cross-check are not yet active.
+3. Historical unique-binding/immutability implementation is preserved but requires current duplicate/orphan preflight before controlled recovery.
+4. Tenant->Kimia connector/book credential/config implementation was explicitly deferred by ADR-026.
+5. Customer financial resolver remains **NOT IMPLEMENTED** until the above prerequisites are proven.
 
 ## Exit criteria
 
-V2-01 may only close when all applicable items are evidenced:
-
-- canonical resolver path implemented from verified relationships/context;
-- no hard-coded/sample/fallback Kimia AccountId;
-- reconciliation remains read-only and tested;
-- duplicate/orphan/ambiguous states reported, never silently fixed;
-- Customer Money/Gold/Coin/Currency remain Kimia-authoritative;
-- Controller does not call Kimia client directly;
-- Kimia Write remains disabled;
-- any required White-label context is canonical and enforced;
-- API/OpenAPI changes, if any, are synchronized;
-- exact-head tests/CI recorded;
-- runtime reconciliation evidence collected from an approved environment or explicitly remains a blocking exit criterion;
-- documentation and traceability complete.
-
-## Current known external blocker
-
-An upstream Composer security advisory involving `league/commonmark 2.8.3` can independently fail Security Hardening / RC2 dependency audit. It must not be suppressed or worked around by weakening security.
-
-## Current capability status
-
-- V2-01 charter: **TESTED — NOT MERGED** for the last exact-head validated state.
-- Read-only reconciliation: **TESTED — NOT MERGED**.
-- Canonical Customer↔Kimia resolver: **NOT IMPLEMENTED**.
-- Approved binding workflow: **NOT IMPLEMENTED**.
-- Exact historical binding cardinality/immutability rules previously attributed to ADR-024: **BLOCKED BY SOURCE RECOVERY**.
-- White-label product requirement: **REUSE AS-IS**.
-- Canonical Tenant runtime root: **NOT IMPLEMENTED**.
-- Tenant/Company/Connector/Book identity/routing semantics: **BLOCKED BY GROUND TRUTH**.
-- Customer financial read current fail-closed behavior: **REUSE AS-IS**.
-- Kimia Write: **BLOCKED BY GROUND TRUTH**.
+V2-01 closes only after applicable resolver/binding/Tenant prerequisites are implemented, exact-head tests/CI pass, Customer Money/Gold/Coin/Currency read only from Kimia, conflicts fail closed, and documentation/traceability are synchronized.
