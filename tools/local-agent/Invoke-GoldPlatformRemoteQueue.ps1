@@ -126,6 +126,10 @@ function Invoke-AllowedCommand {
             $command = "Set-Location -LiteralPath '$escapedRoot'; docker compose exec -T php php artisan kimia:test --no-ansi; if (`$LASTEXITCODE -eq 0) { docker compose exec -T php php artisan kimia:inspect-transactions 350 --page=0 --size=10 --no-ansi; exit `$LASTEXITCODE }; exit `$LASTEXITCODE"
             return Invoke-CapturedCommand -FilePath $pwsh -Arguments @('-NoProfile','-NonInteractive','-Command',$command) -TimeoutSeconds 300
         }
+        'kimia-reconciliation-readonly' {
+            $docker = (Get-Command docker -ErrorAction Stop).Source
+            return Invoke-CapturedCommand -FilePath $docker -Arguments @('compose','exec','-T','php','php','artisan','kimia:inspect-account-reconciliation','--json','--no-ansi') -TimeoutSeconds 300
+        }
         'recent-logs' {
             $docker = (Get-Command docker -ErrorAction Stop).Source
             return Invoke-CapturedCommand -FilePath $docker -Arguments @('compose','exec','-T','php','sh','-lc','test -f storage/logs/laravel.log && tail -n 160 storage/logs/laravel.log || true') -TimeoutSeconds 120
@@ -210,7 +214,7 @@ try {
         }
 
         $commandName = $match.Groups[1].Value.ToLowerInvariant()
-        $allowed = @('self-update','health-check','tests','docker-status','git-status','kimia-readonly','recent-logs')
+        $allowed = @('self-update','health-check','tests','docker-status','git-status','kimia-readonly','kimia-reconciliation-readonly','recent-logs')
 
         if ($commandName -notin $allowed) {
             Add-IssueComment -IssueNumber $issueNumber -Body "## Agent result: FAILED`n`nRejected command '$commandName'. Allowed: $($allowed -join ', ')"
