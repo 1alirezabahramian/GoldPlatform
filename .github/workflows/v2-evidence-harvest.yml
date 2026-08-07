@@ -1,5 +1,8 @@
 name: V2 Evidence Harvest
 
+# V2-00 evidence checkpoint: this workflow is intentionally read-only and may be
+# retriggered by documentation-only metadata edits to refresh immutable evidence.
+
 on:
   push:
     branches:
