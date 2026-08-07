@@ -10,6 +10,12 @@ on:
     paths:
       - '.github/scripts/v2_evidence_harvester.py'
       - '.github/workflows/v2-evidence-harvest.yml'
+  pull_request:
+    branches:
+      - recovery/rc2-product-rebuild
+    paths:
+      - '.github/scripts/v2_evidence_harvester.py'
+      - '.github/workflows/v2-evidence-harvest.yml'
   workflow_dispatch:
     inputs:
       start_pr:
