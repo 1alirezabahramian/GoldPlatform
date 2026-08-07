@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Account;
 use App\Models\ExternalAccount;
 use App\Models\User;
+use App\Services\Kimia\CustomerAccountReconciliationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -46,11 +47,18 @@ class KimiaInspectAccountReconciliationTest extends TestCase
         ]);
 
         $before = $this->snapshot();
+        $result = app(CustomerAccountReconciliationService::class)->inspect();
+
+        $this->assertSame(1, $result['summary']['matched_linked']);
+        $this->assertSame(1, $result['summary']['account_only_unlinked']);
+        $this->assertSame(1, $result['summary']['external_only']);
+
+        $statuses = array_column($result['rows'], 'status');
+        $this->assertContains('matched_linked', $statuses);
+        $this->assertContains('account_only_unlinked', $statuses);
+        $this->assertContains('external_only', $statuses);
 
         $this->artisan('kimia:inspect-account-reconciliation --json')
-            ->expectsOutputToContain('matched_linked')
-            ->expectsOutputToContain('account_only_unlinked')
-            ->expectsOutputToContain('external_only')
             ->assertSuccessful();
 
         $this->assertSame($before, $this->snapshot());
@@ -75,6 +83,9 @@ class KimiaInspectAccountReconciliationTest extends TestCase
         ]);
 
         $before = $this->snapshot();
+        $result = app(CustomerAccountReconciliationService::class)->inspect();
+
+        $this->assertSame(1, $result['summary']['duplicate_user_binding']);
 
         $this->artisan('kimia:inspect-account-reconciliation')
             ->expectsOutputToContain('duplicate_user_binding')
