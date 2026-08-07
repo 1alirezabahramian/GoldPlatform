@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -19,7 +19,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'first_name', 'last_name', 'mobile', 'name', 'national_code', 'group_id',
-        'account_id', 'mobile_verified', 'is_active', 'last_login_at', 'email', 'password',
+        'tenant_id', 'account_id', 'mobile_verified', 'is_active', 'last_login_at', 'email', 'password',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -35,6 +35,7 @@ class User extends Authenticatable
         ];
     }
 
+    public function tenant(): BelongsTo { return $this->belongsTo(Tenant::class); }
     public function group(): BelongsTo { return $this->belongsTo(UserGroup::class, 'group_id'); }
     public function account(): BelongsTo { return $this->belongsTo(Account::class); }
     public function wallet(): HasOne { return $this->hasOne(Wallet::class); }
