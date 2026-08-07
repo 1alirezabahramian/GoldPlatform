@@ -50,30 +50,48 @@ jobs:
       - name: Validate harvester syntax
         run: python3 -m py_compile .github/scripts/v2_evidence_harvester.py
 
-      - name: Harvest JSON evidence
+      - name: Harvest PR JSON evidence
         run: |
           python3 .github/scripts/v2_evidence_harvester.py \
             --repo "${{ github.repository }}" \
+            --mode prs \
             --start-pr "$START_PR" \
             --end-pr "$END_PR" \
             --canonical-ref "$CANONICAL_REF" \
-            --format json > v2-evidence.json
+            --format json > v2-pr-evidence.json
 
-      - name: Harvest Markdown evidence
+      - name: Harvest PR Markdown evidence
         run: |
           python3 .github/scripts/v2_evidence_harvester.py \
             --repo "${{ github.repository }}" \
+            --mode prs \
             --start-pr "$START_PR" \
             --end-pr "$END_PR" \
             --canonical-ref "$CANONICAL_REF" \
-            --format markdown > v2-evidence.md
+            --format markdown > v2-pr-evidence.md
+
+      - name: Harvest branch head JSON evidence
+        run: |
+          python3 .github/scripts/v2_evidence_harvester.py \
+            --repo "${{ github.repository }}" \
+            --mode branches \
+            --format json > v2-branch-heads.json
+
+      - name: Harvest branch head Markdown evidence
+        run: |
+          python3 .github/scripts/v2_evidence_harvester.py \
+            --repo "${{ github.repository }}" \
+            --mode branches \
+            --format markdown > v2-branch-heads.md
 
       - name: Upload immutable evidence artifact
         uses: actions/upload-artifact@v4
         with:
           name: v2-evidence-${{ github.sha }}
           path: |
-            v2-evidence.json
-            v2-evidence.md
+            v2-pr-evidence.json
+            v2-pr-evidence.md
+            v2-branch-heads.json
+            v2-branch-heads.md
           if-no-files-found: error
           retention-days: 30
