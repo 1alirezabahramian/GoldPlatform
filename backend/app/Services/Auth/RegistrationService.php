@@ -2,6 +2,7 @@
 
 namespace App\Services\Auth;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -9,7 +10,17 @@ class RegistrationService
 {
     public function register(array $data): User
     {
-        return DB::transaction(function () use ($data) {
+        return $this->registerWithTenant($data, null);
+    }
+
+    public function registerForTenant(array $data, Tenant $tenant): User
+    {
+        return $this->registerWithTenant($data, $tenant->id);
+    }
+
+    private function registerWithTenant(array $data, ?int $tenantId): User
+    {
+        return DB::transaction(function () use ($data, $tenantId) {
 
             /*
             |--------------------------------------------------------------------------
@@ -32,6 +43,8 @@ class RegistrationService
                 'mobile_verified' => true,
 
                 'is_active' => true,
+
+                'tenant_id' => $tenantId,
 
             ]);
 
