@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """GoldPlatform V2 read-only GitHub evidence harvester.
 
-Batch-reads PR metadata, exact-head workflow runs and canonical ancestry.
+Batch-reads PR metadata, exact-head workflow runs, canonical ancestry, or the
+complete branch-name -> exact-head-SHA inventory.
+
 It never infers business rules, Kimia behavior, capability completion or
 Production Ready status. Missing evidence remains UNKNOWN / NOT_FOUND.
 """
@@ -54,6 +56,14 @@ class PrEvidence:
     evidence_error: str | None = None
 
 
+@dataclass
+class BranchEvidence:
+    name: str
+    head_sha: str | None
+    protected: bool | None
+    evidence_error: str | None = None
+
+
 class GitHubReader:
     def __init__(self, token: str, api_url: str, timeout: int = 30, retries: int = 3) -> None:
         self.token = token
@@ -91,9 +101,10 @@ class GitHubReader:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Read-only V2 GitHub evidence harvester")
     parser.add_argument("--repo", required=True, help="owner/repository")
-    parser.add_argument("--start-pr", type=int, required=True)
-    parser.add_argument("--end-pr", type=int, required=True)
-    parser.add_argument("--canonical-ref", required=True)
+    parser.add_argument("--mode", choices=("prs", "branches"), default="prs")
+    parser.add_argument("--start-pr", type=int)
+    parser.add_argument("--end-pr", type=int)
+    parser.add_argument("--canonical-ref")
     parser.add_argument("--token", default=os.getenv("GITHUB_TOKEN"))
     parser.add_argument("--api-url", default=os.getenv("GITHUB_API_URL", "https://api.github.com"))
     parser.add_argument("--format", choices=("json", "markdown"), default="json")
@@ -204,6 +215,35 @@ def collect_pr(reader: GitHubReader, repo: str, number: int, canonical_ref: str)
         )
 
 
+def collect_branches(reader: GitHubReader, repo: str) -> list[BranchEvidence]:
+    rows: list[BranchEvidence] = []
+    page = 1
+    while True:
+        try:
+            payload = reader.get(f"/repos/{repo}/branches?per_page=100&page={page}")
+        except Exception as exc:
+            rows.append(BranchEvidence(
+                name=f"__PAGE_{page}_ERROR__",
+                head_sha=None,
+                protected=None,
+                evidence_error=f"{type(exc).__name__}: {exc}",
+            ))
+            break
+        if not payload:
+            break
+        for branch in payload:
+            rows.append(BranchEvidence(
+                name=branch.get("name") or "UNKNOWN",
+                head_sha=(branch.get("commit") or {}).get("sha"),
+                protected=branch.get("protected"),
+            ))
+        if len(payload) < 100:
+            break
+        page += 1
+    rows.sort(key=lambda row: row.name)
+    return rows
+
+
 def render_workflow(workflow: WorkflowEvidence) -> str:
     if workflow.run_number is None:
         return workflow.status
@@ -213,12 +253,13 @@ def render_workflow(workflow: WorkflowEvidence) -> str:
     return value
 
 
-def render_markdown(rows: list[PrEvidence], repo: str, canonical_ref: str) -> str:
+def render_pr_markdown(rows: list[PrEvidence], repo: str, canonical_ref: str) -> str:
     lines = [
         "# GoldPlatform V2 Evidence Harvest",
         "",
         f"Repository: `{repo}`  ",
         f"Canonical ref: `{canonical_ref}`  ",
+        "Mode: `pull requests`  ",
         "Classification: `READ-ONLY EVIDENCE — NO COMPLETION INFERENCE`",
         "",
         "| PR | State | Merged | Head SHA | Backend RC1 exact-head CI | All exact-head runs | Canonical relation | Error |",
@@ -244,22 +285,70 @@ def render_markdown(rows: list[PrEvidence], repo: str, canonical_ref: str) -> st
     return "\n".join(lines)
 
 
+def render_branch_markdown(rows: list[BranchEvidence], repo: str) -> str:
+    lines = [
+        "# GoldPlatform V2 Branch Head Inventory",
+        "",
+        f"Repository: `{repo}`  ",
+        f"Branch count: `{len([row for row in rows if not row.name.startswith('__PAGE_')])}`  ",
+        "Mode: `branches`  ",
+        "Classification: `READ-ONLY EVIDENCE — NO CLEANUP OR COMPLETION INFERENCE`",
+        "",
+        "| Branch | Exact Head SHA | Protected | Error |",
+        "|---|---|:---:|---|",
+    ]
+    for row in rows:
+        lines.append(
+            "| `{name}` | `{sha}` | {protected} | {error} |".format(
+                name=row.name.replace("|", "\\|"),
+                sha=row.head_sha or "UNKNOWN",
+                protected="yes" if row.protected else ("no" if row.protected is False else "UNKNOWN"),
+                error=(row.evidence_error or "").replace("|", "\\|"),
+            )
+        )
+    lines.extend([
+        "",
+        "> Branch names and SHAs are inventory evidence only. They do not authorize deletion, merge, rebase, cleanup, capability reuse or production claims.",
+    ])
+    return "\n".join(lines)
+
+
 def main() -> int:
     args = parse_args()
-    if args.start_pr <= 0 or args.end_pr < args.start_pr:
-        print("Invalid PR range", file=sys.stderr)
-        return 2
     if not args.token:
         print("GITHUB_TOKEN or --token is required", file=sys.stderr)
         return 2
 
     reader = GitHubReader(args.token, args.api_url)
+
+    if args.mode == "branches":
+        rows = collect_branches(reader, args.repo)
+        if args.format == "markdown":
+            print(render_branch_markdown(rows, args.repo))
+        else:
+            print(json.dumps({
+                "repository": args.repo,
+                "mode": "branches",
+                "classification": "READ-ONLY EVIDENCE — NO CLEANUP OR COMPLETION INFERENCE",
+                "branch_count": len([row for row in rows if not row.name.startswith("__PAGE_")]),
+                "branches": [asdict(row) for row in rows],
+            }, ensure_ascii=False, indent=2))
+        return 0
+
+    if args.start_pr is None or args.end_pr is None or not args.canonical_ref:
+        print("--start-pr, --end-pr and --canonical-ref are required in prs mode", file=sys.stderr)
+        return 2
+    if args.start_pr <= 0 or args.end_pr < args.start_pr:
+        print("Invalid PR range", file=sys.stderr)
+        return 2
+
     rows = [collect_pr(reader, args.repo, number, args.canonical_ref) for number in range(args.start_pr, args.end_pr + 1)]
     if args.format == "markdown":
-        print(render_markdown(rows, args.repo, args.canonical_ref))
+        print(render_pr_markdown(rows, args.repo, args.canonical_ref))
     else:
         print(json.dumps({
             "repository": args.repo,
+            "mode": "prs",
             "canonical_ref": args.canonical_ref,
             "classification": "READ-ONLY EVIDENCE — NO COMPLETION INFERENCE",
             "pull_requests": [asdict(row) for row in rows],
