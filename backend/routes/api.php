@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\OperatorPanelController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\StaffAuthController;
 use App\Http\Controllers\Api\TenantIdentitySettingsController;
+use App\Http\Controllers\Api\TenantStaffController;
 use App\Http\Controllers\Api\V1\CustomerAssetReadController;
 use App\Http\Controllers\Api\V1\CustomerCustodyDeliveryController;
 use App\Http\Controllers\Api\V1\CustomerDashboardController;
@@ -101,6 +102,8 @@ Route::prefix('admin')
             ->middleware('idempotency:policy.update');
         Route::get('/settings/identity-onboarding', [TenantIdentitySettingsController::class, 'show']);
         Route::put('/settings/identity-onboarding', [TenantIdentitySettingsController::class, 'update']);
+        Route::post('/staff', [TenantStaffController::class, 'store'])
+            ->middleware('idempotency:staff.create');
     });
 
 Route::middleware(['auth:sanctum', 'throttle:auth', 'tenant.resolve', 'tenant.user-match'])
