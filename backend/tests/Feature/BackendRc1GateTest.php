@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\AccountType;
 use App\Integrations\Kimia\Repositories\KimiaAccountRepository;
 use App\Integrations\Kimia\Repositories\VoucherRepository;
+use App\Models\Tenant;
+use App\Models\TenantDomain;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -18,6 +20,8 @@ class BackendRc1GateTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const TENANT_HOST = 'backend-rc1-pilot.test';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -28,6 +32,16 @@ class BackendRc1GateTest extends TestCase
             'password' => 'test-password',
             'timeout' => 5,
         ]);
+
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
+
+        TenantDomain::query()->create([
+            'tenant_id' => $tenant->id,
+            'host' => self::TENANT_HOST,
+            'is_primary' => true,
+            'is_active' => true,
+            'verified_at' => now(),
+        ]);
     }
 
     #[Test]
@@ -37,23 +51,25 @@ class BackendRc1GateTest extends TestCase
         Role::findOrCreate('operator', 'web');
         Role::findOrCreate('admin', 'web');
 
-        $customer = User::factory()->create();
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
+
+        $customer = User::factory()->create(['tenant_id' => $tenant->id]);
         $customer->assignRole('customer');
         Sanctum::actingAs($customer);
-        $this->getJson('/api/customer/overview')->assertOk();
-        $this->getJson('/api/operator/orders/queue')->assertForbidden();
-        $this->getJson('/api/admin/audit-logs')->assertForbidden();
+        $this->getJson($this->tenantUrl('/api/customer/overview'))->assertOk();
+        $this->getJson($this->tenantUrl('/api/operator/orders/queue'))->assertForbidden();
+        $this->getJson($this->tenantUrl('/api/admin/audit-logs'))->assertForbidden();
 
-        $operator = User::factory()->create();
+        $operator = User::factory()->create(['tenant_id' => $tenant->id]);
         $operator->assignRole('operator');
         Sanctum::actingAs($operator);
-        $this->getJson('/api/operator/orders/queue')->assertOk();
-        $this->getJson('/api/admin/audit-logs')->assertForbidden();
+        $this->getJson($this->tenantUrl('/api/operator/orders/queue'))->assertOk();
+        $this->getJson($this->tenantUrl('/api/admin/audit-logs'))->assertForbidden();
 
-        $admin = User::factory()->create();
+        $admin = User::factory()->create(['tenant_id' => $tenant->id]);
         $admin->assignRole('admin');
         Sanctum::actingAs($admin);
-        $this->getJson('/api/admin/audit-logs')->assertOk();
+        $this->getJson($this->tenantUrl('/api/admin/audit-logs'))->assertOk();
     }
 
     #[Test]
@@ -76,5 +92,10 @@ class BackendRc1GateTest extends TestCase
 
         Http::assertSent(fn (Request $request): bool => $request->method() === 'GET');
         Http::assertSentCount(2);
+    }
+
+    private function tenantUrl(string $path): string
+    {
+        return 'http://'.self::TENANT_HOST.$path;
     }
 }
