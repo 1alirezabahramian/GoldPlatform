@@ -22,6 +22,7 @@ final class TenantStaffController extends Controller
         }
 
         $validated = $request->validate([
+            'tenant_id' => ['prohibited'],
             'name' => ['nullable', 'string', 'max:255'],
             'mobile' => ['required', 'string', 'size:11', Rule::unique('users', 'mobile')],
             'username' => [
