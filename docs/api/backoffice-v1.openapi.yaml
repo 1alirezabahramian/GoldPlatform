@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
   title: GoldPlatform Backoffice API
-  version: 0.3.0-v2-identity
+  version: 0.4.0-v2-identity
   description: |
-    قرارداد Canonical فعلی برای احراز هویت Staff و تنظیمات Identity/Onboarding.
+    قرارداد Canonical فعلی برای احراز هویت Staff، تنظیمات Identity/Onboarding و مدیریت Staff در محدوده Tenant.
     Tenant از Host معتبر resolve می‌شود و Staff به Tenant همان Host محدود است.
+    ساخت Admin/Operator جدید فقط با Tenant Owner authority صریح انجام می‌شود؛ tenant_id از Client پذیرفته نمی‌شود.
     این سند هیچ Rule مالی، Kimia Write، Jibit payload یا Referral reward تعریف نمی‌کند.
 servers:
   - url: /api
@@ -113,6 +114,56 @@ paths:
         '422': { $ref: '#/components/responses/ValidationFailed' }
         '429': { $ref: '#/components/responses/RateLimited' }
 
+  /admin/staff:
+    post:
+      operationId: createTenantStaff
+      summary: ایجاد Admin یا Operator توسط Owner صریح همان Tenant
+      description: |
+        Tenant فقط از Host معتبر resolve می‌شود و tenant_id ورودی Client ممنوع است.
+        Role فقط از roleهای موجود admin/operator استفاده می‌شود و Permission system جدیدی ساخته نمی‌شود.
+        رمز موقت به‌صورت تصادفی تولید و فقط در پاسخ اولیه بازگردانده می‌شود؛ پاسخ no-store است و Idempotency Registry آن را ذخیره یا replay نمی‌کند.
+        User جدید Staff است و Customer wallet/default financial accounts برای او ساخته نمی‌شود.
+      security: [{ sanctum: [] }]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [mobile, username, role]
+              properties:
+                name: { type: [string, 'null'], maxLength: 255 }
+                mobile: { type: string, minLength: 11, maxLength: 11 }
+                username: { type: string, maxLength: 100 }
+                role:
+                  type: string
+                  enum: [admin, operator]
+      responses:
+        '201':
+          description: Staff ساخته شد؛ temporary_password فقط در همین پاسخ اولیه ارائه می‌شود
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'no-store, private' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StaffProvisioningSuccess' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '409':
+          description: Idempotent staff creation قبلاً کامل شده و credential حساس قابل replay نیست
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SensitiveCredentialReplayConflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
 components:
   securitySchemes:
     sanctum:
@@ -123,7 +174,7 @@ components:
     Unauthenticated:
       description: Staff احراز هویت نشده است
     Forbidden:
-      description: نقش Staff، Tenant یا Policy ورود اجازه دسترسی نمی‌دهد
+      description: نقش Staff، Tenant یا Authority اجازه دسترسی نمی‌دهد
     TenantUnavailable:
       description: Host به Tenant فعال و تأییدشده resolve نشد
     ValidationFailed:
@@ -215,6 +266,37 @@ components:
                 customer_registration_mode:
                   type: string
                   enum: [manual, assisted, automatic]
+
+    StaffProvisioningSuccess:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [staff, temporary_password]
+              properties:
+                staff:
+                  type: object
+                  required: [id, name, mobile, username, role, must_change_password]
+                  properties:
+                    id: { type: integer }
+                    name: { type: [string, 'null'] }
+                    mobile: { type: string }
+                    username: { type: string }
+                    role: { type: string, enum: [admin, operator] }
+                    must_change_password: { type: boolean, const: true }
+                temporary_password:
+                  type: string
+                  minLength: 40
+                  writeOnly: true
+
+    SensitiveCredentialReplayConflict:
+      type: object
+      required: [message, code]
+      properties:
+        message: { type: string }
+        code: { type: string, const: IDEMPOTENT_SECRET_RESPONSE_NOT_REPLAYABLE }
 
     DependencyNotReadyError:
       type: object
