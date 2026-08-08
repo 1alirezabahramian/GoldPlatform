@@ -17,6 +17,7 @@ final class BackofficeIdentityOpenApiContractTest extends TestCase
             '/staff/login',
             '/auth/staff/change-password',
             '/settings/identity-onboarding',
+            '/staff',
         ] as $routeFragment) {
             self::assertStringContainsString($routeFragment, $routes);
         }
@@ -25,14 +26,19 @@ final class BackofficeIdentityOpenApiContractTest extends TestCase
             '/auth/staff/login:',
             '/auth/staff/change-password:',
             '/admin/settings/identity-onboarding:',
+            '/admin/staff:',
             'REGISTRATION_MODE_DEPENDENCY_NOT_READY',
+            'IDEMPOTENT_SECRET_RESPONSE_NOT_REPLAYABLE',
             'enum: [manual, assisted, automatic]',
+            'enum: [admin, operator]',
             'customer_auth_mode: { type: string, const: otp }',
             'staff_auth_mode: { type: string, const: password }',
+            'temporary_password:',
         ] as $contractFragment) {
             self::assertStringContainsString($contractFragment, $spec);
         }
 
+        self::assertStringNotContainsString('tenant_id:', $spec);
         self::assertStringNotContainsString('admin/admin', $spec);
         self::assertStringNotContainsString('Kimia Write payload', $spec);
     }
