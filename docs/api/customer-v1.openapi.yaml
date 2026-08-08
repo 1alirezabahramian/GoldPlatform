@@ -39,58 +39,96 @@ paths:
   /assets:
     get:
       operationId: getCustomerAssets
-      summary: دریافت همه مانده‌های مالی مشتری
+      summary: دریافت مانده‌های مالی مشتری از Kimia
+      description: |
+        Host باید به Tenant فعال و تأییدشده resolve شود و کاربر احراز هویت‌شده باید متعلق به همان Tenant باشد.
+        شناسه‌های داخلی Kimia در پاسخ Customer منتشر نمی‌شوند. Money ریالی در Backend به تومان تبدیل می‌شود.
       security: [{ sanctum: [] }]
       responses:
         '200':
-          description: فهرست Money، Gold، Coin و Currency متعلق به مشتری
+          description: Money، Gold، Coin و Currency متعلق به مشتری با منبع Kimia
+          headers:
+            X-Request-ID: { $ref: '#/components/headers/XRequestId' }
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/AssetListResponse' }
+              schema: { $ref: '#/components/schemas/CustomerAssetsResponse' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/FinancialBalanceUnavailable' }
   /assets/money:
     get:
       operationId: getCustomerMoneyAssets
-      summary: دریافت حساب‌های پولی مشتری
+      summary: دریافت مانده پولی مشتری از Kimia
       security: [{ sanctum: [] }]
       responses:
         '200':
-          description: حساب‌های Money مشتری
+          description: مانده پولی Customer-safe با واحد تومان
+          headers:
+            X-Request-ID: { $ref: '#/components/headers/XRequestId' }
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/AssetListResponse' }
+              schema: { $ref: '#/components/schemas/CustomerMoneyResponse' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/FinancialBalanceUnavailable' }
   /assets/gold:
     get:
       operationId: getCustomerGoldAssets
-      summary: دریافت حساب‌های طلایی مشتری
+      summary: دریافت مانده طلای مشتری از Kimia
       security: [{ sanctum: [] }]
       responses:
         '200':
-          description: حساب‌های Gold مشتری
+          description: مانده طلای Customer-safe با واحد گرم
+          headers:
+            X-Request-ID: { $ref: '#/components/headers/XRequestId' }
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/AssetListResponse' }
+              schema: { $ref: '#/components/schemas/CustomerGoldResponse' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/FinancialBalanceUnavailable' }
   /assets/coins:
     get:
       operationId: getCustomerCoinAssets
-      summary: دریافت سکه‌های پویا متعلق به مشتری
+      summary: دریافت مانده سکه‌های Dynamic مشتری از Kimia
       security: [{ sanctum: [] }]
       responses:
         '200':
           description: فهرست Dynamic Coin بدون شناسه داخلی Kimia
+          headers:
+            X-Request-ID: { $ref: '#/components/headers/XRequestId' }
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/AssetListResponse' }
+              schema: { $ref: '#/components/schemas/CustomerCoinsResponse' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/FinancialBalanceUnavailable' }
   /assets/currencies:
     get:
       operationId: getCustomerCurrencyAssets
-      summary: دریافت ارزهای پویا متعلق به مشتری
+      summary: دریافت مانده ارزهای Dynamic مشتری از Kimia
       security: [{ sanctum: [] }]
       responses:
         '200':
           description: فهرست Dynamic Currency بدون شناسه داخلی Kimia
+          headers:
+            X-Request-ID: { $ref: '#/components/headers/XRequestId' }
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/AssetListResponse' }
+              schema: { $ref: '#/components/schemas/CustomerCurrenciesResponse' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/FinancialBalanceUnavailable' }
   /order-statuses:
     get:
       operationId: getCustomerOrderStatuses
@@ -170,6 +208,10 @@ components:
     sanctum:
       type: http
       scheme: bearer
+  headers:
+    XRequestId:
+      description: شناسه رهگیری درخواست؛ متناظر با meta.request_id
+      schema: { type: string }
   parameters:
     PublicReference:
       name: reference
@@ -186,9 +228,19 @@ components:
     Unauthenticated:
       description: کاربر احراز هویت نشده است
     Forbidden:
-      description: نقش کاربر اجازه دسترسی به پنل مشتری را ندارد
+      description: نقش کاربر یا Tenant resolved اجازه دسترسی به این منبع را ندارد
     RateLimited:
       description: تعداد درخواست‌ها بیش از حد مجاز است
+    TenantUnavailable:
+      description: Host به Tenant فعال و تأییدشده resolve نشد
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    FinancialBalanceUnavailable:
+      description: اتصال Customer→Account→Kimia یا خواندن/طبقه‌بندی امن مانده کامل نیست
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
     CustomerNotFound:
       description: منبع متعلق به مشتری پیدا نشد یا متعلق به مشتری دیگری است
       content:
@@ -269,6 +321,106 @@ components:
     DashboardResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessEnvelope'
+    CustomerAssetsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [source, money, gold, coins, currencies]
+              properties:
+                source: { type: string, const: kimia }
+                money: { $ref: '#/components/schemas/MoneyBalance' }
+                gold: { $ref: '#/components/schemas/GoldBalance' }
+                coins:
+                  type: array
+                  items: { $ref: '#/components/schemas/CoinBalance' }
+                currencies:
+                  type: array
+                  items: { $ref: '#/components/schemas/CurrencyBalance' }
+    CustomerMoneyResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [source, money]
+              properties:
+                source: { type: string, const: kimia }
+                money: { $ref: '#/components/schemas/MoneyBalance' }
+    CustomerGoldResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [source, gold]
+              properties:
+                source: { type: string, const: kimia }
+                gold: { $ref: '#/components/schemas/GoldBalance' }
+    CustomerCoinsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [source, coins]
+              properties:
+                source: { type: string, const: kimia }
+                coins:
+                  type: array
+                  items: { $ref: '#/components/schemas/CoinBalance' }
+    CustomerCurrenciesResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [source, currencies]
+              properties:
+                source: { type: string, const: kimia }
+                currencies:
+                  type: array
+                  items: { $ref: '#/components/schemas/CurrencyBalance' }
+    MoneyBalance:
+      type: object
+      additionalProperties: false
+      required: [amount_toman, unit]
+      properties:
+        amount_toman: { type: [string, 'null'], pattern: '^-?\d+(?:\.\d+)?$' }
+        unit: { type: string, const: toman }
+    GoldBalance:
+      type: object
+      additionalProperties: false
+      required: [weight_gram, unit]
+      properties:
+        weight_gram: { type: [string, 'null'], pattern: '^-?\d+(?:\.\d+)?$' }
+        unit: { type: string, const: gram }
+    CoinBalance:
+      type: object
+      additionalProperties: false
+      required: [name, quantity]
+      properties:
+        name: { type: string }
+        quantity: { type: [string, 'null'], pattern: '^-?\d+(?:\.\d+)?$' }
+    CurrencyBalance:
+      type: object
+      additionalProperties: false
+      required: [name, symbol, amount]
+      properties:
+        name: { type: string }
+        symbol: { type: [string, 'null'] }
+        amount: { type: [string, 'null'], pattern: '^-?\d+(?:\.\d+)?$' }
     AssetListResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessEnvelope'
