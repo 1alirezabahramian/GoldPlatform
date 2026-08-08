@@ -52,7 +52,6 @@ final class TenantStaffController extends Controller
                 'username' => $user->username,
                 'role' => $validated['role'],
                 'must_change_password' => true,
-                'tenant_id' => $tenant->id,
             ],
             'temporary_password' => $result['temporary_password'],
         ], 'Staff account created successfully.', status: 201)
