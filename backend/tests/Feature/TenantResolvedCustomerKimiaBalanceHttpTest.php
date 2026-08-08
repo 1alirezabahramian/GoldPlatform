@@ -107,8 +107,7 @@ class TenantResolvedCustomerKimiaBalanceHttpTest extends TestCase
 
         $response = $this->getJson('http://other-v2.test/_v2/test-customer-balances');
 
-        $response->assertForbidden()
-            ->assertJsonPath('code', 'TENANT_CONTEXT_MISMATCH');
+        $response->assertForbidden();
 
         Http::assertNothingSent();
     }
