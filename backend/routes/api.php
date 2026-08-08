@@ -40,11 +40,15 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
     Route::prefix('v1/customer')->middleware('role:customer')->group(function () {
         Route::get('/dashboard', CustomerDashboardController::class);
         Route::get('/profile', CustomerProfileController::class);
-        Route::get('/assets', [CustomerAssetReadController::class, 'index']);
-        Route::get('/assets/money', [CustomerAssetReadController::class, 'money']);
-        Route::get('/assets/gold', [CustomerAssetReadController::class, 'gold']);
-        Route::get('/assets/coins', [CustomerAssetReadController::class, 'coins']);
-        Route::get('/assets/currencies', [CustomerAssetReadController::class, 'currencies']);
+
+        Route::middleware(['tenant.resolve', 'tenant.user-match'])->group(function () {
+            Route::get('/assets', [CustomerAssetReadController::class, 'index']);
+            Route::get('/assets/money', [CustomerAssetReadController::class, 'money']);
+            Route::get('/assets/gold', [CustomerAssetReadController::class, 'gold']);
+            Route::get('/assets/coins', [CustomerAssetReadController::class, 'coins']);
+            Route::get('/assets/currencies', [CustomerAssetReadController::class, 'currencies']);
+        });
+
         Route::get('/orders', [CustomerReadController::class, 'orders']);
         Route::get('/order-statuses', CustomerOrderStatusController::class);
         Route::get('/custodies', [CustomerReadController::class, 'custodies']);
