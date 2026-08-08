@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Tenant;
+use App\Models\TenantDomain;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -11,9 +14,12 @@ final class RecoveryFinancialBalanceSourceOfTruthTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const HOST = 'v2-source-of-truth.test';
+
     public function test_customer_asset_endpoints_fail_closed_instead_of_exposing_internal_projection(): void
     {
-        $customer = $this->customer();
+        $customer = $this->tenantCustomerWithoutAccount();
+        Http::fake();
 
         foreach ([
             '/api/v1/customer/assets',
@@ -23,11 +29,13 @@ final class RecoveryFinancialBalanceSourceOfTruthTest extends TestCase
             '/api/v1/customer/assets/currencies',
         ] as $uri) {
             $this->actingAs($customer, 'sanctum')
-                ->getJson($uri)
+                ->getJson('http://'.self::HOST.$uri)
                 ->assertStatus(503)
-                ->assertJsonPath('code', 'KIMIA_FINANCIAL_BALANCE_SOURCE_REQUIRED')
+                ->assertJsonPath('code', 'CUSTOMER_ACCOUNT_BINDING_REQUIRED')
                 ->assertJsonMissingPath('data');
         }
+
+        Http::assertNothingSent();
     }
 
     public function test_customer_dashboard_does_not_expose_ledger_derived_balances(): void
@@ -55,11 +63,31 @@ final class RecoveryFinancialBalanceSourceOfTruthTest extends TestCase
         }
     }
 
-    private function customer(): User
+    private function tenantCustomerWithoutAccount(): User
+    {
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
+
+        TenantDomain::query()->updateOrCreate(
+            ['host' => self::HOST],
+            [
+                'tenant_id' => $tenant->id,
+                'is_primary' => true,
+                'is_active' => true,
+                'verified_at' => now(),
+            ],
+        );
+
+        return $this->customer([
+            'tenant_id' => $tenant->id,
+            'account_id' => null,
+        ]);
+    }
+
+    private function customer(array $attributes = []): User
     {
         Role::findOrCreate('customer', 'web');
 
-        $user = User::factory()->create();
+        $user = User::factory()->create($attributes);
         $user->assignRole('customer');
 
         return $user;
