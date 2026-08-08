@@ -58,8 +58,8 @@ final class TenantStaffProvisioningTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('data.staff.username', 'operator.one')
             ->assertJsonPath('data.staff.role', 'operator')
-            ->assertJsonPath('data.staff.tenant_id', $tenant->id)
-            ->assertJsonPath('data.staff.must_change_password', true);
+            ->assertJsonPath('data.staff.must_change_password', true)
+            ->assertJsonMissingPath('data.staff.tenant_id');
 
         $temporaryPassword = $response->json('data.temporary_password');
         $this->assertIsString($temporaryPassword);
