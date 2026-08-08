@@ -70,6 +70,7 @@ final class TenantStaffProvisioningTest extends TestCase
         $this->assertTrue($staff->hasRole('operator'));
         $this->assertTrue($staff->must_change_password);
         $this->assertTrue(Hash::check($temporaryPassword, $staff->password));
+        $this->assertNull($staff->wallet, 'Staff provisioning must not create customer wallet/default financial accounts.');
 
         $this->assertDatabaseHas('audit_logs', [
             'actor_id' => $owner->id,
