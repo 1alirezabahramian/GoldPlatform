@@ -102,9 +102,9 @@ final class TenantStaffProvisioningTest extends TestCase
         $this->assertDatabaseMissing('users', ['username' => 'should-not-exist']);
     }
 
-    public function test_client_cannot_select_another_tenant_for_new_staff(): void
+    public function test_client_cannot_select_tenant_for_new_staff(): void
     {
-        [$tenantA, $owner] = $this->tenantWithOwner('admin.a.test');
+        [, $owner] = $this->tenantWithOwner('admin.a.test');
         [$tenantB] = $this->tenantWithOwner('admin.b.test');
         Sanctum::actingAs($owner);
 
@@ -115,11 +115,9 @@ final class TenantStaffProvisioningTest extends TestCase
                 'role' => 'admin',
                 'tenant_id' => $tenantB->id,
             ])
-            ->assertCreated();
+            ->assertUnprocessable();
 
-        $staff = User::query()->where('username', 'tenant-bound')->firstOrFail();
-        $this->assertSame($tenantA->id, $staff->tenant_id);
-        $this->assertNotSame($tenantB->id, $staff->tenant_id);
+        $this->assertDatabaseMissing('users', ['username' => 'tenant-bound']);
     }
 
     public function test_idempotency_registry_does_not_persist_or_replay_temporary_password(): void
