@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Middleware\EnsureAuthenticatedUserMatchesTenant;
 use App\Http\Middleware\IdempotencyMiddleware;
 use App\Http\Middleware\RequestContext;
+use App\Http\Middleware\ResolveTenantFromDomain;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -24,6 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'idempotency' => IdempotencyMiddleware::class,
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
+            'tenant.resolve' => ResolveTenantFromDomain::class,
+            'tenant.user-match' => EnsureAuthenticatedUserMatchesTenant::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

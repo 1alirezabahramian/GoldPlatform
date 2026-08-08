@@ -2,6 +2,7 @@
 
 namespace App\Services\Auth;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -9,62 +10,42 @@ class RegistrationService
 {
     public function register(array $data): User
     {
-        return DB::transaction(function () use ($data) {
+        return $this->registerWithTenant($data, null);
+    }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Create User
-            |--------------------------------------------------------------------------
-            */
+    public function registerForTenant(array $data, Tenant $tenant): User
+    {
+        return $this->registerWithTenant($data, $tenant->id);
+    }
+
+    private function registerWithTenant(array $data, ?int $tenantId): User
+    {
+        return DB::transaction(function () use ($data, $tenantId) {
+            $name = trim(implode(' ', array_filter([
+                $data['first_name'] ?? null,
+                $data['last_name'] ?? null,
+            ])));
 
             $user = User::create([
-
                 'mobile' => $data['mobile'],
-
-                'first_name' => $data['first_name'] ?? null,
-
-                'last_name' => $data['last_name'] ?? null,
-
+                'name' => $name !== '' ? $name : null,
                 'national_code' => $data['national_code'] ?? null,
-
                 'password' => $data['password'],
-
                 'mobile_verified' => true,
-
                 'is_active' => true,
-
+                'tenant_id' => $tenantId,
             ]);
 
             /*
             |--------------------------------------------------------------------------
-            | Create Wallet
+            | Wallet lifecycle
             |--------------------------------------------------------------------------
+            |
+            | UserObserver is the canonical owner of creating the user's wallet and
+            | default internal wallet-account projections after User creation.
+            | RegistrationService must not duplicate that observer side effect.
+            |
             */
-
-            $wallet = $user->wallet()->create([]);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Create Default Wallet Accounts
-            |--------------------------------------------------------------------------
-            */
-
-            $wallet->accounts()->createMany([
-                [
-                    'code' => 'RIAL',
-                    'title' => 'ریال',
-                    'balance' => '0',
-                    'blocked_balance' => '0',
-                    'is_active' => true,
-                ],
-                [
-                    'code' => 'GOLD18',
-                    'title' => 'طلای ۱۸ عیار',
-                    'balance' => '0',
-                    'blocked_balance' => '0',
-                    'is_active' => true,
-                ],
-            ]);
 
             /*
             |--------------------------------------------------------------------------
