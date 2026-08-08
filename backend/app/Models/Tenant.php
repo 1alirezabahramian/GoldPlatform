@@ -14,6 +14,9 @@ class Tenant extends Model
         'name',
         'slug',
         'is_active',
+        'customer_auth_mode',
+        'staff_auth_mode',
+        'customer_registration_mode',
     ];
 
     protected function casts(): array
