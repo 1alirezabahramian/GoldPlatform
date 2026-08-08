@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Tenant;
+use App\Support\IdentityOnboardingPolicy;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -19,6 +20,9 @@ class TenantFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name).'-'.fake()->unique()->numerify('####'),
             'is_active' => true,
+            'customer_auth_mode' => IdentityOnboardingPolicy::CUSTOMER_AUTH_OTP,
+            'staff_auth_mode' => IdentityOnboardingPolicy::STAFF_AUTH_PASSWORD,
+            'customer_registration_mode' => IdentityOnboardingPolicy::REGISTRATION_MANUAL,
         ];
     }
 }
