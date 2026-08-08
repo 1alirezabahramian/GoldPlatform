@@ -8,6 +8,8 @@ use App\Models\CustomerTradingPolicy;
 use App\Models\DeliveryRequest;
 use App\Models\Order;
 use App\Models\OutboxMessage;
+use App\Models\Tenant;
+use App\Models\TenantDomain;
 use App\Models\User;
 use App\Models\UserGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,42 +21,60 @@ class Stages1011CompletionTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const TENANT_HOST = 'stages-10-11-pilot.test';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
+
+        TenantDomain::query()->create([
+            'tenant_id' => $tenant->id,
+            'host' => self::TENANT_HOST,
+            'is_primary' => true,
+            'is_active' => true,
+            'verified_at' => now(),
+        ]);
+    }
+
     public function test_panel_routes_require_authentication_and_roles(): void
     {
-        $this->getJson('/api/customer/overview')->assertUnauthorized();
+        $this->getJson($this->tenantUrl('/api/customer/overview'))->assertUnauthorized();
 
-        $user = User::factory()->create();
+        $tenant = $this->pilotTenant();
+        $user = User::factory()->create(['tenant_id' => $tenant->id]);
         Role::findOrCreate('customer', 'web');
         $user->assignRole('customer');
         Sanctum::actingAs($user);
 
-        $this->getJson('/api/customer/overview')->assertOk()->assertJsonStructure([
+        $this->getJson($this->tenantUrl('/api/customer/overview'))->assertOk()->assertJsonStructure([
             'balances', 'open_orders', 'custody_count', 'delivery_count',
         ]);
-        $this->getJson('/api/admin/audit-logs')->assertForbidden();
+        $this->getJson($this->tenantUrl('/api/admin/audit-logs'))->assertForbidden();
     }
 
     public function test_mutating_routes_require_idempotency_key(): void
     {
-        $admin = $this->actingAdmin();
+        $this->actingAdmin();
         $policy = $this->policy();
 
-        $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false])
+        $this->putJson($this->tenantUrl("/api/admin/customer-policies/{$policy->id}"), ['is_active' => false])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Idempotency-Key header is required.');
     }
 
     public function test_financial_policy_change_fails_closed_without_side_effects(): void
     {
-        $admin = $this->actingAdmin();
+        $this->actingAdmin();
         $policy = $this->policy();
         $headers = ['Idempotency-Key' => 'policy-change-1'];
 
-        $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false], $headers)
+        $this->putJson($this->tenantUrl("/api/admin/customer-policies/{$policy->id}"), ['is_active' => false], $headers)
             ->assertStatus(503)
             ->assertJsonPath('code', 'FINANCIAL_POLICY_GROUND_TRUTH_REQUIRED');
 
-        $this->putJson("/api/admin/customer-policies/{$policy->id}", ['is_active' => false], $headers)
+        $this->putJson($this->tenantUrl("/api/admin/customer-policies/{$policy->id}"), ['is_active' => false], $headers)
             ->assertStatus(503)
             ->assertJsonPath('code', 'FINANCIAL_POLICY_GROUND_TRUTH_REQUIRED');
 
@@ -88,11 +108,11 @@ class Stages1011CompletionTest extends TestCase
             'last_error' => 'internal-error-details',
         ]);
 
-        $auditResponse = $this->getJson('/api/admin/audit-logs')
+        $auditResponse = $this->getJson($this->tenantUrl('/api/admin/audit-logs'))
             ->assertOk()
             ->assertJsonPath('data.0.action', 'security.redaction.test');
 
-        $outboxResponse = $this->getJson('/api/admin/outbox')
+        $outboxResponse = $this->getJson($this->tenantUrl('/api/admin/outbox'))
             ->assertOk()
             ->assertJsonPath('data.0.event_type', 'security.redaction.test');
 
@@ -110,8 +130,8 @@ class Stages1011CompletionTest extends TestCase
 
     public function test_operator_queue_responses_redact_sensitive_fields(): void
     {
-        $operator = $this->actingOperator();
-        $customer = User::factory()->create();
+        $this->actingOperator();
+        $customer = User::factory()->create(['tenant_id' => $this->pilotTenant()->id]);
 
         Order::query()->create([
             'user_id' => $customer->id,
@@ -145,11 +165,11 @@ class Stages1011CompletionTest extends TestCase
             'metadata' => ['token' => 'sensitive-delivery-metadata'],
         ]);
 
-        $orderResponse = $this->getJson('/api/operator/orders/queue')
+        $orderResponse = $this->getJson($this->tenantUrl('/api/operator/orders/queue'))
             ->assertOk()
             ->assertJsonPath('data.0.status', 'pending');
 
-        $deliveryResponse = $this->getJson('/api/operator/deliveries/queue')
+        $deliveryResponse = $this->getJson($this->tenantUrl('/api/operator/deliveries/queue'))
             ->assertOk()
             ->assertJsonPath('data.0.status', 'requested');
 
@@ -165,8 +185,8 @@ class Stages1011CompletionTest extends TestCase
 
     public function test_operator_delivery_action_responses_redact_receiver_identity_and_metadata(): void
     {
-        $operator = $this->actingOperator();
-        $customer = User::factory()->create();
+        $this->actingOperator();
+        $customer = User::factory()->create(['tenant_id' => $this->pilotTenant()->id]);
 
         $custody = CustodyAsset::query()->create([
             'user_id' => $customer->id,
@@ -188,19 +208,19 @@ class Stages1011CompletionTest extends TestCase
         ]);
 
         $approveResponse = $this->postJson(
-            "/api/operator/deliveries/{$delivery->id}/approve",
+            $this->tenantUrl("/api/operator/deliveries/{$delivery->id}/approve"),
             [],
             ['Idempotency-Key' => 'operator-action-approve-1'],
         )->assertOk()->assertJsonPath('status', 'approved');
 
         $readyResponse = $this->postJson(
-            "/api/operator/deliveries/{$delivery->id}/ready",
+            $this->tenantUrl("/api/operator/deliveries/{$delivery->id}/ready"),
             [],
             ['Idempotency-Key' => 'operator-action-ready-1'],
         )->assertOk()->assertJsonPath('status', 'ready');
 
         $deliverResponse = $this->postJson(
-            "/api/operator/deliveries/{$delivery->id}/deliver",
+            $this->tenantUrl("/api/operator/deliveries/{$delivery->id}/deliver"),
             [
                 'receiver_name' => 'Sensitive Action Receiver',
                 'receiver_identifier' => 'sensitive-action-identifier',
@@ -225,28 +245,41 @@ class Stages1011CompletionTest extends TestCase
 
     private function actingAdmin(): User
     {
-        $admin = User::factory()->create();
+        $admin = User::factory()->create(['tenant_id' => $this->pilotTenant()->id]);
         Role::findOrCreate('admin', 'web');
         $admin->assignRole('admin');
         Sanctum::actingAs($admin);
+
         return $admin;
     }
 
     private function actingOperator(): User
     {
-        $operator = User::factory()->create();
+        $operator = User::factory()->create(['tenant_id' => $this->pilotTenant()->id]);
         Role::findOrCreate('operator', 'web');
         $operator->assignRole('operator');
         Sanctum::actingAs($operator);
+
         return $operator;
     }
 
     private function policy(): CustomerTradingPolicy
     {
         $group = UserGroup::query()->create(['title' => 'test group']);
+
         return CustomerTradingPolicy::query()->create([
             'user_group_id' => $group->id,
             'is_active' => true,
         ]);
+    }
+
+    private function pilotTenant(): Tenant
+    {
+        return Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
+    }
+
+    private function tenantUrl(string $path): string
+    {
+        return 'http://'.self::TENANT_HOST.$path;
     }
 }
