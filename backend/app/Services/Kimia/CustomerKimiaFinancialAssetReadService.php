@@ -51,25 +51,6 @@ final class CustomerKimiaFinancialAssetReadService
                 ? (string) $row['Money']
                 : null;
 
-            if (isset($coinMap[$currencyId])) {
-                $coins[] = [
-                    'name' => $coinMap[$currencyId],
-                    'quantity' => $rawAmount,
-                ];
-
-                continue;
-            }
-
-            if (isset($currencyMap[$currencyId])) {
-                $currencies[] = [
-                    'name' => $currencyMap[$currencyId],
-                    'symbol' => isset($row['CurrencySymbol']) ? (string) $row['CurrencySymbol'] : null,
-                    'amount' => $rawAmount,
-                ];
-
-                continue;
-            }
-
             if (($row['CurrencySymbol'] ?? null) === 'ریال') {
                 if ($rialRowSeen) {
                     return $this->unresolved('KIMIA_BALANCE_CLASSIFICATION_UNRESOLVED');
@@ -80,6 +61,32 @@ final class CustomerKimiaFinancialAssetReadService
                 $goldWeightGram = array_key_exists('Weight', $row) && $row['Weight'] !== null
                     ? (string) $row['Weight']
                     : null;
+
+                continue;
+            }
+
+            $isCoin = isset($coinMap[$currencyId]);
+            $isCurrency = isset($currencyMap[$currencyId]);
+
+            if ($isCoin && $isCurrency) {
+                return $this->unresolved('KIMIA_BALANCE_CLASSIFICATION_UNRESOLVED');
+            }
+
+            if ($isCoin) {
+                $coins[] = [
+                    'name' => $coinMap[$currencyId],
+                    'quantity' => $rawAmount,
+                ];
+
+                continue;
+            }
+
+            if ($isCurrency) {
+                $currencies[] = [
+                    'name' => $currencyMap[$currencyId],
+                    'symbol' => isset($row['CurrencySymbol']) ? (string) $row['CurrencySymbol'] : null,
+                    'amount' => $rawAmount,
+                ];
 
                 continue;
             }
