@@ -35,7 +35,7 @@ class TenantDomainReadinessPreflightTest extends TestCase
         ]);
 
         $result = app(TenantDomainReadinessService::class)
-            ->inspect('khalifeh-coin', 'WWW.KhalifehCoin.com');
+            ->inspect('khalifeh-coin', 'KhalifehCoin.com');
 
         $this->assertTrue($result['domain_found']);
         $this->assertTrue($result['domain_belongs_to_tenant']);
