@@ -30,13 +30,13 @@ final class CustomerAssetsReadContractTest extends TestCase
 
         $response = $this->getJson('http://'.self::HOST.'/api/v1/customer/assets')
             ->assertServiceUnavailable()
-            ->assertJsonPath('code', 'CUSTOMER_ACCOUNT_BINDING_REQUIRED')
+            ->assertJsonPath('code', 'KIMIA_FINANCIAL_BALANCE_UNAVAILABLE')
             ->assertJsonMissingPath('data');
 
         Http::assertNothingSent();
 
         $encoded = json_encode($response->json(), JSON_THROW_ON_ERROR);
-        foreach (['external_asset_id', 'asset_id', 'account_id', 'user_id', 'ledger_entries'] as $internalField) {
+        foreach (['external_asset_id', 'asset_id', 'account_id', 'user_id', 'ledger_entries', 'CUSTOMER_ACCOUNT_BINDING_REQUIRED'] as $internalField) {
             $this->assertStringNotContainsString($internalField, $encoded);
         }
     }
@@ -50,7 +50,7 @@ final class CustomerAssetsReadContractTest extends TestCase
         foreach (['coins', 'currencies'] as $endpoint) {
             $this->getJson('http://'.self::HOST."/api/v1/customer/assets/{$endpoint}")
                 ->assertServiceUnavailable()
-                ->assertJsonPath('code', 'CUSTOMER_ACCOUNT_BINDING_REQUIRED')
+                ->assertJsonPath('code', 'KIMIA_FINANCIAL_BALANCE_UNAVAILABLE')
                 ->assertJsonMissingPath('data');
         }
 
