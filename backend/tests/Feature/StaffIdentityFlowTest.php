@@ -55,7 +55,7 @@ class StaffIdentityFlowTest extends TestCase
         $this->staff($tenantA, username: 'admin');
         $this->staff($tenantB, username: 'admin');
 
-        $response = $this->withHeader('Host', 'admin.a.test')->postJson('/api/auth/staff/login', [
+        $response = $this->postJson('https://admin.a.test/api/auth/staff/login', [
             'username' => 'admin',
             'password' => 'Initial-Password-123',
         ]);
@@ -73,7 +73,7 @@ class StaffIdentityFlowTest extends TestCase
         $this->tenantWithDomain('admin.b.test');
         $this->staff($tenantA, username: 'only-a');
 
-        $this->withHeader('Host', 'admin.b.test')->postJson('/api/auth/staff/login', [
+        $this->postJson('https://admin.b.test/api/auth/staff/login', [
             'username' => 'only-a',
             'password' => 'Initial-Password-123',
         ])->assertUnprocessable();
@@ -85,7 +85,7 @@ class StaffIdentityFlowTest extends TestCase
         $user = $this->staff($tenant);
         Sanctum::actingAs($user);
 
-        $this->withHeader('Host', 'admin.a.test')->postJson('/api/auth/staff/change-password', [
+        $this->postJson('https://admin.a.test/api/auth/staff/change-password', [
             'current_password' => 'Initial-Password-123',
             'password' => 'Replacement-Password-456',
             'password_confirmation' => 'Replacement-Password-456',
@@ -103,8 +103,7 @@ class StaffIdentityFlowTest extends TestCase
         $admin = $this->staff($tenant);
         Sanctum::actingAs($admin);
 
-        $this->withHeader('Host', 'admin.a.test')
-            ->getJson('/api/admin/settings/identity-onboarding')
+        $this->getJson('https://admin.a.test/api/admin/settings/identity-onboarding')
             ->assertOk()
             ->assertJsonPath('data.customer_auth_mode', 'otp')
             ->assertJsonPath('data.staff_auth_mode', 'password')
@@ -112,10 +111,9 @@ class StaffIdentityFlowTest extends TestCase
             ->assertJsonPath('data.readiness.jibit', false)
             ->assertJsonPath('data.readiness.kimia_customer_create', false);
 
-        $this->withHeader('Host', 'admin.a.test')
-            ->putJson('/api/admin/settings/identity-onboarding', [
-                'customer_registration_mode' => 'automatic',
-            ])
+        $this->putJson('https://admin.a.test/api/admin/settings/identity-onboarding', [
+            'customer_registration_mode' => 'automatic',
+        ])
             ->assertStatus(409)
             ->assertJsonPath('errors.code', 'REGISTRATION_MODE_DEPENDENCY_NOT_READY');
 
