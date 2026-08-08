@@ -31,7 +31,9 @@ final class TenantStaffProvisioningService
 
             $temporaryPassword = Str::random(48);
 
-            $user = User::query()->create([
+            // Customer creation owns wallet/default-account provisioning through UserObserver.
+            // Staff identities are intentionally created without that customer-only side effect.
+            $user = User::withoutEvents(fn (): User => User::query()->create([
                 'tenant_id' => $tenant->id,
                 'name' => $attributes['name'] ?? null,
                 'mobile' => $attributes['mobile'],
@@ -41,7 +43,7 @@ final class TenantStaffProvisioningService
                 'password_changed_at' => null,
                 'mobile_verified' => false,
                 'is_active' => true,
-            ]);
+            ]));
 
             $user->assignRole($role);
 
@@ -62,6 +64,7 @@ final class TenantStaffProvisioningService
                 ],
                 'metadata' => [
                     'authority' => 'tenant_owner',
+                    'customer_wallet_provisioning' => 'not_applicable',
                 ],
                 'created_at' => now(),
             ]);
