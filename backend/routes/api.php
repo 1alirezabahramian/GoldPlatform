@@ -63,9 +63,15 @@ Route::middleware(['auth:sanctum', 'throttle:customer'])->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum', 'throttle:operator', 'tenant.resolve', 'tenant.user-match'])
-    ->prefix('operator')
-    ->middleware(['role:operator|admin', 'permission:'.OperatorPermissionCatalog::OPERATOR_ACCESS])
+Route::prefix('operator')
+    ->middleware([
+        'auth:sanctum',
+        'throttle:operator',
+        'tenant.resolve',
+        'tenant.user-match',
+        'role:operator|admin',
+        'permission:'.OperatorPermissionCatalog::OPERATOR_ACCESS,
+    ])
     ->group(function () {
         Route::get('/orders/queue', [OperatorPanelController::class, 'orderQueue'])
             ->middleware('permission:'.OperatorPermissionCatalog::ORDERS_QUEUE_VIEW);
@@ -79,8 +85,15 @@ Route::middleware(['auth:sanctum', 'throttle:operator', 'tenant.resolve', 'tenan
             ->middleware(['permission:'.OperatorPermissionCatalog::DELIVERIES_COMPLETE, 'idempotency:delivery.deliver']);
     });
 
-Route::middleware(['auth:sanctum', 'throttle:admin', 'tenant.resolve', 'tenant.user-match'])
-    ->prefix('admin')->middleware('role:admin')->group(function () {
+Route::prefix('admin')
+    ->middleware([
+        'auth:sanctum',
+        'throttle:admin',
+        'tenant.resolve',
+        'tenant.user-match',
+        'role:admin',
+    ])
+    ->group(function () {
         Route::get('/audit-logs', [AdminPanelController::class, 'auditLogs']);
         Route::get('/outbox', [AdminPanelController::class, 'outbox']);
         Route::get('/customer-policies', [AdminPanelController::class, 'policies']);
