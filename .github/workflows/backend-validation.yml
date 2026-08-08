@@ -6,6 +6,7 @@ on:
       - feature/goldplatform-developer-mcp
       - recovery/rc2-snapshot-2026-08-04
       - recovery/rc2-product-rebuild
+      - v2/v2-01-canonical-runtime-integration
   push:
     branches:
       - feature/goldplatform-developer-mcp

@@ -11,6 +11,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IdempotencyMiddleware
 {
+    private const NON_REPLAYABLE_RESPONSE_SCOPES = [
+        'staff.create',
+    ];
+
     public function handle(Request $request, Closure $next, string $scope = 'api'): Response
     {
         $key = trim((string) $request->header('Idempotency-Key'));
@@ -21,8 +25,9 @@ class IdempotencyMiddleware
         $keyHash = hash('sha256', $key);
         $requestHash = hash('sha256', $request->method().'|'.$request->path().'|'.json_encode($request->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         $userId = $request->user()?->getKey();
+        $nonReplayableResponse = in_array($scope, self::NON_REPLAYABLE_RESPONSE_SCOPES, true);
 
-        return DB::transaction(function () use ($request, $next, $scope, $keyHash, $requestHash, $userId): Response {
+        return DB::transaction(function () use ($request, $next, $scope, $keyHash, $requestHash, $userId, $nonReplayableResponse): Response {
             $record = IdempotencyRecord::query()
                 ->where('user_id', $userId)
                 ->where('scope', $scope)
@@ -34,6 +39,14 @@ class IdempotencyMiddleware
                 if (! hash_equals($record->request_hash, $requestHash)) {
                     return response()->json(['message' => 'Idempotency key was used with a different request.'], 409);
                 }
+
+                if ($nonReplayableResponse) {
+                    return response()->json([
+                        'message' => 'The operation already completed; sensitive credentials are not replayed.',
+                        'code' => 'IDEMPOTENT_SECRET_RESPONSE_NOT_REPLAYABLE',
+                    ], 409);
+                }
+
                 return response()->json($record->response_body ?? [], $record->response_status ?? 200);
             }
 
@@ -53,7 +66,7 @@ class IdempotencyMiddleware
             $body = $response instanceof JsonResponse ? $response->getData(true) : ['content' => $response->getContent()];
             $record->forceFill([
                 'response_status' => $response->getStatusCode(),
-                'response_body' => $body,
+                'response_body' => $nonReplayableResponse ? null : $body,
                 'completed_at' => now(),
             ])->save();
 

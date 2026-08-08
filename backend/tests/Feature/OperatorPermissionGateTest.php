@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Tenant;
+use App\Models\TenantDomain;
 use App\Models\User;
 use App\Support\OperatorPermissionCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,6 +15,23 @@ use Tests\TestCase;
 class OperatorPermissionGateTest extends TestCase
 {
     use RefreshDatabase;
+
+    private const TENANT_HOST = 'operator-permission-pilot.test';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
+
+        TenantDomain::query()->create([
+            'tenant_id' => $tenant->id,
+            'host' => self::TENANT_HOST,
+            'is_primary' => true,
+            'is_active' => true,
+            'verified_at' => now(),
+        ]);
+    }
 
     public function test_default_operator_and_admin_roles_keep_existing_access(): void
     {
@@ -56,11 +75,17 @@ class OperatorPermissionGateTest extends TestCase
         $role = Role::findByName('operator', 'web');
         $role->revokePermissionTo(OperatorPermissionCatalog::ORDERS_QUEUE_VIEW);
 
-        $operator = User::factory()->create();
+        $tenant = Tenant::query()->where('slug', 'khalifeh-coin')->firstOrFail();
+        $operator = User::factory()->create(['tenant_id' => $tenant->id]);
         $operator->assignRole($role);
         Sanctum::actingAs($operator);
 
-        $this->getJson('/api/operator/orders/queue')->assertForbidden();
-        $this->getJson('/api/operator/deliveries/queue')->assertOk();
+        $this->getJson($this->tenantUrl('/api/operator/orders/queue'))->assertForbidden();
+        $this->getJson($this->tenantUrl('/api/operator/deliveries/queue'))->assertOk();
+    }
+
+    private function tenantUrl(string $path): string
+    {
+        return 'http://'.self::TENANT_HOST.$path;
     }
 }
