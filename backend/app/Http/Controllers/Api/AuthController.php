@@ -10,19 +10,25 @@ use App\Models\User;
 use App\Services\Sms\OtpService;
 use App\Services\Sms\SmsService;
 use App\Support\ApiResponse;
+use App\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
     public function __construct(
         protected OtpService $otpService,
-        protected SmsService $smsService
+        protected SmsService $smsService,
+        protected TenantContext $tenantContext
     ) {
     }
 
     public function sendOtp(SendOtpRequest $request)
     {
-        $user = User::query()->where('mobile', $request->mobile)->first();
+        $tenant = $this->tenantContext->tenant();
+        $user = User::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('mobile', $request->mobile)
+            ->first();
 
         if (! $user) {
             return ApiResponse::error(
@@ -50,7 +56,11 @@ class AuthController extends Controller
 
     public function verifyOtp(VerifyOtpRequest $request)
     {
-        $user = User::query()->where('mobile', $request->mobile)->first();
+        $tenant = $this->tenantContext->tenant();
+        $user = User::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('mobile', $request->mobile)
+            ->first();
 
         if (! $user) {
             return ApiResponse::error(
