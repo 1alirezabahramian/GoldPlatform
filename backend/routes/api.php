@@ -18,8 +18,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->middleware('throttle:auth')->group(function () {
-    Route::post('/send-otp', [AuthController::class, 'sendOtp']);
-    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::middleware('tenant.resolve')->group(function () {
+        Route::post('/send-otp', [AuthController::class, 'sendOtp']);
+        Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    });
     Route::post('/register', [RegistrationController::class, 'register']);
 });
 
