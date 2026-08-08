@@ -28,11 +28,16 @@ final class RecoveryFinancialBalanceSourceOfTruthTest extends TestCase
             '/api/v1/customer/assets/coins',
             '/api/v1/customer/assets/currencies',
         ] as $uri) {
-            $this->actingAs($customer, 'sanctum')
+            $response = $this->actingAs($customer, 'sanctum')
                 ->getJson('http://'.self::HOST.$uri)
                 ->assertStatus(503)
-                ->assertJsonPath('code', 'CUSTOMER_ACCOUNT_BINDING_REQUIRED')
+                ->assertJsonPath('code', 'KIMIA_FINANCIAL_BALANCE_UNAVAILABLE')
                 ->assertJsonMissingPath('data');
+
+            self::assertStringNotContainsString(
+                'CUSTOMER_ACCOUNT_BINDING_REQUIRED',
+                json_encode($response->json(), JSON_THROW_ON_ERROR),
+            );
         }
 
         Http::assertNothingSent();
