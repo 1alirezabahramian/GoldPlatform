@@ -1,0 +1,236 @@
+openapi: 3.1.0
+info:
+  title: GoldPlatform Backoffice API
+  version: 0.3.0-v2-identity
+  description: |
+    قرارداد Canonical فعلی برای احراز هویت Staff و تنظیمات Identity/Onboarding.
+    Tenant از Host معتبر resolve می‌شود و Staff به Tenant همان Host محدود است.
+    این سند هیچ Rule مالی، Kimia Write، Jibit payload یا Referral reward تعریف نمی‌کند.
+servers:
+  - url: /api
+paths:
+  /auth/staff/login:
+    post:
+      operationId: staffLogin
+      summary: ورود Admin/Operator با Username و Password در Tenant resolved
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [username, password]
+              properties:
+                username: { type: string, maxLength: 100 }
+                password: { type: string }
+      responses:
+        '200':
+          description: ورود موفق Staff و صدور Sanctum token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StaffLoginSuccess' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /auth/staff/change-password:
+    post:
+      operationId: changeStaffPassword
+      summary: تغییر رمز Staff و پایان الزام تغییر رمز اولیه
+      security: [{ sanctum: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password: { type: string }
+                password: { type: string, minLength: 12 }
+                password_confirmation: { type: string, minLength: 12 }
+      responses:
+        '200':
+          description: رمز با موفقیت تغییر کرد؛ سایر tokenهای Staff حذف می‌شوند و token فعلی حفظ می‌شود
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasswordChangeSuccess' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /admin/settings/identity-onboarding:
+    get:
+      operationId: getIdentityOnboardingSettings
+      summary: مشاهده Policyهای Identity/Onboarding همان Tenant
+      security: [{ sanctum: [] }]
+      responses:
+        '200':
+          description: تنظیمات Identity/Onboarding و readiness وابستگی‌های بیرونی
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IdentitySettingsShowSuccess' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    put:
+      operationId: updateIdentityOnboardingSettings
+      summary: تغییر Mode ثبت‌نام مشتری با Gate وابستگی‌ها
+      security: [{ sanctum: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [customer_registration_mode]
+              properties:
+                customer_registration_mode:
+                  type: string
+                  enum: [manual, assisted, automatic]
+      responses:
+        '200':
+          description: Mode مجاز با موفقیت ذخیره شد
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IdentitySettingsUpdateSuccess' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/TenantUnavailable' }
+        '409':
+          description: وابستگی لازم برای Mode انتخابی هنوز Ground Truth/Runtime readiness ندارد
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DependencyNotReadyError' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+
+  responses:
+    Unauthenticated:
+      description: Staff احراز هویت نشده است
+    Forbidden:
+      description: نقش Staff، Tenant یا Policy ورود اجازه دسترسی نمی‌دهد
+    TenantUnavailable:
+      description: Host به Tenant فعال و تأییدشده resolve نشد
+    ValidationFailed:
+      description: ورودی یا Credential معتبر نیست
+    RateLimited:
+      description: تعداد درخواست‌ها بیش از حد مجاز است
+
+  schemas:
+    ApiSuccessEnvelope:
+      type: object
+      required: [success, message, data, errors]
+      properties:
+        success: { type: boolean, const: true }
+        message: { type: string }
+        data: {}
+        errors: { type: 'null' }
+
+    StaffLoginSuccess:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [token, user]
+              properties:
+                token: { type: string }
+                user:
+                  type: object
+                  required: [id, name, username, roles, must_change_password]
+                  properties:
+                    id: { type: integer }
+                    name: { type: [string, 'null'] }
+                    username: { type: string }
+                    roles:
+                      type: array
+                      items: { type: string }
+                    must_change_password: { type: boolean }
+
+    PasswordChangeSuccess:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [must_change_password, password_changed_at]
+              properties:
+                must_change_password: { type: boolean, const: false }
+                password_changed_at: { type: [string, 'null'], format: date-time }
+
+    IdentitySettingsShowSuccess:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [customer_auth_mode, staff_auth_mode, customer_registration_mode, available_registration_modes, readiness]
+              properties:
+                customer_auth_mode: { type: string, const: otp }
+                staff_auth_mode: { type: string, const: password }
+                customer_registration_mode:
+                  type: string
+                  enum: [manual, assisted, automatic]
+                available_registration_modes:
+                  type: array
+                  items:
+                    type: string
+                    enum: [manual, assisted, automatic]
+                readiness:
+                  type: object
+                  required: [jibit, kimia_customer_create]
+                  properties:
+                    jibit: { type: boolean, const: false }
+                    kimia_customer_create: { type: boolean, const: false }
+
+    IdentitySettingsUpdateSuccess:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [customer_auth_mode, staff_auth_mode, customer_registration_mode]
+              properties:
+                customer_auth_mode: { type: string, const: otp }
+                staff_auth_mode: { type: string, const: password }
+                customer_registration_mode:
+                  type: string
+                  enum: [manual, assisted, automatic]
+
+    DependencyNotReadyError:
+      type: object
+      required: [success, message, data, errors]
+      properties:
+        success: { type: boolean, const: false }
+        message: { type: string }
+        data: { type: 'null' }
+        errors:
+          type: object
+          required: [code, readiness]
+          properties:
+            code: { type: string, const: REGISTRATION_MODE_DEPENDENCY_NOT_READY }
+            readiness:
+              type: object
+              required: [jibit, kimia_customer_create]
+              properties:
+                jibit: { type: boolean, const: false }
+                kimia_customer_create: { type: boolean, const: false }
